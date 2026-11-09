@@ -6,16 +6,27 @@ Covers: 403/200, 3 patterns, N+1 fix, midnight crossover, rapid <1h + 30d via Ac
 import datetime
 import os
 import unittest
+
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
-import models
-from models import Base, User, UserSession, Student, Teacher, Course, SessionLog, Attendance, Transaction, Branch, ActivityLog
-from main import app
 from dependencies import get_db, hash_password
-
+from main import app
+from models import (
+    ActivityLog,
+    Attendance,
+    Base,
+    Branch,
+    Course,
+    SessionLog,
+    Student,
+    Teacher,
+    Transaction,
+    User,
+    UserSession,
+)
 
 # FIX(B1): مسیر فایل‌های سرور مستقل از پوشهٔ اجرا — نسبت به محل همین فایل تست، نه cwd.
 # الگوی قدیمی `open("Kharazmi_Server/routers/x.py")` فقط وقتی کار می‌کرد که سوئیت از ریشهٔ ریپو

@@ -6,13 +6,13 @@ from fastapi import HTTPException
 from fastapi.testclient import TestClient
 from pydantic import ValidationError
 from sqlalchemy import text
+from test_priority2_financial import ledger, pay  # noqa: F401 — pytest fixture: مصرف فقط از طریق نام پارامتر تست
 
 import models
 import schemas
 from dependencies import get_db, perform_delete_enrollment
 from main import app
 from routers import admin, classes, crm, finance, homework
-from test_priority2_financial import ledger, pay
 from validation import is_valid_iranian_national_code, validate_iranian_national_code
 
 

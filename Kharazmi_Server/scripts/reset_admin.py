@@ -1,6 +1,5 @@
-from sqlalchemy.orm import Session
 import models
-from models import User, SessionLocal, engine
+from models import SessionLocal, User, engine
 
 # اتصال به دیتابیس
 models.Base.metadata.create_all(bind=engine)

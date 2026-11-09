@@ -1,17 +1,27 @@
-import os
 import datetime
-from typing import Annotated, List, Optional
-from fastapi import APIRouter, Depends, HTTPException, status, Header
+from typing import Annotated
+
+from fastapi import APIRouter, Depends, Header, HTTPException
 from pydantic import BaseModel, Field, StringConstraints
+from sqlalchemy import (
+    desc,
+    or_,  # FIX (F-C7): ایمپورت گمشده — کل مسیر ثبت‌نام آنلاین 500 می‌داد (NameError موقع اجرا؛ import-main نمی‌گیرد).
+)
+from sqlalchemy.orm import Session
+
+from dependencies import (
+    NotificationService,
+    check_user_login,
+    ensure_student_shadow_users,
+    get_db,
+    get_next_sequence_value,
+    normalize_mobile,
+    require_permission,
+)
+from models import Branch, Course, Enrollment, Lead, SmsLog, Student, Transaction
+
 # FIX: Bug 22 - public registration uses the same identity validation as staff registration.
 from validation import NationalCodeRequest
-from sqlalchemy.orm import Session
-from sqlalchemy import or_  # FIX (F-C7): ایمپورت گمشده — کل مسیر ثبت‌نام آنلاین 500 می‌داد (NameError موقع اجرا؛ import-main نمی‌گیرد).
-from sqlalchemy import desc
-
-import models
-from models import Lead, Student, Enrollment, Course, Transaction, SmsLog, Branch
-from dependencies import get_db, check_user_login, require_permission, NotificationService, get_next_sequence_value, ensure_student_shadow_users, normalize_mobile
 
 router = APIRouter()
 

@@ -1,11 +1,12 @@
 import unittest
+
+from fastapi import HTTPException
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from fastapi import HTTPException
 
 import models
-from models import Student, Course, Enrollment, Transaction, UserSession, User
-from routers.ai import chat_with_ai_assistant, AIChatRequest
+from models import Student, User, UserSession
+from routers.ai import AIChatRequest, chat_with_ai_assistant
 
 
 class TestKharazmiAIAssistant(unittest.TestCase):

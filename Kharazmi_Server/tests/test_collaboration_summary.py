@@ -1,16 +1,15 @@
 import datetime
 import unittest
-import time
 
 from fastapi import HTTPException
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
-from models import Base, Branch, Course, LiveSession, Settlement, Teacher, User, UserSession
 from collaboration_summary import build_teacher_collaboration_summary
-from routers.teachers import get_teacher_collaboration_summary, get_teacher_full_profile
 from dependencies import check_admin_access
+from models import Base, Branch, Course, LiveSession, Settlement, Teacher, User, UserSession
+from routers.teachers import get_teacher_collaboration_summary, get_teacher_full_profile
 
 
 class TestCollaborationSummary(unittest.TestCase):

@@ -19,7 +19,6 @@ Design Notes:
 import csv
 import datetime
 import io
-from typing import List, Optional
 from collections.abc import Iterator
 
 from fastapi import APIRouter, Depends, Header
@@ -27,9 +26,8 @@ from fastapi.responses import StreamingResponse
 from sqlalchemy import or_
 from sqlalchemy.orm import Session, joinedload
 
+from dependencies import check_admin_access, get_db
 from models import Branch, Enrollment, Installment, Student
-from dependencies import get_db, check_admin_access
-from financial_calculations import calculate_student_debt
 from today_summary import jalali_date_string, parse_project_date
 
 router = APIRouter()

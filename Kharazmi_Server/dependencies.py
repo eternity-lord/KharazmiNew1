@@ -1,18 +1,33 @@
 import datetime
-from typing import List, Optional, Union
-from fastapi import Depends, HTTPException, status, Header
+
+from fastapi import Depends, Header, HTTPException
 from sqlalchemy.orm import Session
+
 import models
-from models import User, SessionLocal, UserSession, Student, Teacher, Course, Enrollment, Transaction, SessionLog, Attendance, Settlement, Installment, ParentOTP, SequenceCounter, InstituteSettings, ActivityLog, Notification, DeviceToken, Homework, HomeworkSubmission, Room, Conversation, ConversationParticipant, Message, Exam, ExamQuestion, ExamAttempt, Lead
+from models import (
+    Attendance,
+    Course,
+    DeviceToken,
+    Enrollment,
+    Installment,
+    InstituteSettings,
+    Notification,
+    SequenceCounter,
+    Student,
+    Teacher,
+    Transaction,
+    User,
+    UserSession,
+)
 
 SESSION_EXPIRY_DAYS = 30
 
 # FIX: JWT secret from env for signed tokens
-import os
 import base64
-import json
-import hmac
 import hashlib
+import hmac
+import json
+import os
 import uuid
 
 JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY") or os.getenv("SECRET_KEY")
@@ -441,7 +456,7 @@ def perform_delete_enrollment(enrollment, db: Session, forgive_session_charges: 
     """
     # FIX: Bug 13 - archive once; never detach or delete historical enrollment links.
     # پول واقعی دریافت‌شده از بین نمی‌رود؛ فقط session_chargeهای مشمول بخشودگی به کیف پول برمی‌گردند.
-    from sqlalchemy import and_, or_, func
+    from sqlalchemy import and_, func, or_
 
     effects = {
         "enrollment_id": enrollment.id,
@@ -771,6 +786,7 @@ def ensure_student_shadow_users(db: Session, student) -> None:
     اگر سایه‌ای از قبل باشد دست نمی‌خورد (idempotent — امن برای backfill و لاگین).
     """
     import secrets
+
     from sqlalchemy.exc import IntegrityError  # FIX F-B2 local
     if student.id is None:
         db.flush()
@@ -997,11 +1013,10 @@ def require_permission(permission: str):
         raise HTTPException(status_code=403, detail="شما دسترسی لازم برای این عملیات را ندارید")
     return dependency
 
-from passlib.handlers.pbkdf2 import pbkdf2_sha256
-
 # FIX M28: کانتکست bcrypt یک‌بار در سطح ماژول (نه هر بار داخل verify) — فقط برای هش‌های legacy.
 # ساخت داخل try است تا رفتار قبلی حفظ شود: اگر bcrypt در دسترس نباشد، import نمی‌شکند و verify همان False را می‌دهد.
 from passlib.context import CryptContext as _CryptContext
+from passlib.handlers.pbkdf2 import pbkdf2_sha256
 
 try:
     _BCRYPT_CTX = _CryptContext(schemes=["bcrypt"])
@@ -1074,9 +1089,9 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     # FIX: unknown or plaintext hash -> False
     return False
 
-import json
-import time
+
 from models import SmsLog
+
 
 class NotificationService:
     @staticmethod
@@ -1091,7 +1106,6 @@ class NotificationService:
         priority: int = 1,
         commit: bool = True,  # False فقط وقتی کالر خودش اتمیسیته را مدیریت می‌کند (مثل حلقه شارژ ثبت جلسه)
     ):
-        from sqlalchemy import desc
         now = datetime.datetime.utcnow()
         ten_seconds_ago = now - datetime.timedelta(seconds=10)
         duplicate = (

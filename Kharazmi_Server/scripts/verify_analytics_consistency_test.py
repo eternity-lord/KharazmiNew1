@@ -10,24 +10,18 @@ from sqlalchemy import create_engine, func, or_
 from sqlalchemy.orm import sessionmaker
 
 import models
-from dependencies import get_db, hash_password
+from dependencies import hash_password
 from models import (
     Attendance,
     Course,
     Enrollment,
-    Installment,
     SessionLog,
     Student,
     Transaction,
     User,
     UserSession,
 )
-from routers.analytics import get_analytics_dashboard
-from routers.reports import (
-    get_debtors_report,
-    get_financial_report,
-    get_financial_summary,
-)
+
 
 class TestAnalyticsConsistencyE2E(unittest.TestCase):
 
@@ -226,5 +220,6 @@ class TestAnalyticsConsistencyE2E(unittest.TestCase):
         print("="*80 + "\n")
 
 import datetime
+
 if __name__ == "__main__":
     unittest.main()

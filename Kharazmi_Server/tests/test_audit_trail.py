@@ -34,7 +34,16 @@ import routers.audit_trail as audit_trail
 from dependencies import get_db, hash_password
 from main import app
 from models import (
-    Base, Branch, Course, Enrollment, FinancialAuditLog, Installment, Student, Transaction, User, UserSession,
+    Base,
+    Branch,
+    Course,
+    Enrollment,
+    FinancialAuditLog,
+    Installment,
+    Student,
+    Transaction,
+    User,
+    UserSession,
 )
 from today_summary import gregorian_to_jalali
 

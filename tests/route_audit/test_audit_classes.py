@@ -5,7 +5,6 @@ from io import BytesIO
 
 from openpyxl import load_workbook
 
-
 CLASSES_ROUTES = [
     ("POST", "/admin/classes/{course_id}/suspend_s"), ("POST", "/classes/create"),
     ("GET", "/classes/deletion_requests"), ("POST", "/classes/deletion_requests/{request_id}/approve"),

@@ -9,16 +9,15 @@ Smart Auto-Dunning (Human-in-the-Loop) - Isolated Router
 """
 import datetime
 import re
-from typing import List, Optional
 
 from fastapi import APIRouter, Depends, Header, HTTPException
 from pydantic import BaseModel
+from sqlalchemy import func, or_
 from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import func, or_, and_
 
+from dependencies import check_admin_access, get_db, get_session_from_token
 from models import ActivityLog, Enrollment, Installment, SmsLog, Student, User
-from dependencies import get_db, check_admin_access, get_session_from_token
-from today_summary import parse_project_date, jalali_date_string
+from today_summary import jalali_date_string, parse_project_date
 
 router = APIRouter()
 

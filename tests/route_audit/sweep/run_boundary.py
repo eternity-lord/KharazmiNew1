@@ -11,7 +11,6 @@ from fastapi.testclient import TestClient
 
 from ..clock import freeze_loaded_server_modules
 from ..kotlin_contract import audit_payload
-from .common import block_external_network_calls
 from ..seed import restore_role_sessions
 from .boundary_seed import (
     BOUNDARY_AMOUNT,
@@ -19,6 +18,7 @@ from .boundary_seed import (
     BOUNDARY_HOMEWORK_ID,
     seed_boundary_database,
 )
+from .common import block_external_network_calls
 
 ROOT = Path(__file__).resolve().parents[3]
 OUT = Path(__file__).resolve().parent

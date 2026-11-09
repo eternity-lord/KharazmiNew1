@@ -1,17 +1,13 @@
-from pydantic import BaseModel, Field
-from typing import List, Optional, Union
-from pydantic import Field
-from pydantic.fields import FieldInfo
-from pydantic import BaseModel
-import datetime
 # FIX: Bug 22 - validate identity writes and cross-field score bounds centrally.
-from pydantic import field_validator, model_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
+
 from validation import (
     NationalCodeRequest,
     validate_attendance_status,
     validate_installment_amount,
     validate_jalali_due_date,
 )
+
 
 class HistoryRequest(BaseModel):
     course_id: int

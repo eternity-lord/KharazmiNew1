@@ -1,14 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Header
-from sqlalchemy.orm import Session
-from typing import List, Optional
+from fastapi import APIRouter, Depends, Header, HTTPException
 from pydantic import BaseModel
-from sqlalchemy import func, or_
+from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError
-import datetime
+from sqlalchemy.orm import Session
 
 import models
-from models import Branch, Resource, ResourceBooking, Student, Teacher, Course, Transaction, Enrollment, SessionLog, Attendance, User
-from dependencies import get_db, check_admin_access, check_admin_or_secretary_access, check_user_login
+from dependencies import check_admin_access, check_admin_or_secretary_access, check_user_login, get_db
+from models import Branch, Course, Resource, ResourceBooking, SessionLog, Student, Teacher, Transaction, User
 
 router = APIRouter()
 

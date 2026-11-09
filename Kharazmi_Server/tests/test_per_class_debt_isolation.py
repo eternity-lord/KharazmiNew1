@@ -15,12 +15,13 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
+from financial_calculations import calculate_enrollment_debt_breakdown, calculate_student_debt
 from models import (
+    Attendance,
     Base,
     Branch,
     Course,
     Enrollment,
-    Attendance,
     SessionLog,
     Student,
     Teacher,
@@ -28,7 +29,7 @@ from models import (
     User,
     UserSession,
 )
-from financial_calculations import calculate_enrollment_debt_breakdown, calculate_student_debt
+from routers.admin import get_student_full_profile
 from routers.classes import (
     get_all_classes,
     get_class_details,
@@ -36,7 +37,6 @@ from routers.classes import (
     get_class_students_excel,
     get_class_students_full,
 )
-from routers.admin import get_student_full_profile
 from routers.finance import (
     FinanceSubmitData,
     get_debtors_list,

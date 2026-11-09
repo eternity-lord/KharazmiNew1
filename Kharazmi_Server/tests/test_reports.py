@@ -6,14 +6,27 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
-from models import Base, Branch, Course, Enrollment, Student, Teacher, User, UserSession, Transaction, SessionLog, Attendance, InstituteSettings
+from models import (
+    Attendance,
+    Base,
+    Branch,
+    Course,
+    Enrollment,
+    InstituteSettings,
+    SessionLog,
+    Student,
+    Teacher,
+    Transaction,
+    User,
+    UserSession,
+)
 from routers.reports import (
     get_chart_data,
-    get_financial_report,
     get_debtors_report,
+    get_financial_report,
     get_financial_summary,
-    get_student_statement,
     get_logged_in_teacher,
+    get_student_statement,
 )
 
 

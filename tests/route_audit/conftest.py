@@ -66,9 +66,10 @@ def client(audit_app, frozen_server_clock):
 def network_isolation(monkeypatch):
     """Never allow SMS/push/provider code in route tests to reach a network."""
     monkeypatch.setenv("FCM_SERVER_KEY", "")
-    import requests
     import socket
     import urllib.request
+
+    import requests
 
     def blocked_provider_request(*args, **kwargs):
         raise AssertionError("route-audit attempted an external network request")

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import csv
-import json
 import re
 from pathlib import Path
 from typing import Any
@@ -12,9 +11,10 @@ SERVER = ROOT / "Kharazmi_Server"
 
 def block_external_network_calls() -> None:
     """Fail closed if provider code tries to send an SMS/push/HTTP request."""
-    import requests
     import socket
     import urllib.request
+
+    import requests
 
     def blocked(*args, **kwargs):
         raise AssertionError("route-audit blocked an external network call")
@@ -40,8 +40,9 @@ def prepare_valid_route_fixture(row: dict[str, str], models) -> None:
     db = models.SessionLocal()
     try:
         if path == "/attendance/qr_check-in":
-            from ..clock import FIXED_NOW
             from today_summary import jalali_date_string
+
+            from ..clock import FIXED_NOW
 
             session = db.query(models.SessionLog).filter(models.SessionLog.session_code == 5001).one()
             session.date = jalali_date_string(FIXED_NOW.date())

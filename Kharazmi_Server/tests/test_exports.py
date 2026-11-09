@@ -19,12 +19,20 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
-from models import (
-    Base, User, UserSession, Student, Teacher, Course, Enrollment, Installment,
-    Branch, SessionLog,
-)
-from main import app
 from dependencies import get_db, hash_password
+from main import app
+from models import (
+    Base,
+    Branch,
+    Course,
+    Enrollment,
+    Installment,
+    SessionLog,
+    Student,
+    Teacher,
+    User,
+    UserSession,
+)
 from today_summary import jalali_date_string
 
 
@@ -274,7 +282,8 @@ class TestExportSessionLifecycle(unittest.TestCase):
     def setUp(self):
         import os
         import tempfile
-        from models import Branch, User, UserSession, Student, Enrollment, Course, Teacher
+
+        from models import Branch, Course, Enrollment, Student, Teacher, User, UserSession
 
         fd, self.db_path = tempfile.mkstemp(suffix=".db")
         os.close(fd)

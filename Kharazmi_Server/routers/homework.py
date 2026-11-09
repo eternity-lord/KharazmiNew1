@@ -1,17 +1,24 @@
-import os
 import datetime
+import os
 import random
 import re
-from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile, Header
+
+from fastapi import APIRouter, Depends, File, Header, HTTPException, UploadFile
 from pydantic import BaseModel, Field  # FIX: Bug 22 - validate finite grading inputs.
-from sqlalchemy.orm import Session
 from sqlalchemy import desc
+from sqlalchemy.orm import Session
 
 import models
-from models import Homework, HomeworkSubmission, Course, Enrollment, Student, Teacher
+from dependencies import (
+    NotificationService,
+    ensure_student_shadow_users,
+    get_db,
+    get_session_parent,
+    get_session_student,
+    require_permission,
+)
+from models import Course, Enrollment, Homework, HomeworkSubmission, Student
 from storage import storage_dir
-from dependencies import get_db, check_user_login, require_permission, NotificationService, get_session_student, get_session_parent, ensure_student_shadow_users
 
 router = APIRouter()
 
@@ -225,7 +232,9 @@ async def submit_homework_file(
     # Save or update submission
     submission = db.query(HomeworkSubmission).filter(HomeworkSubmission.homework_id == homework_id, HomeworkSubmission.student_id == student_id).first()
 
-    from today_summary import parse_project_date  # FIX H3-B3: due_date is free text (often Jalali); compare real dates (lazy import)
+    from today_summary import (
+        parse_project_date,  # FIX H3-B3: due_date is free text (often Jalali); compare real dates (lazy import)
+    )
     today_date = datetime.datetime.now().date()
     _due = parse_project_date(hw.due_date)
     # No valid deadline → can't be late.

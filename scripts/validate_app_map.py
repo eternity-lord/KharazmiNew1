@@ -20,8 +20,8 @@ import sys
 import tempfile
 import threading
 from collections import Counter
-from pathlib import Path
 from collections.abc import Iterable
+from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:

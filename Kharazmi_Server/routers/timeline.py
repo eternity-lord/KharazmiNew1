@@ -4,15 +4,14 @@ Isolated router - no modifications to finance/classes/audit.
 All logic uses joinedload/selectinload to avoid N+1.
 """
 import datetime
-from typing import List, Optional
 
 from fastapi import APIRouter, Depends, Header, HTTPException
 from pydantic import BaseModel
-from sqlalchemy.orm import Session, joinedload, selectinload
 from sqlalchemy import desc
+from sqlalchemy.orm import Session, joinedload
 
+from dependencies import check_student_access, check_user_login, get_db
 from models import Attendance, Course, Enrollment, Grade, Installment, SessionLog, Student, Transaction
-from dependencies import get_db, check_user_login, check_student_access
 
 router = APIRouter()
 

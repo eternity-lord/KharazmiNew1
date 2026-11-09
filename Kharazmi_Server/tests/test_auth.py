@@ -1,17 +1,22 @@
 import datetime
 import re
 import unittest
-import uuid
 
 from fastapi import HTTPException, Request
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
-from models import Base, Student, Teacher, User, UserSession, ParentOTP, Branch, SmsLog
 from dependencies import check_admin_access, check_user_login, hash_password, verify_password
-from routers.auth import login_user, request_student_otp, student_login, LoginRequest, StudentOtpRequest, StudentLoginRequest
-
+from models import Base, Branch, ParentOTP, SmsLog, Student, Teacher, User, UserSession
+from routers.auth import (
+    LoginRequest,
+    StudentLoginRequest,
+    StudentOtpRequest,
+    login_user,
+    request_student_otp,
+    student_login,
+)
 
 _req_counter = 0
 

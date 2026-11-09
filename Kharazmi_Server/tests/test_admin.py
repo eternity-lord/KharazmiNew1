@@ -6,18 +6,17 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
+from dependencies import check_admin_access
 from models import Base, Branch, Course, Enrollment, Student, Teacher, User, UserSession
-from dependencies import check_admin_access, check_user_login
 from routers.admin import (
-    get_student_full_profile,
-    toggle_suspend_student,
-    delete_student,
-    get_pending_teachers,
     approve_teacher,
-    suspend_teacher,
+    delete_student,
     delete_teacher,
+    get_pending_teachers,
+    get_student_full_profile,
+    suspend_teacher,
+    toggle_suspend_student,
 )
-from routers.reports import get_logged_in_teacher
 
 
 class TestAdminRouter(unittest.TestCase):

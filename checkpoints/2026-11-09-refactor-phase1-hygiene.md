@@ -30,7 +30,7 @@ DATABASE_URL=sqlite:////tmp/kharazmi_base.db JWT_SECRET_KEY=... \
 | فاز | محتوا | وضعیت |
 | --- | --- | --- |
 | **P1** | بهداشت ریپو: حذف آرشیو و اسکریپت‌های مرده، سامان‌دهی اسکریپت‌های عملیاتی، پیکربندی ruff/mypy، `.gitignore` | ✅ انجام شد (همین سند) |
-| **P2** | lint/type: اعمال اصلاح‌های امن راف، مهاجرت `dict()` → `model_dump()` و `declarative_base()`، حذف تعریف‌های دوباره (F811) و متغیرهای مرده (F841)، `zip(strict=…)` و رفع ۸۶ warning | ⏳ بعدی |
+| **P2** | lint/type: مهاجرت `dict()` → `model_dump()` و `declarative_base()` (warningها ۸۶ ← ۲) + اصلاح‌های امن راف: یافته‌ها ۲۵۱۹ ← ۱۱۵۷ ← **۲۵۱** | ✅ انجام شد — PR #4 و `2026-11-09-refactor-phase2c-dead-code-and-schema-dedupe.md` |
 | **P2b** | **احیای سوئیت `tests/route_audit`** (۱۶۷ تست قرمز به‌دلیل پوسیدگی زمانی) + افزودنش به CI به‌عنوان job جدا | ✅ انجام شد — `2026-11-09-route-audit-clock-rot-fix.md` |
 | **P3** | شکستن ماژول‌های غول‌پیکر: `routers/admin.py` (۲۹۹۳ خط)، `routers/finance.py` (۲۸۲۲)، `attendance.py` (۱۵۶۱)، `classes.py` (۱۵۶۰) ← استخراج لایهٔ service، با **نگه‌داشتن دکوریتورهای route در همان فایل روتر** | ⏳ |
 | **P4** | اپ اندروید: Activityهای غول‌پیکر (`StudentProfileActivity` ۱۲۶۴، `InvoiceActivity` ۱۲۴۸، `AttendanceActivity` ۱۰۱۲، `ClassDetailActivity` ۹۴۸)، حذف duplication، جدا کردن لایهٔ داده از UI | ⏳ |

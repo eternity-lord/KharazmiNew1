@@ -22,9 +22,8 @@
 import json
 import logging
 import os
-from dataclasses import dataclass, field
-from typing import Optional
 from collections.abc import Callable, Iterable
+from dataclasses import dataclass, field
 
 import requests
 

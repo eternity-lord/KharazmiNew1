@@ -1,14 +1,14 @@
-import unittest
 import datetime
+import unittest
+
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
-import models
-from models import Base, User, UserSession, Student, Course, Enrollment, Transaction, Branch
-from main import app
 from dependencies import get_db, hash_password
+from main import app
+from models import Base, Branch, Course, Enrollment, Student, Transaction, User, UserSession
 
 
 class TestSoftDeleteRevenueE2E(unittest.TestCase):
@@ -91,7 +91,9 @@ class TestSoftDeleteRevenueE2E(unittest.TestCase):
 
     def test_soft_delete_ignored_by_both_reports_and_analytics_e2e(self):
         headers = {"Authorization": "Bearer tok_saas_admin"}
-        from today_summary import gregorian_to_jalali  # FIX (audit-v2/test-triage): پارام شمسی (میلادی بازه‌ی ناممکن/ناهماهنگ می‌ساخت).
+        from today_summary import (
+            gregorian_to_jalali,  # FIX (audit-v2/test-triage): پارام شمسی (میلادی بازه‌ی ناممکن/ناهماهنگ می‌ساخت).
+        )
         year, month, _ = gregorian_to_jalali(datetime.date.today())
 
         res_reports_init = self.client.get(f"/reports/financial_summary?user_type=institute&year={year}&month={month}&branch_id=1", headers=headers)

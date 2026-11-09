@@ -1,7 +1,11 @@
 import datetime
 import os
+
 from dotenv import load_dotenv
 
+# FIX: Bug 17 - enforce one active financial session per course and date in both databases.
+# FIX: H6(C2) - one attendance row per (session, student).
+# FIX: Bug 18 - keep the stored wallet total synchronized on ORM writes.
 from sqlalchemy import (
     BigInteger,
     Boolean,
@@ -9,21 +13,20 @@ from sqlalchemy import (
     DateTime,
     Float,
     ForeignKey,
+    Index,
     Integer,
     String,
     Text,
+    UniqueConstraint,
     create_engine,
+    event,
+    inspect,
     text,
 )
+
 # FIX(SQLAlchemy 2.0): مسیر `sqlalchemy.ext.declarative` منسوخ است (MovedIn20Warning)؛
 # شکلِ معتبر در 2.0 همان `sqlalchemy.orm.declarative_base` است — رفتار یکسان.
 from sqlalchemy.orm import declarative_base, relationship, sessionmaker
-# FIX: Bug 17 - enforce one active financial session per course and date in both databases.
-from sqlalchemy import Index
-# FIX: H6(C2) - one attendance row per (session, student).
-from sqlalchemy import UniqueConstraint
-# FIX: Bug 18 - keep the stored wallet total synchronized on ORM writes.
-from sqlalchemy import event, inspect
 
 # بارگذاری متغیرهای محیطی از فایل .env
 dotenv_path = os.path.join(os.path.dirname(__file__), ".env")

@@ -27,7 +27,7 @@ import models
 import routers.dashboard as dash
 from dependencies import get_db, hash_password, limiter
 from main import app
-from today_summary import jalali_date_string, parse_project_date
+from today_summary import jalali_date_string
 
 TODAY_GREG = datetime.date.today()
 TODAY_JALALI = jalali_date_string(TODAY_GREG)

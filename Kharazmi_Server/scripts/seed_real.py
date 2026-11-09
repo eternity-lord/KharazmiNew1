@@ -1,7 +1,5 @@
-from sqlalchemy.orm import Session
 import models
-from models import Teacher, Student, Course, Enrollment, Transaction, SessionLocal, engine, InstituteShare, PricingTable
-import datetime
+from models import Course, Enrollment, InstituteShare, PricingTable, SessionLocal, Student, Teacher, Transaction, engine
 
 # اتصال به دیتابیس
 models.Base.metadata.create_all(bind=engine)

@@ -7,9 +7,49 @@ from sqlalchemy import text
 
 import models
 from models import (
-    Attendance, Course, Enrollment, Grade, InstituteShare, SessionLog, SmsLog, Student, Teacher, Transaction, User, UserSession, Settlement, Installment, ParentOTP, PricingTable
+    Attendance,
+    Course,
+    Enrollment,
+    Grade,
+    Installment,
+    InstituteShare,
+    ParentOTP,
+    PricingTable,
+    SessionLog,
+    Settlement,
+    SmsLog,
+    Student,
+    Teacher,
+    Transaction,
+    User,
+    UserSession,
 )
-from routers import auth, students, teachers, classes, finance, reports, attendance, admin, parent, homework, calendar, messages, exams, crm, branches, automation, analytics, ai, audit, timeline, dunning, dashboard, exports, audit_trail
+from routers import (
+    admin,
+    ai,
+    analytics,
+    attendance,
+    audit,
+    audit_trail,
+    auth,
+    automation,
+    branches,
+    calendar,
+    classes,
+    crm,
+    dashboard,
+    dunning,
+    exams,
+    exports,
+    finance,
+    homework,
+    messages,
+    parent,
+    reports,
+    students,
+    teachers,
+    timeline,
+)
 
 # ساخت اپلیکیشن
 # FIX M2: مستندات تعاملی فقط در توسعه؛ در پروداکشن (ENV=production) خاموش.
@@ -22,15 +62,17 @@ app = FastAPI(
     openapi_url=None if _ENV == "production" else "/openapi.json",
 )
 
-from slowapi.errors import RateLimitExceeded
 from slowapi import _rate_limit_exceeded_handler
-from dependencies import limiter, check_user_login
-from storage import storage_dir, resolve_existing
+from slowapi.errors import RateLimitExceeded
+
+from dependencies import check_user_login, limiter
+from storage import resolve_existing, storage_dir
 
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 from fastapi.middleware.cors import CORSMiddleware
+
 # FIX M1: بدون "*" — مصرف‌کننده‌ها اپ موبایل (native، بی‌نیاز از CORS) و پورتال ولی
 # (same-origin، بی‌نیاز از CORS) هستند؛ دامنه‌ی اضافه فقط از ENV می‌آید.
 _CORS_ORIGINS = [o.strip() for o in os.getenv("CORS_ALLOWED_ORIGINS", "").split(",") if o.strip()]
@@ -42,9 +84,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+from fastapi.responses import FileResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import Response
-from fastapi.responses import FileResponse
+
 
 class PublicRouteIsolationMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request, call_next):
@@ -379,7 +422,7 @@ def auto_patch_database():
 
         # 🔥 مقداردهی خودکار کدهای ترتیبی برای داده‌های قدیمی دیتابیس (Backfill)
         try:
-            from models import Teacher, Student, Course, SessionLog, Transaction
+            from models import Course, SessionLog, Student, Teacher, Transaction
             # 1. معلمان قدیمی
             uncoded_teachers = db.query(Teacher).filter(Teacher.teacher_code == None).order_by(Teacher.id.asc()).all()
             if uncoded_teachers:
@@ -458,7 +501,9 @@ def auto_patch_database():
 
         # 6. اجرای تسک خودکار یادآوری اقساط شهریه به اولیا
         try:
-            from today_summary import parse_project_date  # FIX H3-B1: due_date is Jalali; compare as real dates via central converter (lazy import, same pattern as routers/analytics.py)
+            from today_summary import (
+                parse_project_date,  # FIX H3-B1: due_date is Jalali; compare as real dates via central converter (lazy import, same pattern as routers/analytics.py)
+            )
             today_str = datetime.datetime.now().strftime("%Y/%m/%d")
             today_date = datetime.datetime.now().date()
             # FIX: Bug 13 - exclude archived Installment rows from this active view.
@@ -539,7 +584,7 @@ def auto_patch_database():
         # 🔥 [Auto-Patch] Backfill: Securely Hash existing plaintext passwords in Users and Teachers tables
         try:
             from dependencies import hash_password
-            from models import User, Teacher
+            from models import Teacher, User
             # 1. Backfill Users
             plaintext_users = db.query(User).all()
             for u in plaintext_users:
@@ -594,8 +639,14 @@ def _live_auto_end_worker():
     import time as _t
 
     def _loop():
-        from routers.attendance import finalize_live_session, _get_live_max_minutes, claim_live_session_for_finalize, _now_str, DuplicateSessionDate
-        from models import LiveSession, SessionLocal, Course
+        from models import LiveSession, SessionLocal
+        from routers.attendance import (
+            DuplicateSessionDate,
+            _get_live_max_minutes,
+            _now_str,
+            claim_live_session_for_finalize,
+            finalize_live_session,
+        )
         while True:
             try:
                 db = SessionLocal()

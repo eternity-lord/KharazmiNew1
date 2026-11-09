@@ -1,22 +1,33 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Header, Form
-from fastapi.responses import HTMLResponse
-from sqlalchemy.orm import Session
-from typing import List, Optional, Union
-from sqlalchemy import desc, or_, text
 import datetime
 import random
-import uuid
 
-import models
-from models import Student, Enrollment, Course, Grade, Installment, SessionLog, Attendance, SmsLog, ParentOTP, UserSession, User, Notification
-from schemas import ParentOtpRequest, ParentLoginRequest, ChildSelectRequest
+from fastapi import APIRouter, Depends, Header, HTTPException, Request
+from fastapi.responses import HTMLResponse
+from sqlalchemy import desc
+from sqlalchemy.orm import Session
+
 from dependencies import get_db, limiter, normalize_mobile, resolve_notification_role
-# FIX(C6): خواندن واقعی تکالیف/آزمون‌ها/برنامهٔ هفتگی برای پورتال‌ها (بدون کد تکراری).
-from portal_data import build_portal_activity
-from fastapi import Request
 
 # FIX: Bug 16 - share the tuition-minus-payment debt calculation across financial views.
 from financial_calculations import calculate_student_debt
+from models import (
+    Attendance,
+    Course,
+    Enrollment,
+    Grade,
+    Installment,
+    Notification,
+    ParentOTP,
+    SessionLog,
+    SmsLog,
+    Student,
+    User,
+    UserSession,
+)
+
+# FIX(C6): خواندن واقعی تکالیف/آزمون‌ها/برنامهٔ هفتگی برای پورتال‌ها (بدون کد تکراری).
+from portal_data import build_portal_activity
+from schemas import ChildSelectRequest, ParentLoginRequest, ParentOtpRequest
 
 router = APIRouter()
 
@@ -123,7 +134,7 @@ def parent_login(request: Request, req: ParentLoginRequest, db: Session = Depend
     now = datetime.datetime.utcnow()
 
     # FIX: جستجوی OTP هش شده، بررسی قفل و انقضا
-    from dependencies import verify_password, create_jwt_token, hash_password
+    from dependencies import create_jwt_token, verify_password
     candidates = db.query(ParentOTP).filter(
         ParentOTP.mobile.in_([mobile, _raw_mob]),  # FIX H20-ESC
         ParentOTP.is_used == False,
@@ -237,8 +248,7 @@ def parent_select_child(req: ChildSelectRequest, db: Session = Depends(get_db)):
         raise HTTPException(status_code=403, detail="حساب شما توسط مدیر معلق شده است. لطفاً با آموزشگاه تماس بگیرید")
 
     # FIX(H2): سشن به سایه‌ی parent اشاره می‌کند، نه Student.id (با ساخت lazy اگر نیست)
-    from dependencies import create_jwt_token
-    from dependencies import ensure_student_shadow_users
+    from dependencies import create_jwt_token, ensure_student_shadow_users
     ensure_student_shadow_users(db, student)
     token = create_jwt_token(user_id=student.parent_user_id, sub_role="parent")
     new_session = UserSession(
@@ -379,7 +389,9 @@ def get_parent_child_profile(authorization: str | None = Header(None), db: Sessi
         course = db.query(Course).filter(Course.id == enroll.course_id).first() if enroll else None
         c_title = course.title if course else "کلاس حذف شده"
 
-        from today_summary import parse_project_date  # FIX H3-B1: due_date is Jalali; compare as real dates via central converter (lazy import, same pattern as routers/analytics.py)
+        from today_summary import (
+            parse_project_date,  # FIX H3-B1: due_date is Jalali; compare as real dates via central converter (lazy import, same pattern as routers/analytics.py)
+        )
         today_date = datetime.datetime.now().date()
         due = parse_project_date(inst.due_date)
         status_text = "پرداخت شده" if inst.is_paid else ("معوقه" if (due is not None and due < today_date) else "در انتظار")

@@ -1,10 +1,8 @@
 # FIX: Priority 3 / Bug 22 - one checksum/normalization rule for identity write requests.
 import math
 import re
-from typing import List, Tuple
 
 from pydantic import BaseModel, field_validator
-
 
 _DIGITS = str.maketrans("۰۱۲۳۴۵۶۷۸۹٠١٢٣٤٥٦٧٨٩", "01234567890123456789")
 

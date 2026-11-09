@@ -1,35 +1,56 @@
-from pydantic import BaseModel
-from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile, Header
-from sqlalchemy.orm import Session, joinedload
-from typing import List, Optional, Union
-from sqlalchemy import desc, or_, text, func
+import datetime
 import io
 import json
-import uuid
-import os
-import datetime
-from openpyxl import Workbook
-from openpyxl.styles import Font, Alignment, PatternFill
+
+from fastapi import APIRouter, Depends, Header, HTTPException
 from fastapi.responses import StreamingResponse
+from openpyxl import Workbook
+from openpyxl.styles import Alignment, Font, PatternFill
+from pydantic import BaseModel
+from sqlalchemy import desc, func, or_
+from sqlalchemy.orm import Session
 
 import models
-from models import (
-    Attendance, Course, Enrollment, Grade, InstituteShare, SessionLog, SmsLog, Student, Teacher, Transaction, User, UserSession, Installment, ActivityLog
+from dependencies import (
+    check_admin_access,
+    check_admin_or_secretary_access,
+    check_admin_secretary_or_teacher_access,
+    check_user_login,
+    display_name,
+    get_db,
+    get_enrollment_tuition_and_discount,
+    resolve_session_teacher,
 )
-from schemas import (
-    HistoryRequest, LoginRequest, TeacherInfo, FullTeacherProfile, StudentCreate, TeacherCreate, CourseCreate, EnrollmentCreate, BulkEnrollmentCreate, GradeCreate, GradeItem, AttendanceLogRequest, AttendanceItem, AttendanceSubmitData, SmsSendRequest, ChangePasswordRequest, StudentProfileInfo, FullStudentProfile, TeacherProfileInfo, FullTeacherProfile, ClassReportInfo, ClassStudentData, ClassSessionHistory, ClassSessionStudent, FullClassReport, ShareConfigModel, StudentUpdate, TeacherUpdate, PersonListItem, TransactionUpdate, StudentAttendanceHistoryRequest, AdvancedSearchItem, FinanceSubmitData, PrintReceiptRequest, TransactionTestData
-)
-from dependencies import (get_db, check_admin_access, check_admin_or_secretary_access,
-                            check_admin_secretary_or_teacher_access, resolve_session_teacher,
-                            check_user_login, get_enrollment_tuition_and_discount,
-                            SESSION_EXPIRY_DAYS, display_name, safe_person_name)
 
 # FIX: Bug 16 - share the tuition-minus-payment debt calculation across financial views.
 from financial_calculations import (
+    MAX_TEACHER_SESSION_PRICE,
     calculate_enrollment_debt_breakdown,
     session_fields_for_client,
-    MAX_TEACHER_SESSION_PRICE,
 )
+from models import (
+    ActivityLog,
+    Attendance,
+    Course,
+    Enrollment,
+    Installment,
+    SessionLog,
+    Student,
+    Teacher,
+    Transaction,
+    User,
+)
+from schemas import (
+    BulkEnrollmentCreate,
+    ClassReportInfo,
+    ClassSessionHistory,
+    ClassSessionStudent,
+    ClassStudentData,
+    CourseCreate,
+    EnrollmentCreate,
+    FullClassReport,
+)
+
 # FIX (F-T1): اعتبارسنجی مرکزی اقساط — همان قاعده‌ی مسیر مستقل قسط، برای مسیر ثبت‌نام همراه اقساط.
 from validation import normalize_installments
 
@@ -93,7 +114,7 @@ def create_class(course: CourseCreate, override: bool = False, db: Session = Dep
         course.teacher_id = me.id
         if (course.teacher_session_price or 0) > MAX_TEACHER_SESSION_PRICE:
             raise HTTPException(status_code=400, detail=f"نرخ هر جلسه برای هر شاگرد نمی‌تواند بیشتر از {MAX_TEACHER_SESSION_PRICE:,} تومان باشد؛ برای نرخ بالاتر با ادمین هماهنگ کنید")
-    from dependencies import get_next_sequence_value, get_current_user, resolve_creation_branch
+    from dependencies import get_current_user, get_next_sequence_value, resolve_creation_branch
     next_code = str(get_next_sequence_value(db, "class", 100001))
 
     # FIX(branch): کلاس جدید باید branch معتبر داشته باشد — سیاست مرکزی resolve_creation_branch:
@@ -666,7 +687,7 @@ def get_class_full_report(id: int, db: Session = Depends(get_db), authorization:
     )
 
     # FIX (تاریخچهٔ جلسات): نام روز هفته از مبدل مرکزی تاریخ (همان منبع بقیهٔ اپ).
-    from today_summary import parse_project_date, PERSIAN_DAY_NAMES  # lazy، مثل attendance/finance
+    from today_summary import PERSIAN_DAY_NAMES, parse_project_date  # lazy، مثل attendance/finance
 
     session_history = []
     for sess in sessions:
@@ -754,22 +775,6 @@ def get_class_full_report(id: int, db: Session = Depends(get_db), authorization:
 
 
 # مدل ورودی و خروجی
-class ShareConfigModel(BaseModel):
-    count_1: int
-    count_2: int
-    count_3: int
-    count_4: int
-    count_5: int
-    count_6: int
-    count_7: int
-    count_8: int
-    count_9: int
-    count_10: int
-    count_11: int
-    count_12: int
-    count_13: int
-    count_14: int
-    count_15: int
 
 
 @router.get("/classes/{class_id}/students_full/excel")
@@ -997,30 +1002,6 @@ def get_class_students_full(id: int, db: Session = Depends(get_db), authorizatio
 
 
 # 1. مدل‌های ورودی و خروجی جدید
-class AdvancedSearchItem(BaseModel):
-    type: str
-    id: int
-    title: str
-    subtitle: str
-    info: str
-    student_id: int | None = None
-    course_id: int | None = None
-    debt_teacher: int | None = 0
-    debt_institute: int | None = 0
-    total_debt: int | None = 0
-    unpaid_sessions: int | None = 0
-    students_in_class: list[dict] | None = None
-
-
-class FinanceSubmitData(BaseModel):
-    student_id: int
-    amount: int
-    target_wallet: str  # "teacher" یا "institute" یا "both"
-    description: str
-    payment_method: str
-    date: str
-    amount_institute: int | None = None
-    amount_teacher: int | None = None
 
 
 @router.delete("/classes/{course_id}")
@@ -1185,7 +1166,6 @@ def _apply_class_deletion(db: Session, course, forgive_session_charges: bool):
             for student_id, amounts in sorted(wallet_credits.items())
         ],
     }
-
 
 
 @router.post("/classes/{course_id}/request_delete")

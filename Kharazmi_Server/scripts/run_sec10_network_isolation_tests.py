@@ -1,5 +1,4 @@
 import httpx
-import json
 
 URL_BASE = "http://localhost:8000"
 

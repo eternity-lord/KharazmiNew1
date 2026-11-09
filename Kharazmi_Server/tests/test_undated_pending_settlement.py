@@ -23,7 +23,6 @@ from sqlalchemy.pool import StaticPool
 import models
 from dependencies import get_db
 from main import app
-from routers.teachers import get_pending_settlement
 
 VALID_DATE = "1405/06/02"
 

@@ -1,17 +1,24 @@
-import os
 import datetime
-import random
-from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, status, Header
+import os
+
+from fastapi import APIRouter, Depends, Header, HTTPException
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
-from sqlalchemy import desc
 
 import models
-from models import Exam, ExamQuestion, ExamAttempt, Course, Student, Teacher, Enrollment, Grade, Attendance, SessionLog
+from dependencies import (
+    NotificationService,
+    check_student_access,
+    check_user_login,
+    ensure_student_shadow_users,
+    get_db,
+    get_session_parent,
+    get_session_student,
+    require_permission,
+)
+from models import Attendance, Course, Enrollment, Exam, ExamAttempt, ExamQuestion, Grade, SessionLog, Student
 from storage import storage_dir
-from dependencies import get_db, check_user_login, require_permission, NotificationService, check_student_access, get_session_student, get_session_parent, ensure_student_shadow_users
 
 router = APIRouter()
 
@@ -404,8 +411,8 @@ def export_report_card_pdf(
     file_path = os.path.join(storage_dir("report_cards"), safe_name)
 
     # Generate simple, beautiful text representation inside the PDF file
-    from reportlab.pdfgen import canvas
     from reportlab.lib.pagesizes import letter
+    from reportlab.pdfgen import canvas
 
     c = canvas.Canvas(file_path, pagesize=letter)
     c.setFont("Helvetica-Bold", 20)

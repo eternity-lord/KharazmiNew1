@@ -131,6 +131,7 @@ def extract(output: Path | None) -> list[dict[str, str]]:
     root = _project_root()
     sys.path.insert(0, str(root / "Kharazmi_Server"))
     from fastapi.routing import APIRoute  # imported after project path is set
+
     import main
 
     document = main.app.openapi()

@@ -11,13 +11,25 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
 from models import (
-    Base, Branch, Course, Enrollment, Student, Teacher, User, UserSession,
-    SessionLog, Attendance,
+    Attendance,
+    Base,
+    Branch,
+    Course,
+    Enrollment,
+    SessionLog,
+    Student,
+    Teacher,
+    User,
+    UserSession,
 )
-from routers.admin import (search_admin_teachers, search_admin_students,
-                            get_pending_teachers, get_teacher_credentials)
-from routers.teachers import (get_teacher_full_profile, get_pending_settlement,
-                              get_all_teachers, get_teacher_profile, get_teachers_excel)
+from routers.admin import get_pending_teachers, get_teacher_credentials, search_admin_students, search_admin_teachers
+from routers.teachers import (
+    get_all_teachers,
+    get_pending_settlement,
+    get_teacher_full_profile,
+    get_teacher_profile,
+    get_teachers_excel,
+)
 
 
 class TestTeacherNullData(unittest.TestCase):

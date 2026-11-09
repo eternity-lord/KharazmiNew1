@@ -1,22 +1,33 @@
-from pydantic import BaseModel
-from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile, Header, Request
-from sqlalchemy.orm import Session, joinedload
-from typing import List, Optional, Union
-from sqlalchemy import desc, or_, text, func
-import io
-import uuid
-import os
 import datetime
 import random
 
-import models
-from models import (
-    Attendance, Course, Enrollment, Grade, InstituteShare, SessionLog, SmsLog, Student, Teacher, Transaction, User, UserSession, ActivityLog, DeviceToken, Notification, ParentOTP
+from fastapi import APIRouter, Depends, Header, HTTPException, Request
+from pydantic import BaseModel
+from sqlalchemy import desc, or_
+from sqlalchemy.orm import Session
+
+from dependencies import (
+    ROLE_PERMISSIONS,
+    check_user_login,
+    create_jwt_token,
+    display_name,
+    ensure_student_shadow_users,
+    get_current_user,
+    get_db,
+    get_session_parent,
+    get_session_student,
+    hash_password,
+    limiter,
+    normalize_mobile,
+    resolve_notification_role,
+    safe_person_name,
+    verify_password,
 )
+from models import ActivityLog, DeviceToken, Notification, ParentOTP, SmsLog, Student, Teacher, User, UserSession
 from schemas import (
-    HistoryRequest, LoginRequest, TeacherInfo, FullTeacherProfile, StudentCreate, TeacherCreate, CourseCreate, EnrollmentCreate, GradeCreate, GradeItem, AttendanceLogRequest, AttendanceItem, AttendanceSubmitData, SmsSendRequest, ChangePasswordRequest, StudentProfileInfo, FullStudentProfile, TeacherProfileInfo, FullTeacherProfile, ClassReportInfo, ClassStudentData, ClassSessionHistory, FullClassReport, ShareConfigModel, StudentUpdate, TeacherUpdate, PersonListItem, TransactionUpdate, StudentAttendanceHistoryRequest, AdvancedSearchItem, FinanceSubmitData, PrintReceiptRequest, TransactionTestData
+    ChangePasswordRequest,
+    LoginRequest,
 )
-from dependencies import get_db, check_admin_access, check_user_login, get_enrollment_tuition_and_discount, SESSION_EXPIRY_DAYS, limiter, get_current_user, hash_password, verify_password, ROLE_PERMISSIONS, create_jwt_token, ensure_student_shadow_users, get_session_student, get_session_parent, normalize_mobile, resolve_notification_role, display_name, safe_person_name
 
 router = APIRouter()
 
@@ -206,98 +217,9 @@ def login_user(request: Request, req: LoginRequest, db: Session = Depends(get_db
 # 1. مدل‌های ورودی (Schemas)
 # ==========================================
 # --- مدل‌های معلم ---
-class TeacherInfo(BaseModel):
-    name: str
-    mobile: str
-    national_code: str
-    status: str
-
-
-class FullTeacherProfile(BaseModel):
-    info: TeacherInfo
-    total_students: int
-    total_revenue: int
-    active_classes_count: int
-    classes: list[str]
-
-
-class StudentCreate(BaseModel):
-    first_name: str
-    last_name: str
-    father_name: str
-    national_code: str
-    birth_date: str
-    student_mobile: str
-    parent_mobile: str
-    home_phone: str
-    address: str
-    study_status: str
-    gender: str
-
-
-class TeacherCreate(BaseModel):
-    first_name: str
-    last_name: str
-    father_name: str
-    national_code: str
-    birth_date: str
-    mobile: str
-    password: str
-    home_phone: str
-    marital_status: str
-    gender: str
-    employment_type: str
-    card_number: str
-    profile_image: str | None = None
-
-
-class CourseCreate(BaseModel):
-    title: str
-    code: str
-    teacher_id: int
-    education_type: str
-    grade_level: str
-    gender_type: str
-    class_type: str = "خصوصی"
-    days_of_week: str = "نامشخص"
-    class_time: str = "نامشخص"
-    teacher_session_price: int
-    rule_prepay_institute: bool = False
-    rule_prepay_teacher: bool = False
-    rule_calc_absent: bool = True
-    bg_color: str = "#FFFFFF"
-
-
-class EnrollmentCreate(BaseModel):
-    student_id: int
-    course_id: int
-    register_date: str
-    shift: str
-    total_tuition: int
-    paid_amount: int
-    payment_method: str
-    receiver: str
-    discount_type: str | None = "none"
-    discount_value: int | None = 0
 
 
 # مدل‌های مربوط به نمره
-class GradeCreate(BaseModel):
-    student_id: int
-    course_id: int
-    exam_title: str
-    score: float
-    max_score: float
-    date: str
-    description: str = ""
-
-
-class GradeItem(BaseModel):
-    course_name: str
-    exam_title: str
-    score: float
-    max_score: float
-    date: str
 
 
 # ==========================================
@@ -770,20 +692,6 @@ def change_mobile(req: ChangeMobileRequest, db: Session = Depends(get_db), curre
 # ==========================================
 # 12. API جدید: پروفایل کامل دانش‌آموز (NEW)
 # ==========================================
-class StudentProfileInfo(BaseModel):
-    name: str
-    national_code: str
-    student_mobile: str
-    parent_mobile: str
-    address: str
-    is_suspended: bool = False
-
-
-class FullStudentProfile(BaseModel):
-    info: StudentProfileInfo
-    classes: list[str]
-    transactions: list[str]
-    total_debt: int
 
 
 # ==========================================

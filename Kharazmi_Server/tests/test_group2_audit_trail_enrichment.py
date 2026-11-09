@@ -24,8 +24,9 @@
 import datetime
 import json
 
-from models import ActivityLog, Branch, Course, Enrollment, Installment, Student, Teacher, Transaction
 from test_audit_trail import AuditTrailBase
+
+from models import ActivityLog, Branch, Course, Enrollment, Installment, Student, Teacher
 
 JALALI_NOW = None  # (فقط برای خوانایی؛ تاریخ‌ها از datetime.now ساخته می‌شوند)
 

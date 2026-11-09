@@ -11,7 +11,6 @@ import os
 import re
 import unittest
 
-
 SERVER_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 REPO_ROOT = os.path.dirname(SERVER_DIR)
 KT_DIR = os.path.join(

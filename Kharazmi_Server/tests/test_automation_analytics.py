@@ -1,13 +1,13 @@
-import unittest
 import datetime
+import unittest
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from fastapi import HTTPException
 
 import models
-from models import AutomationRule, AutomationLog, Student, Course, Enrollment, Attendance, SessionLog, Grade, Lead, Transaction, Installment
+from models import Attendance, AutomationLog, AutomationRule, Course, Enrollment, Installment, SessionLog, Student
+from routers.analytics import export_analytics_excel, export_analytics_pdf, get_analytics_dashboard
 from routers.automation import run_automation_engine
-from routers.analytics import get_analytics_dashboard, export_analytics_excel, export_analytics_pdf
 
 
 class TestKharazmiAutomationAnalytics(unittest.TestCase):

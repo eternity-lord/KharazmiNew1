@@ -14,16 +14,20 @@ from sqlalchemy.pool import StaticPool
 from starlette.requests import Request
 
 import models
+from backfill_branch_ids import apply_plan, collect_plan
+from dependencies import resolve_creation_branch
 from models import Base, Branch, Course, Enrollment, InstituteShare, Student, Teacher, Transaction, User, UserSession
-from schemas import (
-    AttendanceItem, AttendanceSubmitData, CourseCreate, EnrollmentCreate,
-    StudentCreate, StudentRegisterAndEnrollRequest,
-)
-from dependencies import get_active_branch, resolve_creation_branch
-from routers.students import register_student, register_and_enroll_student
-from routers.classes import create_class, add_enrollment
 from routers import attendance
-from backfill_branch_ids import collect_plan, apply_plan
+from routers.classes import add_enrollment, create_class
+from routers.students import register_and_enroll_student, register_student
+from schemas import (
+    AttendanceItem,
+    AttendanceSubmitData,
+    CourseCreate,
+    EnrollmentCreate,
+    StudentCreate,
+    StudentRegisterAndEnrollRequest,
+)
 
 
 def _fake_request(scope_path="/"):

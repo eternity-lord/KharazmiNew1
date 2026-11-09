@@ -1,39 +1,54 @@
-from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile, Header, Request
-from sqlalchemy.orm import Session, joinedload
-from typing import Optional, Union
-from sqlalchemy import desc, or_, text, func
-import io
-import uuid
-import os
 import datetime
+import os
+import uuid
 
-import models
-from models import (
-    Attendance, Course, Enrollment, Grade, InstituteShare, SessionLog, SmsLog, Student, Teacher, Transaction, User, UserSession, Installment, Notification
+from fastapi import APIRouter, Depends, File, Header, HTTPException, Request, UploadFile
+from sqlalchemy import desc, func, or_
+from sqlalchemy.orm import Session
+
+from dependencies import (
+    check_admin_or_secretary_access,
+    check_admin_secretary_or_teacher_access,
+    check_student_access,
+    check_user_login,
+    ensure_student_shadow_users,
+    get_db,
+    get_session_student,
+    limiter,
+    normalize_mobile,
+    require_permission,
+    resolve_notification_role,
+    resolve_session_teacher,
+    validate_image_upload,
 )
-from schemas import (
-    HistoryRequest, LoginRequest, TeacherInfo, FullTeacherProfile, StudentCreate, TeacherCreate, CourseCreate, EnrollmentCreate, GradeCreate, GradeItem, AttendanceLogRequest, AttendanceItem, AttendanceSubmitData, SmsSendRequest, ChangePasswordRequest, StudentProfileInfo, FullStudentProfile, TeacherProfileInfo, FullTeacherProfile, ClassReportInfo, ClassStudentData, ClassSessionHistory, FullClassReport, ShareConfigModel, StudentUpdate, TeacherUpdate, PersonListItem, TransactionUpdate, StudentAttendanceHistoryRequest, AdvancedSearchItem, FinanceSubmitData, PrintReceiptRequest, TransactionTestData, StudentRegisterAndEnrollRequest
-)
-from storage import storage_dir, resolve_existing
-from dependencies import (get_db, check_admin_access, check_admin_or_secretary_access,
-                            check_admin_secretary_or_teacher_access, resolve_session_teacher,
-                            check_user_login, check_student_access,
-                            get_enrollment_tuition_and_discount, SESSION_EXPIRY_DAYS, limiter,
-                            ensure_student_shadow_users, get_session_student, get_session_parent,
-                            normalize_mobile, validate_image_upload, require_permission,
-                            resolve_notification_role)
-# FIX(C6): خواندن واقعی تکالیف/آزمون‌ها/برنامهٔ هفتگی برای پورتال‌ها (بدون کد تکراری).
-from portal_data import build_portal_activity
 
 # FIX: Bug 16 - share the tuition-minus-payment debt calculation across financial views.
 from financial_calculations import calculate_student_debt
+from models import (
+    Attendance,
+    Course,
+    Enrollment,
+    Grade,
+    Installment,
+    Notification,
+    SessionLog,
+    SmsLog,
+    Student,
+    Transaction,
+    User,
+    UserSession,
+)
+
+# FIX(C6): خواندن واقعی تکالیف/آزمون‌ها/برنامهٔ هفتگی برای پورتال‌ها (بدون کد تکراری).
+from portal_data import build_portal_activity
+from schemas import GradeCreate, StudentCreate, StudentRegisterAndEnrollRequest, StudentUpdate
+from storage import resolve_existing, storage_dir
 
 router = APIRouter()
 
 # FIX: Bug 22 - reuse the same checksum as schemas and online registration.
-from validation import is_valid_iranian_national_code
 # FIX (F-T1): اعتبارسنجی مرکزی اقساط — مسیر ثبت دانش‌آموز + ثبت‌نام هم همان قاعده‌ی مسیر مستقل قسط را دارد.
-from validation import normalize_installments
+from validation import is_valid_iranian_national_code, normalize_installments
 
 
 @router.post("/students/register")
@@ -104,7 +119,7 @@ def register_and_enroll_student(
         raise HTTPException(status_code=400, detail=str(exc))
 
     try:
-        from dependencies import get_next_sequence_value, get_current_user, resolve_creation_branch
+        from dependencies import get_current_user, get_next_sequence_value, resolve_creation_branch
         next_code = get_next_sequence_value(db, "student", 100001)
 
         # FIX(branch): دانش‌آموز با branch معتبر ساخته می‌شود (سیاست مرکزی — branch کاربر فعلی،

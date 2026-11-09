@@ -6,14 +6,26 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
-from models import Base, Branch, Course, Enrollment, Student, Teacher, User, UserSession, Grade, Installment, SequenceCounter
+from models import (
+    Base,
+    Branch,
+    Course,
+    Enrollment,
+    Grade,
+    Installment,
+    SequenceCounter,
+    Student,
+    Teacher,
+    User,
+    UserSession,
+)
 from routers.students import (
-    search_students,
-    get_student_profile,
-    update_student,
     get_student_grades,
     get_student_installments,
     get_student_my_profile,
+    get_student_profile,
+    search_students,
+    update_student,
 )
 from schemas import StudentUpdate
 

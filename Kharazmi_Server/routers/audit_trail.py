@@ -26,7 +26,7 @@ import datetime
 import json
 import re
 import time
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
@@ -36,9 +36,20 @@ from starlette.middleware.base import BaseHTTPMiddleware
 
 import models
 from dependencies import check_admin_access, display_name, get_db, get_session_from_token
+
 # FIX (گروه۲/آیتم۸): برای join نام‌ها به‌جای شناسهٔ خام و جست‌وجوی نام
-from models import (ActivityLog, Branch, Course, Enrollment, FinancialAuditLog, Installment,
-                    Student, Teacher, Transaction, User)
+from models import (
+    ActivityLog,
+    Branch,
+    Course,
+    Enrollment,
+    FinancialAuditLog,
+    Installment,
+    Student,
+    Teacher,
+    Transaction,
+    User,
+)
 
 router = APIRouter()
 

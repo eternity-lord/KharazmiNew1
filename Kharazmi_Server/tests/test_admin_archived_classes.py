@@ -18,12 +18,21 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
-from models import (
-    Base, Branch, ClassDeletionRequest, Course, Enrollment, SessionLog, Student,
-    Teacher, Transaction, User, UserSession,
-)
-from main import app
 from dependencies import get_db
+from main import app
+from models import (
+    Base,
+    Branch,
+    ClassDeletionRequest,
+    Course,
+    Enrollment,
+    SessionLog,
+    Student,
+    Teacher,
+    Transaction,
+    User,
+    UserSession,
+)
 
 
 class TestAdminArchivedClasses(unittest.TestCase):

@@ -1,12 +1,12 @@
-import unittest
-import uuid
 import datetime
+import unittest
+
+from fastapi import HTTPException
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from fastapi import HTTPException
 
 import models
-from models import Student, Enrollment, Course, Transaction, Installment, Payment, ActivityLog, UserSession
+from models import ActivityLog, Course, Enrollment, Installment, Payment, Student, Transaction, UserSession
 from payment_gateways import get_payment_gateway
 from routers.finance import verify_financial_idor
 

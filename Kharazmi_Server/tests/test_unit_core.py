@@ -1,9 +1,12 @@
 import unittest
-from dependencies import hash_password, verify_password, get_enrollment_tuition_and_discount
-import models
-from models import SessionLocal, Student, Teacher, Course, Enrollment, Transaction, SessionLog, Attendance
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+
+import models
+from dependencies import get_enrollment_tuition_and_discount, hash_password, verify_password
+from models import Course, Enrollment, Student, Teacher
+
 
 class TestKharazmiCoreLogic(unittest.TestCase):
 

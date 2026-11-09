@@ -1,10 +1,12 @@
 import unittest
-import models
-from models import SessionLocal, Student, Teacher, Course, Enrollment, User, UserSession, ParentOTP
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from dependencies import check_admin_access, require_permission, ROLE_PERMISSIONS
-from fastapi import HTTPException
+
+import models
+from dependencies import ROLE_PERMISSIONS
+from models import Course, Enrollment, Student, Teacher, User, UserSession
+
 
 class TestKharazmiPermissionLogic(unittest.TestCase):
 
