@@ -1,11 +1,7 @@
 import datetime
-import io
 import json
 
 from fastapi import APIRouter, Depends, Header, HTTPException
-from fastapi.responses import StreamingResponse
-from openpyxl import Workbook
-from openpyxl.styles import Alignment, Font, PatternFill
 from pydantic import BaseModel
 from sqlalchemy import desc
 from sqlalchemy.orm import Session
@@ -26,7 +22,6 @@ from dependencies import (
 from financial_calculations import (
     MAX_TEACHER_SESSION_PRICE,
     calculate_enrollment_debt_breakdown,
-    session_fields_for_client,
 )
 from models import (
     ActivityLog,
@@ -335,220 +330,20 @@ def get_class_full_report(id: int, db: Session = Depends(get_db), authorization:
 
 @router.get("/classes/{class_id}/students_full/excel")
 def get_class_students_excel(class_id: int, db: Session = Depends(get_db), _: str = Depends(check_admin_or_secretary_access)):
-    course = db.query(Course).filter(Course.id == class_id).first()
-    if not course:
-        raise HTTPException(status_code=404, detail="کلاس یافت نشد")
-
-    # FIX: Bug 13 - exclude archived Enrollment rows from this active view.
-    enrollments = db.query(Enrollment).filter(Enrollment.is_deleted == False).filter(Enrollment.course_id == class_id).all()
-
-    wb = Workbook()
-    ws = wb.active
-    ws.title = "لیست دانش‌آموزان کلاس"
-    ws.views.sheetView[0].rightToLeft = True
-
-    ws.append([f"کلاس: {course.title}", "", f"کد کلاس: {course.code}"])
-    ws.append([])
-
-    headers = ["شناسه", "نام و نام خانوادگی", "شهریه پایه (تومان)", "نوع تخفیف", "تخفیف انتخابی", "مبلغ تخفیف (تومان)", "شهریه نهایی (تومان)", "کل پرداختی (تومان)", "بدهی به معلم", "بدهی به آموزشگاه", "بدهی کل", "جلسات حاضر", "جلسات غایب", "درصد حضور"]
-    ws.append(headers)
-
-    ws.cell(row=1, column=1).font = Font(name="Tahoma", size=12, bold=True, color="004D40")
-    ws.cell(row=1, column=3).font = Font(name="Tahoma", size=12, bold=True, color="004D40")
-
-    header_fill = PatternFill(start_color="00695C", end_color="00695C", fill_type="solid")
-    header_font = Font(name="Tahoma", size=11, bold=True, color="FFFFFF")
-    for col_num in range(1, len(headers) + 1):
-        cell = ws.cell(row=3, column=col_num)
-        cell.fill = header_fill
-        cell.font = header_font
-        cell.alignment = Alignment(horizontal="center", vertical="center")
-
-    row_num = 4
-    for enroll in enrollments:
-        st = db.query(Student).filter(Student.id == enroll.student_id, Student.is_deleted == False).first()
-        if st:
-            final_tuition, discount_amt = get_enrollment_tuition_and_discount(enroll)
-            breakdown = calculate_enrollment_debt_breakdown(db, enroll)
-            debt_teacher = breakdown["debt_teacher"]
-            debt_institute = breakdown["debt_institute"]
-            total_debt = breakdown["debt"]
-
-            # FIX: Bug 14 - exclude archived SessionLog rows from this active view.
-            sessions = db.query(SessionLog).filter(SessionLog.is_deleted == False).filter(SessionLog.course_id == class_id).all()
-            present_count = 0
-            absent_count = 0
-            for session in sessions:
-                att = db.query(Attendance).filter(Attendance.session_id == session.id, Attendance.student_id == st.id, Attendance.is_deleted == False).first()
-                if att:
-                    if att.status in ["Present", "Late"]:
-                        present_count += 1
-                    elif att.status == "Absent":
-                        absent_count += 1
-
-            total_s = present_count + absent_count
-            att_rate = (present_count / total_s * 100) if total_s > 0 else 100.0
-
-            d_type = getattr(enroll, "discount_type", "none") or "none"
-            d_type_farsi = "درصدی" if d_type == "percentage" else "مبلغ ثابت" if d_type == "fixed" else "بدون تخفیف"
-            d_val_disp = f"{enroll.discount_value}%" if d_type == "percentage" else enroll.discount_value
-
-            row_data = [
-                st.id,
-                display_name(st, "نامشخص"),
-                enroll.total_tuition,
-                d_type_farsi,
-                d_val_disp,
-                discount_amt,
-                final_tuition,
-                breakdown["paid_teacher"] + breakdown["paid_institute"],
-                debt_teacher,
-                debt_institute,
-                total_debt,
-                present_count,
-                absent_count,
-                f"{att_rate:.1f}%"
-            ]
-            ws.append(row_data)
-
-            ws.cell(row=row_num, column=3).number_format = '#,##0'
-            ws.cell(row=row_num, column=6).number_format = '#,##0'
-            ws.cell(row=row_num, column=7).number_format = '#,##0'
-            ws.cell(row=row_num, column=8).number_format = '#,##0'
-            ws.cell(row=row_num, column=9).number_format = '#,##0'
-            ws.cell(row=row_num, column=10).number_format = '#,##0'
-            ws.cell(row=row_num, column=11).number_format = '#,##0'
-
-            for col_num in range(1, len(headers) + 1):
-                cell = ws.cell(row=row_num, column=col_num)
-                cell.alignment = Alignment(horizontal="center", vertical="center")
-                cell.font = Font(name="Tahoma", size=10)
-
-            row_num += 1
-
-    for col in ws.columns:
-        max_len = max(len(str(cell.value or '')) for cell in col)
-        col_letter = col[0].column_letter
-        ws.column_dimensions[col_letter].width = max(max_len + 3, 12)
-
-    stream = io.BytesIO()
-    wb.save(stream)
-    stream.seek(0)
-
-    return StreamingResponse(
-        stream,
-        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        headers={"Content-Disposition": f"attachment; filename=class_students_{class_id}.xlsx"}
-    )
+    # REFAC(P3c): بدنهٔ دامنه (105 خط) به `services/class_reports.py` رفت؛ این پوسته فقط لایهٔ HTTP است
+    # (همان decorator، همان امضا، همان پاسخ JSON). نام تابع عمداً این‌جا می‌ماند:
+    # امضا قراردادِ OpenAPI است و تست‌ها این handler را مستقیم از `routers.classes`
+    # صدا می‌زنند.
+    return class_reports.get_class_students_excel(class_id, db, _)
 
 
 @router.get("/classes/{id}/students_full")
 def get_class_students_full(id: int, db: Session = Depends(get_db), authorization: str | None = Header(None), sub_role: str = Depends(check_user_login)):
-    # FIX (E2E-B5): دوقلوی هم‌الگو — کلاس آرشیوی 404.
-    course = db.query(Course).filter(Course.id == id, Course.is_deleted == False).first()
-    if not course:
-        raise HTTPException(status_code=404, detail="کلاس یافت نشد")
-    # FIX (L14/Y3): گزارش کلاس — ادمین/منشی + معلمِ مالک کلاس (الگوی audit-v2/#11). شاگرد/ولی 403.
-    if sub_role not in ("admin", "secretary"):
-        if sub_role != "teacher":
-            raise HTTPException(status_code=403, detail="شما مجاز به مشاهده اطلاعات این کلاس نیستید")
-        _me = get_logged_in_teacher(db, authorization)
-        if not _me or course.teacher_id != _me.id:
-            raise HTTPException(status_code=403, detail="شما مجاز به مشاهده اطلاعات این کلاس نیستید")
-
-    class_teacher = db.query(Teacher).filter(Teacher.id == course.teacher_id).first()
-    class_teacher_name = display_name(class_teacher, "نامشخص")
-    # FIX: Bug 13 - exclude archived Enrollment rows from this active view.
-    enrollments = db.query(Enrollment).filter(Enrollment.is_deleted == False).filter(Enrollment.course_id == id).all()
-    students_list = []
-
-    for enroll in enrollments:
-        st = db.query(Student).filter(Student.id == enroll.student_id, Student.is_deleted == False).first()
-        if st:
-            final_tuition, discount_amt = get_enrollment_tuition_and_discount(enroll)
-            # کیف‌های Student سراسری‌اند؛ اعداد این ردیف فقط برای همین enrollment هستند.
-            breakdown = calculate_enrollment_debt_breakdown(db, enroll)
-            debt_teacher = breakdown["debt_teacher"]
-            debt_institute = breakdown["debt_institute"]
-            total_debt = breakdown["debt"]
-            # این دو مقدار برای سازگاری response، کیف کلی دانش‌آموزند و منبع بدهی کلاس نیستند.
-            w_t = st.wallet_teacher if st.wallet_teacher is not None else 0
-            w_i = st.wallet_institute if st.wallet_institute is not None else 0
-
-            # محاسبه تعداد جلسات حاضر و غایب
-            # دریافت تمام جلسات این کلاس
-            # FIX: Bug 14 - exclude archived SessionLog rows from this active view.
-            sessions = db.query(SessionLog).filter(SessionLog.is_deleted == False).filter(SessionLog.course_id == id).all()
-            present_count = 0
-            absent_count = 0
-
-            for session in sessions:
-                attendance = (
-                    db.query(Attendance)
-                    .filter(
-                        Attendance.session_id == session.id,
-                        Attendance.student_id == st.id,
-                        Attendance.is_deleted == False
-                    )
-                    .first()
-                )
-
-                if attendance:
-                    if attendance.status == "Present" or attendance.status == "Late":
-                        present_count += 1
-                    elif attendance.status == "Absent":
-                        absent_count += 1
-
-            students_list.append(
-                {
-                    "student_id": st.id,
-                    "student_code": st.student_code,
-                    "student_name": display_name(st, "نامشخص"),
-                    "national_code": st.national_code,
-                    "mobile": st.student_mobile,
-                    "total_tuition": final_tuition,
-                    "paid": breakdown["paid_teacher"] + breakdown["paid_institute"],
-                    "paid_teacher": breakdown["paid_teacher"],
-                    "paid_institute": breakdown["paid_institute"],
-                    "debt": total_debt,
-                    "debt_teacher": debt_teacher,
-                    "debt_institute": debt_institute,
-                    "wallet_teacher": w_t,
-                    "wallet_institute": w_i,
-                    "course_id": course.id,
-                    "course_title": course.title,
-                    "teacher_id": course.teacher_id,
-                    "teacher_name": class_teacher_name,
-                    "is_unassigned": False,
-                    **session_fields_for_client(breakdown),
-                    "present_count": present_count,
-                    "absent_count": absent_count,
-                    "total_sessions": len(sessions),
-                    "attendance_rate": round((present_count / len(sessions) * 100), 2)
-                    if len(sessions) > 0
-                    else 0,
-                    "is_suspended": st.is_suspended
-                    if st.is_suspended is not None
-                    else False,
-                    "enrollment_id": enroll.id,
-                    "discount_type": getattr(enroll, "discount_type", "none") or "none",
-                    "discount_value": getattr(enroll, "discount_value", 0) or 0,
-                    "discount_amount": discount_amt
-                }
-            )
-
-    return {
-        "course_info": {
-            "id": course.id,
-            "title": course.title,
-            "code": course.code,
-            "teacher_id": course.teacher_id,
-            "is_suspended": course.is_suspended
-            if course.is_suspended is not None
-            else False,
-        },
-        "students": students_list,
-    }
+    # REFAC(P3c): بدنهٔ دامنه (105 خط) به `services/class_reports.py` رفت؛ این پوسته فقط لایهٔ HTTP است
+    # (همان decorator، همان امضا، همان پاسخ JSON). نام تابع عمداً این‌جا می‌ماند:
+    # امضا قراردادِ OpenAPI است و تست‌ها این handler را مستقیم از `routers.classes`
+    # صدا می‌زنند.
+    return class_reports.get_class_students_full(id, db, authorization, sub_role)
 
 
 # ==========================================
