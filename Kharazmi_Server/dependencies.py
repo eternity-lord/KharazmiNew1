@@ -124,6 +124,63 @@ def get_session_from_token(db: Session, token: str):
         return None, None
     return sess, None
 
+
+
+# --- منبعِ یگانهٔ «فراخوان کیست» (REFAC P3c) ---
+# این دو هلپر پیش‌تر در روترها تعریف شده بودند در حالی که مصرف‌کننده‌شان پخشِ کلِ ریپو بود:
+# `_get_admin_username` در `routers/dunning.py` (و `routers/finance.py` با یک importِ تنبلِ
+# **روتر→روتر** از دنینگ آن را می‌گرفت) و `get_logged_in_teacher` در `routers/reports.py`
+# (با ۳۴ importِ تنبل در ۱۴ فایل!). هر دو «resolve هویتِ فراخوان از روی توکن» هستند، یعنی
+# دقیقاً کارِ همین ماژول؛ پس این‌جا آمدند تا آن وابستگیِ عرضیِ روتر→روتر از بین برود.
+# کد **بایت‌به‌بایت** منتقل شده است.
+def _get_admin_username(db: Session, authorization: str | None) -> str:
+    try:
+        if not authorization:
+            return "admin"
+        parts = authorization.split()
+        token = parts[1] if len(parts) == 2 and parts[0].lower() == "bearer" else None
+        if not token:
+            return "admin"
+        sess, _ = get_session_from_token(db, token)
+        if sess is not None and getattr(sess, "user_id", None):
+            u = db.query(User).filter(User.id == sess.user_id).first()
+            if u is not None and u.username:
+                return u.username
+    except Exception:
+        pass
+    return "admin"
+
+
+
+def get_logged_in_teacher(db: Session, authorization: str | None) -> Teacher | None:
+    # FIX: مقاوم به تغییر موبایل – اول teacher_id مستقیم، بعد fallback به mobile
+    if not authorization:
+        return None
+    parts = authorization.split()
+    if len(parts) != 2 or parts[0].lower() != "bearer":
+        return None
+    token = parts[1]
+    # FIX: از helper جدید برای JWT + fallback استفاده کن
+    try:
+        from dependencies import get_session_from_token
+        session, _ = get_session_from_token(db, token)
+    except Exception:
+        session = db.query(UserSession).filter(UserSession.token == token).first()
+    if not session:
+        return None
+    # اگر teacher_id مستقیم ذخیره شده باشد (فیکس Bug 3)
+    if getattr(session, "teacher_id", None):
+        t = db.query(Teacher).filter(Teacher.id == session.teacher_id).first()
+        if t:
+            return t
+    user = db.query(User).filter(User.id == session.user_id).first()
+    if not user or user.role != "teacher":
+        return None
+    teacher = db.query(Teacher).filter(Teacher.mobile == user.username).first()
+    if teacher:
+        return teacher
+    # فقط برای کاربر معلم: ممکن است session.user_id در مهاجرت قدیمی همان Teacher.id باشد
+    return db.query(Teacher).filter(Teacher.id == session.user_id).first()
 def resolve_actor_user_id(db: Session, authorization: str | None) -> int | None:
     """شناسه‌ی کاربرِ عامل (actor) از هدر Authorization — برای ثبت «چه کسی این کار را کرد».
 
@@ -716,7 +773,6 @@ def validate_session_item_statuses(items) -> None:
 def check_student_access(student_id: int, authorization: str | None, db: Session, sub_role: str):
     # FIX: use signed token helper for JWT compatibility
     if sub_role == "teacher":
-        from routers.reports import get_logged_in_teacher
         logged_teacher = get_logged_in_teacher(db, authorization)
         if not logged_teacher:
             raise HTTPException(status_code=403, detail="مربی لاگین شده یافت نشد")
@@ -1203,3 +1259,5 @@ class NotificationService:
             ))
         db.commit()
         return created
+
+

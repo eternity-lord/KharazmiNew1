@@ -13,6 +13,7 @@ from dependencies import (
     check_user_login,
     display_name,
     get_db,
+    get_logged_in_teacher,
     get_session_parent,
     get_session_student,
 )
@@ -454,7 +455,6 @@ def get_current_live_session(
     """جلسه‌ی زنده‌ی فعلیِ معلمِ لاگین‌شده (برای رزومه/تایمر در داشبورد معلم)."""
     if sub_role in ("admin", "secretary"):
         return None
-    from routers.reports import get_logged_in_teacher
     logged = get_logged_in_teacher(db, authorization)
     if not logged:
         return None
@@ -489,7 +489,6 @@ def get_class_attendance(req: AttendanceLogRequest, db: Session = Depends(get_db
     if sub_role not in ("admin", "secretary"):
         if sub_role != "teacher":
             raise HTTPException(status_code=403, detail="شما مجاز به مشاهده اطلاعات این کلاس نیستید")
-        from routers.reports import get_logged_in_teacher  # lazy (جلوگیری از import چرخه‌ای)
         _me = get_logged_in_teacher(db, authorization)
         if not _me or course.teacher_id != _me.id:
             raise HTTPException(status_code=403, detail="شما مجاز به مشاهده اطلاعات این کلاس نیستید")
@@ -552,7 +551,6 @@ def get_history(req: HistoryRequest, db: Session = Depends(get_db), authorizatio
     if sub_role not in ("admin", "secretary"):
         if sub_role != "teacher":
             raise HTTPException(status_code=403, detail="شما مجاز به مشاهده اطلاعات این کلاس نیستید")
-        from routers.reports import get_logged_in_teacher  # lazy (جلوگیری از import چرخه‌ای)
         _me = get_logged_in_teacher(db, authorization)
         if not _me or course.teacher_id != _me.id:
             raise HTTPException(status_code=403, detail="شما مجاز به مشاهده اطلاعات این کلاس نیستید")
@@ -603,7 +601,6 @@ def get_student_attendance_history(req: StudentAttendanceHistoryRequest, db: Ses
     # 404ها عمداً قبل‌اند (الگوی H16: گارد بعد از 404).
     if sub_role not in ("admin", "secretary"):
         if sub_role == "teacher":
-            from routers.reports import get_logged_in_teacher
             _me = get_logged_in_teacher(db, authorization)
             if not _me or course.teacher_id != _me.id:
                 raise HTTPException(status_code=403, detail="شما مجاز به مشاهده سوابق این کلاس نیستید")
@@ -678,7 +675,6 @@ def get_session_details(session_code: int, db: Session = Depends(get_db), author
     if sub_role not in ("admin", "secretary"):
         if sub_role != "teacher":
             raise HTTPException(status_code=403, detail="شما مجاز به مشاهده جزئیات این جلسه نیستید")
-        from routers.reports import get_logged_in_teacher
         _me = get_logged_in_teacher(db, authorization)
         if not _me or not course or course.teacher_id != _me.id:
             raise HTTPException(status_code=403, detail="شما مجاز به مشاهده جزئیات این جلسه نیستید")

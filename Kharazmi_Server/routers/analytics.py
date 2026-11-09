@@ -6,30 +6,14 @@ from fastapi.responses import StreamingResponse
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
-import models
 from dependencies import check_admin_access, check_admin_or_secretary_access, check_user_login, get_db
 
 # FIX: Bug 16 - share the tuition-minus-payment debt calculation across financial views.
 from financial_calculations import calculate_institute_session_revenue, calculate_student_debt, calculate_total_turnover
-from models import Attendance, Course, Enrollment, Grade, Installment, Lead, SessionLog, Student, Teacher, User
+from models import Attendance, Course, Enrollment, Grade, Installment, Lead, SessionLog, Student, Teacher
+from services.branch_scope import get_user_branch_filter
 
 router = APIRouter()
-
-def get_user_branch_filter(db: Session, authorization: str | None, branch_id: int | None) -> int | None:
-    if not authorization:
-        return branch_id
-    try:
-        token = authorization.split()[1]
-        session = db.query(models.UserSession).filter(models.UserSession.token == token).first()
-        if session:
-            if session.sub_role in ["student", "parent"]:
-                return branch_id
-            user = db.query(User).filter(User.id == session.user_id).first()
-            if user and user.branch_id is not None:
-                return user.branch_id
-    except Exception:
-        pass
-    return branch_id
 
 # Helper function to get date range for time filters
 def get_date_range_filter(time_filter: str, start_date: str | None = None, end_date: str | None = None):

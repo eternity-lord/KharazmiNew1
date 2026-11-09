@@ -19,6 +19,7 @@ from models import (
     User,
 )
 from schemas import ClassRestoreRequest
+from services.branch_scope import get_user_branch_filter
 from services.class_archive import (
     _archived_deletion_meta,
     _fmt_datetime,
@@ -57,7 +58,6 @@ def restore_deleted_class(
     if mode == "metadata_only" and include_finance:
         raise HTTPException(status_code=400, detail="بازیابی مالی فقط همراه mode=full مجاز است")
 
-    from routers.analytics import get_user_branch_filter  # lazy: جلوگیری از import چرخه‌ای
     resolved_branch = get_user_branch_filter(db, authorization, None)
 
     course = db.query(Course).filter(Course.id == course_id).first()

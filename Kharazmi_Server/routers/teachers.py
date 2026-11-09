@@ -19,6 +19,7 @@ from dependencies import (
     check_admin_or_secretary_access,
     check_user_login,
     get_db,
+    get_logged_in_teacher,
     hash_password,
     limiter,
     normalize_mobile,
@@ -140,7 +141,6 @@ def get_all_teachers(
         raise HTTPException(status_code=403, detail="شما دسترسی لازم برای مشاهده‌ی لیست معلم‌ها را ندارید")
     q = db.query(Teacher).filter(Teacher.is_deleted == False)
     if sub_role == "teacher":
-        from routers.reports import get_logged_in_teacher  # lazy (مثل auth.py؛ جلوگیری از import چرخه‌ای)
         me = get_logged_in_teacher(db, authorization)
         if me is None or me.is_deleted:
             raise HTTPException(status_code=403, detail="نشست معلم معتبر نیست")
@@ -191,7 +191,6 @@ def get_teacher_communication_history(
         raise HTTPException(status_code=404, detail="معلم یافت نشد")
 
     if sub_role == "teacher":
-        from routers.reports import get_logged_in_teacher
 
         logged_teacher = get_logged_in_teacher(db, authorization)
         if not logged_teacher or logged_teacher.id != teacher_id:
@@ -234,7 +233,6 @@ def get_teacher_today_summary(
             detail="این خلاصه فقط برای پنل معلم در دسترس است",
         )
 
-    from routers.reports import get_logged_in_teacher
 
     logged_teacher = get_logged_in_teacher(db, authorization)
     if not logged_teacher or logged_teacher.id != id:
@@ -267,7 +265,6 @@ def get_my_classes(
         raise HTTPException(status_code=403, detail="شما دسترسی لازم برای مشاهده‌ی اطلاعات معلمان را ندارید")
     # بررسی مالکیت اطلاعات توسط مربی
     if sub_role == "teacher":
-        from routers.reports import get_logged_in_teacher
         logged_teacher = get_logged_in_teacher(db, authorization)
         if not logged_teacher or logged_teacher.id != teacher_id:
             raise HTTPException(status_code=403, detail="شما فقط مجاز به دیدن کلاس‌های خودتان هستید")
@@ -381,7 +378,6 @@ def get_teacher_incomplete_classes(
         raise HTTPException(status_code=403, detail="شما دسترسی لازم برای مشاهده‌ی اطلاعات معلمان را ندارید")
     # بررسی مالکیت اطلاعات توسط مربی
     if sub_role == "teacher":
-        from routers.reports import get_logged_in_teacher
         logged_teacher = get_logged_in_teacher(db, authorization)
         if not logged_teacher or logged_teacher.id != teacher_id:
             raise HTTPException(status_code=403, detail="شما فقط مجاز به دیدن کلاس‌های خودتان هستید")
@@ -421,7 +417,6 @@ def get_teacher_full_profile(
         raise HTTPException(status_code=403, detail="شما دسترسی لازم برای مشاهده‌ی اطلاعات معلمان را ندارید")
     # بررسی مالکیت اطلاعات توسط مربی
     if sub_role == "teacher":
-        from routers.reports import get_logged_in_teacher
         logged_teacher = get_logged_in_teacher(db, authorization)
         if not logged_teacher or logged_teacher.id != id:
             raise HTTPException(status_code=403, detail="شما فقط مجاز به دیدن اطلاعات خودتان هستید")
@@ -495,7 +490,6 @@ def get_teacher_profile(teacher_id: int, db: Session = Depends(get_db), authoriz
     if sub_role not in ("admin", "secretary", "teacher"):
         raise HTTPException(status_code=403, detail="شما دسترسی لازم برای مشاهده‌ی اطلاعات معلمان را ندارید")
     if sub_role == "teacher":
-        from routers.reports import get_logged_in_teacher  # lazy (جلوگیری از import چرخه‌ای)
         logged_teacher = get_logged_in_teacher(db, authorization)
         if not logged_teacher or logged_teacher.id != teacher_id:
             raise HTTPException(status_code=403, detail="شما فقط مجاز به دیدن اطلاعات خودتان هستید")
@@ -643,7 +637,6 @@ async def upload_teacher_photo(id: int, file: UploadFile = File(...), db: Sessio
     if sub_role not in ("admin", "secretary"):
         if sub_role != "teacher":
             raise HTTPException(status_code=403, detail="شما مجاز به تغییر عکس این معلم نیستید")
-        from routers.reports import get_logged_in_teacher  # lazy (مثل auth.py؛ جلوگیری از import چرخه‌ای)
         _t = get_logged_in_teacher(db, authorization)
         if _t is None or _t.id != id:
             raise HTTPException(status_code=403, detail="شما مجاز به تغییر عکس این معلم نیستید")
@@ -776,7 +769,6 @@ def get_pending_settlement(
     if sub_role not in ("admin", "secretary", "teacher"):
         raise HTTPException(status_code=403, detail="شما دسترسی لازم برای مشاهده‌ی اطلاعات معلمان را ندارید")
     if sub_role == "teacher":
-        from routers.reports import get_logged_in_teacher  # lazy (جلوگیری از import چرخه‌ای)
         logged_teacher = get_logged_in_teacher(db, authorization)
         if not logged_teacher or logged_teacher.id != teacher_id:
             raise HTTPException(status_code=403, detail="شما فقط مجاز به دیدن اطلاعات خودتان هستید")
@@ -1079,7 +1071,6 @@ def get_settlement_history(
     if sub_role not in ("admin", "secretary", "teacher"):
         raise HTTPException(status_code=403, detail="شما دسترسی لازم برای مشاهده‌ی اطلاعات معلمان را ندارید")
     if sub_role == "teacher":
-        from routers.reports import get_logged_in_teacher  # lazy (جلوگیری از import چرخه‌ای)
         logged_teacher = get_logged_in_teacher(db, authorization)
         if not logged_teacher or logged_teacher.id != teacher_id:
             raise HTTPException(status_code=403, detail="شما فقط مجاز به دیدن اطلاعات خودتان هستید")
@@ -1274,7 +1265,6 @@ def get_teacher_pending_classes(
     if sub_role not in ("admin", "secretary", "teacher"):
         raise HTTPException(status_code=403, detail="دسترسی به صف کلاس‌ها مجاز نیست")
     if sub_role == "teacher":
-        from routers.reports import get_logged_in_teacher
         me = get_logged_in_teacher(db, authorization)
         if not me or me.id != teacher_id:
             raise HTTPException(status_code=403, detail="فقط صف کلاس‌های خودتان قابل مشاهده است")

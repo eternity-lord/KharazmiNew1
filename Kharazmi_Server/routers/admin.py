@@ -18,6 +18,7 @@ from dependencies import (
     check_user_login,
     get_current_user,
     get_db,
+    get_logged_in_teacher,
     get_next_sequence_value,
     hash_password,
     normalize_mobile,
@@ -63,8 +64,6 @@ from schemas import (
 # و هیچ منطقی عوض نشده، فقط جای تعریف از لایهٔ HTTP به لایهٔ service رفته است.
 from services.class_archive import (
     _archive_jalali,
-    _archive_parse_filter_date,
-    _archive_search_variants,
     _archived_class_aggregates,
     _archived_class_people_report,
     _archived_deletion_meta,
@@ -258,7 +257,6 @@ def get_pending_teachers(
         شعبه‌دار، شعبه‌ی خودش بر پارامتر غلبه می‌کند (branch isolation قابل دورزدن با query نیست).
       • ترتیب قطعی (id صعودی) و متادیتای شعبه در پاسخ برای UI ادمین.
     """
-    from routers.analytics import get_user_branch_filter  # lazy: جلوگیری از import چرخه‌ای
     resolved_branch = get_user_branch_filter(db, authorization, branch_id)
     explicit_filter = branch_id is not None
 
@@ -300,7 +298,6 @@ def _teacher_in_scope(db: Session, teacher, authorization: str | None) -> bool:
     ادمین کل (بدون شعبه) → همه. کاربر شعبه‌دار → فقط شعبه‌ی خودش + رکوردهای بدون شعبه
     (branch_id IS NULL = بدون انتساب، متعلق به هیچ شعبه‌ای نیست). رکورد شعبه‌ی دیگر → خارج از دامنه.
     """
-    from routers.analytics import get_user_branch_filter  # lazy: جلوگیری از import چرخه‌ای
     resolved_branch = get_user_branch_filter(db, authorization, None)
     if resolved_branch is None:
         return True
@@ -501,7 +498,6 @@ def get_pending_classes(db: Session = Depends(get_db), authorization: str | None
         raise HTTPException(status_code=403, detail="شما دسترسی لازم برای مشاهده کلاس‌های درانتظار را ندارید")
     _own_teacher_id = None
     if sub_role == "teacher":
-        from routers.reports import get_logged_in_teacher  # lazy (جلوگیری از import چرخه‌ای)
         _me = get_logged_in_teacher(db, authorization)
         if not _me:
             raise HTTPException(status_code=403, detail="شما دسترسی لازم برای مشاهده کلاس‌های درانتظار را ندارید")
@@ -654,7 +650,8 @@ from fastapi.responses import StreamingResponse
 from openpyxl import Workbook
 from openpyxl.styles import Alignment, Font, PatternFill
 
-from services import class_restore, student_profile, transaction_admin
+from services import class_archive, class_restore, student_profile, transaction_admin
+from services.branch_scope import get_user_branch_filter
 
 
 @router.get("/admin/transactions/list/excel")
@@ -1056,94 +1053,11 @@ def get_deleted_classes(
     اضافه شده، جست‌وجو ممکن است و ترتیب قطعی است. کلیدهای قبلی (id/title/code/teacher_name/
     grade_level/bg_color) دست‌نخورده مانده‌اند تا کلاینت قدیمی نشکند.
     """
-    # الگوی branch isolation پروژه (analytics/crm/exports) — ادمینِ شعبه‌دار فقط شعبه‌ی خودش.
-    from routers.analytics import get_user_branch_filter  # lazy: جلوگیری از import چرخه‌ای
-    resolved_branch = get_user_branch_filter(db, authorization, branch_id)
-
-    # FIX(null-data): is_deleted=True صریح؛ ردیف‌های legacy با NULL «فعال» حساب می‌شوند و
-    # طبق سیاست موجود پروژه در آرشیو نمی‌آیند (لیست عادی و آرشیو قاطی نمی‌شوند).
-    q = db.query(Course).filter(Course.is_deleted == True)
-    if resolved_branch is not None:
-        q = q.filter(Course.branch_id == resolved_branch)
-    # فیلترهای جست‌وجو (همه با AND): عبارت آزاد، نام کلاس، نام معلم، کد کلاس. هر واژه جدا حساب می‌شود
-    # (ترتیب «نام و نام‌خانوادگی» مهم نیست) و ی/ي و ک/ك یکی‌اند.
-    teacher_full = (
-        func.coalesce(Teacher.first_name, "").op("||")(" ").op("||")(func.coalesce(Teacher.last_name, ""))
-    )
-    field_map = {"title": Course.title, "code": Course.code, "teacher": teacher_full}
-
-    def _apply_terms(q_, raw: str | None, fields):
-        for token in (raw or "").split():
-            clauses = [f.ilike(f"%{v}%") for v in _archive_search_variants(token) for f in fields]
-            q_ = q_.filter(or_(*clauses))
-        return q_
-
-    q = q.outerjoin(Teacher, Teacher.id == Course.teacher_id)
-    q = _apply_terms(q, query, [field_map["title"], field_map["code"], field_map["teacher"]])
-    q = _apply_terms(q, title, [field_map["title"]])
-    q = _apply_terms(q, code, [field_map["code"]])
-    q = _apply_terms(q, teacher, [field_map["teacher"]])
-
-    date_from = _archive_parse_filter_date(deleted_from, "تاریخ شروع")
-    date_to = _archive_parse_filter_date(deleted_to, "تاریخ پایان")
-    if date_from and date_to and date_from > date_to:
-        date_from, date_to = date_to, date_from   # بازهٔ وارونه ⇒ جابه‌جا (خطا نده)
-    courses = q.all()
-    course_ids = [c.id for c in courses]
-
-    meta_map = _archived_deletion_meta(db, course_ids)
-    if date_from or date_to:
-        # کلاسِ بدون تاریخ حذف (legacy) در بازهٔ زمانی «نامعلوم» است و وارد نتیجه نمی‌شود.
-        def _in_range(cid: int) -> bool:
-            when = meta_map.get(cid, {}).get("deleted_at")
-            if not when:
-                return False
-            day = when.date()
-            return (date_from is None or day >= date_from) and (date_to is None or day <= date_to)
-        courses = [c for c in courses if _in_range(c.id)]
-        course_ids = [c.id for c in courses]
-        meta_map = {cid: meta_map[cid] for cid in course_ids if cid in meta_map}
-    stats_map = _archived_class_aggregates(db, course_ids)
-
-    teacher_ids = {c.teacher_id for c in courses if c.teacher_id is not None}
-    branch_ids = {c.branch_id for c in courses if c.branch_id is not None}
-    teachers = {t.id: t for t in db.query(Teacher).filter(Teacher.id.in_(teacher_ids)).all()} if teacher_ids else {}
-    branches = {b.id: b for b in db.query(models.Branch).filter(models.Branch.id.in_(branch_ids)).all()} if branch_ids else {}
-
-    # ترتیب قطعی: تازه‌ترین حذف اول؛ کلاس‌های بدون تاریخ حذف آخر (شناسه نزولی).
-    courses.sort(
-        key=lambda c: (meta_map.get(c.id, {}).get("deleted_at") or datetime.datetime.min, c.id),
-        reverse=True,
-    )
-
-    result = []
-    for c in courses:
-        st = stats_map.get(c.id, {})
-        meta = meta_map.get(c.id, {})
-        result.append({
-            "id": c.id,
-            # FIX(null-data): فیلدهای legacy می‌توانند NULL باشند — رشته‌ی خالی می‌رود و
-            # فال‌بک نمایش در اپ انجام می‌شود (نه «None/null» در UI).
-            "title": c.title or "",
-            "code": c.code or "",
-            "teacher_id": c.teacher_id,
-            "teacher_name": _safe_person_name(teachers.get(c.teacher_id)) or "نامشخص",
-            "branch_id": c.branch_id,
-            "branch_name": (branches.get(c.branch_id).name if branches.get(c.branch_id) else "") or "",
-            "grade_level": c.grade_level or "",
-            "days_of_week": c.days_of_week or "",
-            "class_time": c.class_time or "",
-            "students_count": st.get("students_total", 0),
-            "students_active_count": st.get("students_active", 0),
-            "sessions_count": st.get("sessions_total", 0),
-            "transactions_count": st.get("transactions_count", 0),
-            "deleted_at": _fmt_datetime(meta.get("deleted_at")),
-            **_archive_jalali(meta.get("deleted_at")),
-            "forgive_session_charges": bool(meta.get("forgive_session_charges", False)),
-            "is_suspended": bool(c.is_suspended),
-            "bg_color": c.bg_color or "#FFFFFF",
-        })
-    return result
+    # REFAC(P3c): بدنهٔ دامنه (87 خط) به `services/class_archive.py` رفت؛ این پوسته فقط لایهٔ HTTP است
+    # (همان decorator، همان امضا، همان پاسخ JSON). نام تابع عمداً این‌جا می‌ماند:
+    # امضا قراردادِ OpenAPI است و تست‌ها این handler را مستقیم از `routers.admin`
+    # صدا می‌زنند.
+    return class_archive.get_deleted_classes(query, title, teacher, code, deleted_from, deleted_to, branch_id, db, authorization, _)
 
 
 @router.get("/admin/deleted_classes/{course_id}")
@@ -1158,7 +1072,6 @@ def get_deleted_class_detail(
     فقط کلاسِ آرشیوشده سرو می‌شود؛ کلاس فعال، ناموجود و متعلق به شعبه‌ی دیگر همه 404
     می‌گیرند (بدون نشت وجود رکورد). خروجی dict تعریف‌شده است، نه dump خام ORM.
     """
-    from routers.analytics import get_user_branch_filter  # lazy: جلوگیری از import چرخه‌ای
     resolved_branch = get_user_branch_filter(db, authorization, None)
 
     course = (

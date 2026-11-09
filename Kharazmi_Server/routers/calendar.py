@@ -3,7 +3,14 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 import models
-from dependencies import check_user_login, get_db, get_session_parent, get_session_student, require_permission
+from dependencies import (
+    check_user_login,
+    get_db,
+    get_logged_in_teacher,
+    get_session_parent,
+    get_session_student,
+    require_permission,
+)
 from models import Course, Enrollment, Grade, Homework, Installment, Resource, ResourceBooking, Room, Student
 
 router = APIRouter()
@@ -171,7 +178,6 @@ def get_calendar_events(
 
     # 2. Teacher -> see only own classes
     elif role == "teacher":
-        from routers.reports import get_logged_in_teacher
         logged_teacher = get_logged_in_teacher(db, authorization)
         if logged_teacher:
             courses = db.query(Course).filter(Course.teacher_id == logged_teacher.id, Course.is_deleted == False).all()

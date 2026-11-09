@@ -13,6 +13,7 @@ from dependencies import (
     NotificationService,
     ensure_student_shadow_users,
     get_db,
+    get_logged_in_teacher,
     get_session_parent,
     get_session_student,
     require_permission,
@@ -75,7 +76,6 @@ def create_homework(
     db: Session = Depends(get_db),
     role: str = Depends(require_permission("homework.create"))
 ):
-    from routers.reports import get_logged_in_teacher
     logged_teacher = get_logged_in_teacher(db, authorization)
     if not logged_teacher:
         raise HTTPException(status_code=403, detail="مربی لاگین شده یافت نشد")
@@ -135,7 +135,6 @@ def delete_homework(
     db: Session = Depends(get_db),
     role: str = Depends(require_permission("homework.delete"))
 ):
-    from routers.reports import get_logged_in_teacher
     logged_teacher = get_logged_in_teacher(db, authorization)
     if not logged_teacher:
         raise HTTPException(status_code=403, detail="دسترسی غیرمجاز")
@@ -267,7 +266,6 @@ def grade_homework_submission(
     db: Session = Depends(get_db),
     role: str = Depends(require_permission("homework.grade"))
 ):
-    from routers.reports import get_logged_in_teacher
     logged_teacher = get_logged_in_teacher(db, authorization)
     if not logged_teacher:
         raise HTTPException(status_code=403, detail="دسترسی غیرمجاز")

@@ -15,8 +15,13 @@ from pydantic import BaseModel
 from sqlalchemy import func, or_
 from sqlalchemy.orm import Session, joinedload
 
-from dependencies import check_admin_access, get_db, get_session_from_token
-from models import ActivityLog, Enrollment, Installment, SmsLog, Student, User
+from dependencies import (
+    _get_admin_username,
+    check_admin_access,
+    get_db,
+)
+from models import ActivityLog, Enrollment, Installment, SmsLog, Student
+from services.jalali_time import _jalali_now_str
 from today_summary import jalali_date_string, parse_project_date
 
 router = APIRouter()
@@ -34,29 +39,6 @@ class DunningDraft(BaseModel):
 
 class SendBatchRequest(BaseModel):
     installment_ids: list[int]
-
-
-def _jalali_now_str() -> str:
-    _now = datetime.datetime.now()
-    return jalali_date_string(_now.date()) + _now.strftime(" %H:%M")
-
-
-def _get_admin_username(db: Session, authorization: str | None) -> str:
-    try:
-        if not authorization:
-            return "admin"
-        parts = authorization.split()
-        token = parts[1] if len(parts) == 2 and parts[0].lower() == "bearer" else None
-        if not token:
-            return "admin"
-        sess, _ = get_session_from_token(db, token)
-        if sess is not None and getattr(sess, "user_id", None):
-            u = db.query(User).filter(User.id == sess.user_id).first()
-            if u is not None and u.username:
-                return u.username
-    except Exception:
-        pass
-    return "admin"
 
 
 def _categorize(due_date_str: str | None, today: datetime.date):

@@ -25,6 +25,7 @@ from models import (
 from payment_gateways import get_payment_gateway
 from schemas import FinanceSubmitData
 from services.branch_scope import get_user_branch_filter
+from services.jalali_time import _jalali_now_str
 
 """لایهٔ سرویسِ «پرداخت» — بدنهٔ دامنه‌ایِ مسیرهای مالی درگاه و رسید.
 
@@ -51,13 +52,6 @@ from services.branch_scope import get_user_branch_filter
 # --- Feature flag درگاه پرداخت آنلاین ---
 # پیش‌فرض false: تا اتصال درگاه واقعی بانکی، کال‌بک و صفحه‌ی شبیه‌ساز 404 می‌دهند.
 PAYMENT_GATEWAY_ENABLED = os.getenv("PAYMENT_GATEWAY_ENABLED", "false").lower() in ("1", "true", "yes")
-
-
-def _jalali_now_str() -> str:
-    """FIX L7: paid_at شمسی (هماهنگ با due_date و Transaction.date) + ساعت سرور."""
-    from today_summary import jalali_date_string  # lazy، مثل H3-B3 همین فایل
-    _now = datetime.datetime.now()
-    return jalali_date_string(_now.date()) + _now.strftime(" %H:%M")
 
 
 def _replay_idempotent_payment(db: Session, key: str, data: FinanceSubmitData):

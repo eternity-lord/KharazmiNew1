@@ -79,7 +79,12 @@ def _circular_hour_diff(h1: int, h2: int) -> int:
     return min(diff, 24 - diff)
 
 
-def _now_str() -> str:
+# NOTE (P3c): این تابع عمداً با `_now_str` در `services/live_session.py` **یکی نیست** و
+# ادغامشان یک باگِ خاموش می‌سازد: این یکی ثانیه هم دارد (`%H:%M:%S`) چون برای ستون‌های
+# زمانیِ ممیزی/لاگ استفاده می‌شود، ولی آن یکی دقیقه‌ای است (`%H:%M`) چون `LiveSession.end_time`
+# و `start_time` با همان قالبِ UI نوشته می‌شوند. نامِ صریح = جلوگیری از «de-duplicate» کردنِ
+# اشتباهی در آینده. (پیش‌تر هر دو `_now_str` نام داشتند.)
+def _now_str_with_seconds() -> str:
     return datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 
@@ -95,7 +100,7 @@ def get_suspicious_patterns(
     Pattern C: Perfect Attendance (last 10 sessions 0 absences) - bulk optimized
     """
     alerts: list[AuditAlert] = []
-    now_str = _now_str()
+    now_str = _now_str_with_seconds()
 
     # Pattern A: Suspicious Attendance - N+1 FIXED via joinedload
     try:
