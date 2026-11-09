@@ -703,7 +703,12 @@ class TestClassDetailSessionHistoryGuard(unittest.TestCase):
         for expected in ("present_students", "absent_students", "weekday", "total_cost",
                          "cost_per_student", "session_id", "start_time", "end_time"):
             self.assertIn(expected, session_schema, f"فیلد «{expected}» از اسکیمای تاریخچهٔ جلسات حذف شده است")
+        # REFAC(P3b): بدنهٔ «فهرست کلاس‌ها» و «گزارش کامل کلاس» از روتر به لایهٔ سرویس رفت
+        # (services/class_reports.py)، پس روتین‌های گزارش کلاس حالا بین آن دو فایل تقسیم شده‌اند.
+        # گارد همان دو لیترالِ قبلی را — بدون هیچ تضعیفی — روی **مجموعِ** هر دو فایل می‌سنجد؛
+        # در عمل سخت‌گیرانه‌تر هم شده چون لایهٔ سرویس را هم پوشش می‌دهد.
         routines = _read(os.path.join(SERVER_DIR, "routers", "classes.py"))
+        routines += _read(os.path.join(SERVER_DIR, "services", "class_reports.py"))
         self.assertIn("PERSIAN_DAY_NAMES", routines, "روزِ هفته باید از تقویمِ مرکزیِ سرور بیاید")
         self.assertIn("display_name(", routines, "نامِ حاضر/غایب باید از هلپرِ امنِ نام بیاید")
 
