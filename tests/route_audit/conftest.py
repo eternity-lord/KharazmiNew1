@@ -14,7 +14,7 @@ if str(SERVER) not in sys.path:
     sys.path.insert(0, str(SERVER))
 
 from .clock import FIXED_NOW, freeze_loaded_server_modules  # noqa: E402
-from .seed import seed_database  # noqa: E402
+from .seed import restore_role_sessions, seed_database  # noqa: E402
 
 
 @pytest.fixture(scope="session")
@@ -40,9 +40,13 @@ def audit_app(audit_context):
     try:
         threading.Thread.start = no_live_auto_end_worker
         import main  # type: ignore
-        return main.app
     finally:
         threading.Thread.start = original_start
+    # FIX route-audit-rot: importِ main، auto_patch_database() را با ساعت واقعی اجرا
+    # می‌کند و سشن‌های seed (تاریخ FIXED_NOW) را به‌عنوان «منقضی» می‌بُرد. همان ردیف‌ها
+    # با همان توکن قطعی برگردانده می‌شوند تا سوئیت مثل روزِ نوشته‌شدنش رفتار کند.
+    restore_role_sessions(audit_context["manifest"])
+    return main.app
 
 
 @pytest.fixture(scope="session")

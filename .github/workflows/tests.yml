@@ -26,6 +26,9 @@ on:
       - arena/01a0c9b8-kharazmiapp
       # شاخهٔ کاری نشست جاری (۲۰۲۶-۰۹-۲۹) — محتوای یکسان با arena/01a0c9b8-kharazmiapp.
       - arena/01a0ec4f-kharazmiapp
+      # شاخهٔ کاری نشست ریفکتور (۲۰۲۶-۱۱-۰۹) تا هر فازِ ریفکتور پیش از مرج،
+      # زیرِ هر دو سوئیت تست سبز شود.
+      - arena/ff24bfc6-kharazminew1
   workflow_dispatch:
 
 permissions:
@@ -78,6 +81,63 @@ jobs:
           echo "checksum after : $after"
           if [ "$DB_BEFORE" != "$after" ]; then
             echo "::error::دیتابیس واقعی آموزشگاه در تست‌ها تغییر کرده است — این نقض قانون پروژه است."
+            exit 1
+          fi
+          echo "✅ دیتابیس واقعی دست‌نخورده ماند."
+
+  # سوئیت دوم — route audit (۲۴۹ تست route-level با seed قطعی و oracle محاسباتی).
+  #
+  # چرا job جدا و نه یک step بعدی در job بالا:
+  #   دو سوئیت در **یک فرایند** همدیگر را خراب می‌کنند. models.py در اولین import
+  #   engine/SessionLocal را از DATABASE_URL می‌سازد و آن ماژول در sys.modules کش می‌شود؛
+  #   بعدتر conftestِ route_audit متغیر را به DB موقتِ خودش تغییر می‌دهد و seed روی همان
+  #   engine قدیمی می‌نویسد ⇒ «UNIQUE constraint failed: branches.id» (اندازه‌گیری‌شده:
+  #   1326 passed / 202 errors). مستند: checkpoints/2026-11-09-route-audit-clock-rot-fix.md
+  #
+  # چرا این سوئیت حالا در CI است: تا ۲۰۲۶-۱۱-۰۹ نه در testpaths بود و نه در CI؛ یعنی
+  #   ۱۶۷ تستِ قرمزش (پوسیدگی زمانیِ seed) ماه‌ها دیده نمی‌شد.
+  route-audit:
+    name: route audit (tests/route_audit, separate process)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    env:
+      # conftestِ سوئیت، DATABASE_URL را خودش به DB موقتِ seed تبدیل می‌کند؛ این مقدار
+      # صرفاً برای import اولیهٔ ماژول‌هاست و هرگز به دیتابیس واقعی نمی‌رسد.
+      DATABASE_URL: sqlite:////tmp/kharazmi_route_audit.db
+      JWT_SECRET_KEY: ci-only-test-secret-not-production
+      PYTHONUNBUFFERED: "1"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: Kharazmi_Server/requirements.txt
+
+      - name: Install dependencies (runtime + test)
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r Kharazmi_Server/requirements.txt pytest
+
+      - name: Record real DB checksum (before)
+        run: |
+          echo "DB_BEFORE=$(md5sum Kharazmi_Server/gaj_db.db | cut -d' ' -f1)" >> "$GITHUB_ENV"
+
+      - name: Run route-audit suite
+        run: python -m pytest tests/route_audit -q
+
+      - name: Guard - real institute database untouched
+        run: |
+          after=$(md5sum Kharazmi_Server/gaj_db.db | cut -d' ' -f1)
+          echo "checksum before: $DB_BEFORE"
+          echo "checksum after : $after"
+          if [ "$DB_BEFORE" != "$after" ]; then
+            echo "::error::دیتابیس واقعی آموزشگاه در تست‌های route audit تغییر کرده است — این نقض قانون پروژه است."
             exit 1
           fi
           echo "✅ دیتابیس واقعی دست‌نخورده ماند."
