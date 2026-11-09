@@ -6,17 +6,28 @@ Isolated: sqlite memory, no modification to finance/timeline/audit/dunning route
 import datetime
 import os
 import unittest
+
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
-import models
-from models import Base, User, UserSession, Student, Teacher, Course, Enrollment, Installment, Transaction, Branch, SessionLog, Attendance, ActivityLog
-from main import app
 from dependencies import get_db, hash_password
-from today_summary import jalali_date_string, parse_project_date
-
+from main import app
+from models import (
+    Base,
+    Branch,
+    Course,
+    Enrollment,
+    Installment,
+    SessionLog,
+    Student,
+    Teacher,
+    Transaction,
+    User,
+    UserSession,
+)
+from today_summary import jalali_date_string
 
 # FIX(B1): مسیر فایل‌های سرور مستقل از پوشهٔ اجرا — نسبت به محل همین فایل تست، نه cwd.
 # الگوی قدیمی `open("Kharazmi_Server/routers/x.py")` فقط وقتی کار می‌کرد که سوئیت از ریشهٔ ریپو

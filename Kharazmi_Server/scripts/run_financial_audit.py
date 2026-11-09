@@ -1,7 +1,7 @@
-import sys
 import os
-import datetime
-from sqlalchemy import create_engine, text, func
+import sys
+
+from sqlalchemy import create_engine, func
 from sqlalchemy.orm import sessionmaker
 
 # REFAC(P1): منتقل‌شده از ریشهٔ Kharazmi_Server/ به scripts/ ⇒ bootstrap یک سطح بالاتر.
@@ -9,12 +9,9 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import models
 from models import (
-    ActivityLog,
-    Attendance,
     Branch,
     Course,
     Enrollment,
-    Installment,
     PricingTable,
     SessionLog,
     Settlement,
@@ -22,8 +19,8 @@ from models import (
     Teacher,
     Transaction,
     User,
-    UserSession,
 )
+
 
 def run_audit():
     # Use a fresh in-memory SQLite database to run E2E scenarios E2E and retrieve exact SELECT outputs
@@ -111,7 +108,7 @@ def run_audit():
     # Institute share per student: 100,000 / 3 = 33,333.3 -> rounded (33,334 / 33,333 / 33,333)
 
     # Let's use the actual routing logic of submit_session_and_calculate to verify database execution
-    from routers.attendance import submit_session_and_calculate, AttendanceSubmitData, AttendanceItem
+    from routers.attendance import AttendanceItem, AttendanceSubmitData, submit_session_and_calculate
     data_s1 = AttendanceSubmitData(
         course_id=1,
         date="1405/01/10",
@@ -194,7 +191,7 @@ def run_audit():
     # C: Teacher=-166,666, Institute=-83,333 (Total = -249,999)
 
     # Let's perform payments using submit_payment from routers/finance.py
-    from routers.finance import submit_payment, FinanceSubmitData
+    from routers.finance import FinanceSubmitData, submit_payment
 
     # 1. Student A pays exact debt (100,001)
     # We will pay to institute and teacher wallets
@@ -263,8 +260,8 @@ def run_audit():
         print(f"  - Trans ID: {t.id} | Amount: {t.amount:,} | Enrollment ID: {t.enrollment_id} (انتظار: لینک تاریخی حفظ شده، فعال)")
 
     # --- STEP 9: Final Consistency Verification ---
-    from routers.reports import get_financial_report
     from routers.analytics import get_analytics_dashboard
+    from routers.reports import get_financial_report
 
     # Reports legacy revenue:
     legacy_rev = get_financial_report(db=db, _="admin")

@@ -5,17 +5,16 @@ import datetime
 import os
 import time
 import unittest
+
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine, event
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
-import models
-from models import Base, User, UserSession, Student, Teacher, Course, Enrollment, Installment, Branch
-from main import app
 from dependencies import get_db, hash_password
+from main import app
+from models import Base, Branch, Course, Enrollment, Installment, Student, Teacher, User, UserSession
 from today_summary import jalali_date_string
-
 
 # FIX(B1): مسیر فایل‌های سرور مستقل از پوشهٔ اجرا — نسبت به محل همین فایل تست، نه cwd.
 # الگوی قدیمی `open("Kharazmi_Server/routers/x.py")` فقط وقتی کار می‌کرد که سوئیت از ریشهٔ ریپو

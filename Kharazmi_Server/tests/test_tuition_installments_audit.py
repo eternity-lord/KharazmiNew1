@@ -59,7 +59,7 @@ from types import SimpleNamespace
 import pytest
 from fastapi import HTTPException
 from pydantic import ValidationError
-from sqlalchemy import create_engine, event, func, text
+from sqlalchemy import create_engine, event, func
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
@@ -923,6 +923,7 @@ def test_fix_t1_http_layer_returns_422_on_both_endpoints(world):
     (لایه‌ی ۴۰۰ داخل endpoint فقط برای فراخوان‌های داخلیِ دورزننده‌ی schema است — تست جداگانه دارد).
     """
     from fastapi.testclient import TestClient
+
     from dependencies import get_db
     from main import app
 

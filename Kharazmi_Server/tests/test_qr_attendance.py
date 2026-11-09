@@ -1,10 +1,12 @@
+import datetime
 import unittest
-import models
-from models import SessionLocal, Student, Teacher, Course, Enrollment, Attendance, SessionLog
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from fastapi import HTTPException
-import datetime
+
+import models
+from models import Attendance, Course, Enrollment, SessionLog, Student
+
 
 class TestKharazmiQRAttendance(unittest.TestCase):
 

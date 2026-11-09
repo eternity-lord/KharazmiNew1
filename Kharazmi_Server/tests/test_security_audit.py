@@ -1,16 +1,20 @@
-import sys
 import os
+import sys
 
 # Add parent directory to path so main can be imported
 # FIX(tests-dir): مسیر کد سرور یک سطح بالاتر از پوشهٔ tests/ است.
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from fastapi import Depends
-from main import app
-from dependencies import (check_user_login, check_admin_access, check_admin_or_secretary_access,
-                            check_admin_secretary_or_teacher_access)
-
 from fastapi.params import Depends as DependsClass
+
+from dependencies import (
+    check_admin_access,
+    check_admin_or_secretary_access,
+    check_admin_secretary_or_teacher_access,
+    check_user_login,
+)
+from main import app
+
 
 def get_all_routes(router):
     routes = []

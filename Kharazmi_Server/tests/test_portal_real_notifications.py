@@ -29,7 +29,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
 import models
-from dependencies import get_db, hash_password
+from dependencies import get_db
 from main import app
 
 FAKE_TITLES = ("اطلاعیه شروع ترم تحصیلی جدید", "تعطیلی موقت به علت سرما")

@@ -1,14 +1,14 @@
+import hashlib
+
 from fastapi import HTTPException
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
-from typing import Optional
-import hashlib
+
 import models
 
 # =========================================================================
 # 📊 لایه محاسبات مالی متمرکز و یگانه خوارزمی (Centralized Financial Calculations)
 # =========================================================================
-
 # FIX H3-B3: report boundaries may be Jalali (monthly summary) or Gregorian (dashboard),
 # and Transaction.date mixes both by row type (session_charge rows are Gregorian, deposit
 # rows are Jalali). No SQL string range can bound that — parse via the central converter

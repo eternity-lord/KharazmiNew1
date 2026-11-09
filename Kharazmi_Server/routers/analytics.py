@@ -1,20 +1,17 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query, Header
-from fastapi.responses import FileResponse, StreamingResponse
-from sqlalchemy.orm import Session
-from typing import List, Optional, Dict, Any
-from pydantic import BaseModel
-from sqlalchemy import func, or_, and_, desc
 import datetime
-import os
 import io
 
+from fastapi import APIRouter, Depends, Header, HTTPException, Query
+from fastapi.responses import StreamingResponse
+from sqlalchemy import func
+from sqlalchemy.orm import Session
+
 import models
-from models import Student, Teacher, Course, Enrollment, Attendance, SessionLog, Grade, Transaction, Installment, Lead, Branch, User, UserSession
-from dependencies import get_db, check_admin_access, check_admin_or_secretary_access, check_user_login
-from financial_calculations import calculate_institute_session_revenue, calculate_total_turnover
+from dependencies import check_admin_access, check_admin_or_secretary_access, check_user_login, get_db
 
 # FIX: Bug 16 - share the tuition-minus-payment debt calculation across financial views.
-from financial_calculations import calculate_student_debt
+from financial_calculations import calculate_institute_session_revenue, calculate_student_debt, calculate_total_turnover
+from models import Attendance, Course, Enrollment, Grade, Installment, Lead, SessionLog, Student, Teacher, User
 
 router = APIRouter()
 
@@ -402,7 +399,7 @@ def export_analytics_excel(
     _: str = Depends(check_admin_or_secretary_access)  # FIX (L14/Y4): خروجی اکسل همان داده‌ی :153 — فقط کارکنان
 ):
     import openpyxl
-    from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+    from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 
     # دریافت آمار داشبورد
     stats = get_analytics_dashboard(time_filter=time_filter, branch_id=branch_id, authorization=authorization, db=db, _="admin")
@@ -534,10 +531,10 @@ def export_analytics_pdf(
     db: Session = Depends(get_db),
     _: str = Depends(check_admin_or_secretary_access)  # FIX (L14/Y4): خروجی PDF همان داده‌ی :153 — فقط کارکنان
 ):
-    from reportlab.lib.pagesizes import letter, A4
-    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
-    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
     from reportlab.lib import colors
+    from reportlab.lib.pagesizes import A4
+    from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
+    from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
     # دریافت آمار داشبورد
     stats = get_analytics_dashboard(time_filter=time_filter, branch_id=branch_id, authorization=authorization, db=db, _="admin")

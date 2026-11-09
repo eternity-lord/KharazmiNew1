@@ -3,7 +3,6 @@ from __future__ import annotations
 
 from fastapi.testclient import TestClient
 from sqlalchemy import and_, delete, insert, select, update
-import pytest
 
 from .route_registry import route_id, routes
 

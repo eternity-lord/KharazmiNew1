@@ -8,13 +8,11 @@ Informational only: raw numbers, no automatic judgment.
 
 import datetime
 import re
-from typing import Dict, List, Optional, Tuple
 
 from sqlalchemy.orm import Session
 
 from models import Course, LiveSession, Settlement, Teacher
 from today_summary import parse_project_date, parse_schedule_start
-
 
 _TIME_RE = re.compile(r"([01]?\d|2[0-3])\s*[:٫.]\s*([0-5]\d)")
 

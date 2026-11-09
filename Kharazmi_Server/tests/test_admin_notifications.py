@@ -15,16 +15,16 @@
 #   JWT_SECRET_KEY=$(python3 -c "import secrets;print(secrets.token_hex(32))") \
 #   python3 -m pytest test_admin_notifications.py -q
 import datetime
+from types import SimpleNamespace
 
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
-from types import SimpleNamespace
 
 import models
-from dependencies import get_db, NotificationService, resolve_notification_role
+from dependencies import NotificationService, get_db, resolve_notification_role
 from main import app
 
 LEAD_TITLE_MARK = "سرنخ"

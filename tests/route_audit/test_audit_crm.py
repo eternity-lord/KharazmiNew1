@@ -1,9 +1,8 @@
 """Value, persistence, state-transition, and Android-contract audit for CRM routes."""
 from __future__ import annotations
 
-from datetime import timedelta
-
 import json
+from datetime import timedelta
 
 import pytest
 from sqlalchemy import and_, delete, insert, select, update
@@ -449,6 +448,7 @@ def test_crm_convert_with_active_course_records_enrollment_values_pending_tuitio
     client, auth_headers, db
 ):
     import models
+
     from .oracle import build_oracle
 
     before = _database_snapshot(db)
@@ -558,6 +558,7 @@ def test_crm_online_registration_creates_financial_rows_and_mocked_notifications
     import models
     import push_service
     from dependencies import NotificationService
+
     from .oracle import build_oracle
 
     before = _database_snapshot(db)
@@ -677,6 +678,7 @@ def test_crm_online_registration_creates_financial_rows_and_mocked_notifications
 
 def test_crm_online_registration_allows_zero_payment_without_financial_receipt(client, db):
     import models
+
     from .oracle import build_oracle
 
     before = _database_snapshot(db)
@@ -710,6 +712,7 @@ def test_crm_online_registration_reuses_existing_student_and_duplicate_retry_wri
     client, db
 ):
     import models
+
     from .oracle import build_oracle
 
     before = _database_snapshot(db)

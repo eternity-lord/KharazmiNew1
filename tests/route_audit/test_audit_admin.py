@@ -4,7 +4,6 @@ Behavioral cases are marked blocked in docs/route-tests/routes/admin.md until
 the router is processed. This module still makes every route an explicit
 pytest test input, so a missing route cannot disappear silently.
 """
-import pytest
 
 from .route_registry import route_id, routes
 

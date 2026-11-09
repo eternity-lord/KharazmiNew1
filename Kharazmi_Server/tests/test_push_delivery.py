@@ -20,7 +20,6 @@
 # اجرا (از ریشهٔ ریپو):
 #   DATABASE_URL=sqlite:////tmp/c2_push.db JWT_SECRET_KEY=<hex> \
 #     python3 -m pytest Kharazmi_Server/test_push_delivery.py -q
-import datetime
 import os
 import unittest
 

@@ -1,15 +1,15 @@
-import unittest
-import os
 import datetime
+import os
+import unittest
+
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
-import models
-from models import Base, User, UserSession, Student, Teacher, Course, Enrollment, Homework, HomeworkSubmission, Conversation, ConversationParticipant, Message, Exam, ExamQuestion, ExamAttempt, Grade
-from main import app
 from dependencies import get_db, hash_password
+from main import app
+from models import Base, Course, Enrollment, HomeworkSubmission, Student, Teacher, User, UserSession
 
 
 class TestThreeCriticalModulesE2E(unittest.TestCase):

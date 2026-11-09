@@ -20,7 +20,7 @@ import sqlite3
 import unittest
 
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
@@ -220,6 +220,7 @@ class TestMigrationBackfillIsRoleAware(unittest.TestCase):
     def _run_migration(self):
         from sqlalchemy import create_engine
         from sqlalchemy.orm import sessionmaker
+
         import main as main_module
         engine = create_engine(f"sqlite:///{self.db_path}")
         original = models.SessionLocal

@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime, time, timedelta, timezone, UTC
+from datetime import UTC, datetime, time, timedelta
 
 import pytest
 from sqlalchemy import select
@@ -227,7 +227,6 @@ def test_audit_trail_android_contract_filters_and_enriched_values(client, auth_h
 
 
 def test_audit_trail_date_filters_order_and_jalali_full_day(client, auth_headers, db):
-    import models
 
     day = FIXED_NOW.date()
     local_start = datetime.combine(day, time.min)
@@ -278,7 +277,6 @@ def test_audit_trail_date_filters_order_and_jalali_full_day(client, auth_headers
 
 
 def test_audit_trail_iso_end_date_includes_the_whole_selected_day(client, auth_headers, db):
-    import models
 
     day = FIXED_NOW.date()
     entity_id = 9_920_002

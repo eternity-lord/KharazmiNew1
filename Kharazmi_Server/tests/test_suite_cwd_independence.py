@@ -16,7 +16,6 @@
 # اجرا (از ریشهٔ ریپو):
 #   DATABASE_URL=sqlite:////tmp/b1.db JWT_SECRET_KEY=<hex> \
 #     python3 -m pytest Kharazmi_Server/tests/test_suite_cwd_independence.py -q
-import io
 import os
 import subprocess
 import sys

@@ -54,33 +54,28 @@
 تست‌ها DB درون‌حافظه‌ای خودشان (StaticPool) و برای سناریوی race یک فایل SQLite در tmp_path می‌سازند.
 """
 import datetime
-import os
-import shutil
-import tempfile
 from concurrent.futures import ThreadPoolExecutor
 from threading import Barrier
 from types import SimpleNamespace
 
 import pytest
 from fastapi import HTTPException
+from pydantic import ValidationError
 from sqlalchemy import create_engine, event, func, text
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
 import models
 from dependencies import reverse_session_financial_impacts
-from today_summary import gregorian_to_jalali
 from financial_calculations import (
     calculate_institute_session_revenue,
     calculate_teacher_session_revenue,
     calculate_total_turnover,
 )
-from pydantic import ValidationError
-
 from routers import attendance, finance, teachers
 from routers.attendance import QrCheckInRequest
-from schemas import (AttendanceItem, AttendanceSubmitData, HistoryRequest,
-                      SettleRequest, StudentAttendanceHistoryRequest)
+from schemas import AttendanceItem, AttendanceSubmitData, HistoryRequest, SettleRequest, StudentAttendanceHistoryRequest
+from today_summary import gregorian_to_jalali
 
 TOKEN = "att-admin-token"
 TODAY_JALALI = "1405/06/16"          # تاریخ معتبر و گذشته‌نسبت به امروز
@@ -1518,9 +1513,10 @@ def test_fix_os2_student_history_with_active_sessions_does_not_crash(world):
 def test_fix_fs4_migration_autopatch_adds_is_deleted_to_legacy_attendances(tmp_path, monkeypatch):
     """✅ FIX F-S2 (migration): دیتابیس قدیمی بدون ستون `attendances.is_deleted` خودکار وصله می‌شود
     و اجرای دوباره idempotent است (بدون از دست دادن هیچ ردیف تاریخی/مالی)."""
-    import main as server_main
     from sqlalchemy import create_engine as _create_engine
     from sqlalchemy.orm import sessionmaker as _sessionmaker
+
+    import main as server_main
 
     engine = _create_engine(f"sqlite:///{tmp_path / 'legacy.db'}", connect_args={"check_same_thread": False})
     with engine.begin() as connection:

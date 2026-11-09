@@ -1213,6 +1213,7 @@ def test_fix_float_amount_input_never_reaches_money_columns(world):
     """F-W1a (لایه‌ی ورودی): مبلغ اعشاری در `TransactionUpdate` نباید به عدد اعشاری در DB برسد —
     یا در اعتبارسنجی رد می‌شود یا به int کوتاه می‌شود؛ در هر حال ستون‌ها integer می‌مانند."""
     from pydantic import ValidationError
+
     from schemas import TransactionUpdate
 
     try:

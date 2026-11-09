@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-import hashlib
 import sqlite3
 from pathlib import Path
 
 import pytest
 
-from .kotlin_contract import ContractIssue, KotlinField, audit_payload, decode, discover_models, inspect_gson_configuration
+from .kotlin_contract import KotlinField, audit_payload, decode, discover_models, inspect_gson_configuration
 from .oracle import assert_invariants, build_oracle
 
 

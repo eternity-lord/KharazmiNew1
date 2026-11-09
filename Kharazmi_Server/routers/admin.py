@@ -1,33 +1,66 @@
-from pydantic import BaseModel
-from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile, Header, Query
-from sqlalchemy.orm import Session, joinedload
-from typing import List, Optional, Union
-from sqlalchemy import desc, or_, text, func, case
+import datetime
 import io
 import json  # FIX(A2): snapshot_json برای رکورد حذف کلاس
-from storage import storage_dir, resolve_existing
-import uuid
 import os
-import datetime
 import re
 import secrets  # FIX H12: پسورد تصادفی امن (الگوی C12)
+import uuid
+
+from fastapi import APIRouter, Depends, File, Header, HTTPException, Query, UploadFile
+from pydantic import BaseModel
+from sqlalchemy import case, desc, func, or_
+from sqlalchemy.orm import Session, joinedload
 
 import models
-from models import (
-    Attendance, Course, Enrollment, Grade, InstituteShare, SessionLog, SmsLog, Student, Teacher, Transaction, Installment, User, UserSession, InstituteSettings, ActivityLog, Notification, DeviceToken, Room, Conversation, ConversationParticipant, Message, Exam, ExamQuestion, ExamAttempt, Lead, ClassRestoreLog
+from dependencies import (
+    check_admin_access,
+    check_admin_or_secretary_access,
+    check_student_access,
+    check_user_login,
+    get_current_user,
+    get_db,
+    get_next_sequence_value,
+    hash_password,
+    normalize_mobile,
 )
-from schemas import (
-    HistoryRequest, LoginRequest, TeacherInfo, FullTeacherProfile, StudentCreate, TeacherCreate, CourseCreate, EnrollmentCreate, GradeCreate, GradeItem, AttendanceLogRequest, AttendanceItem, AttendanceSubmitData, SmsSendRequest, ChangePasswordRequest, StudentProfileInfo, FullStudentProfile, TeacherProfileInfo, FullTeacherProfile, ClassReportInfo, ClassStudentData, ClassSessionHistory, FullClassReport, ShareConfigModel, StudentUpdate, TeacherUpdate, PersonListItem, TransactionUpdate, StudentAttendanceHistoryRequest, AdvancedSearchItem, FinanceSubmitData, PrintReceiptRequest, TransactionTestData, BulkSmsRequest, BulkSuspendRequest, InstituteSettingsModel, PricingTableUpdateModel, TeacherListItem, SmsHistoryItem, PendingTeacherItem
-)
-from dependencies import get_db, check_admin_access, check_admin_or_secretary_access, check_user_login, check_student_access, get_enrollment_tuition_and_discount, SESSION_EXPIRY_DAYS, get_current_user, hash_password, verify_password, get_next_sequence_value, normalize_mobile
 
 # FIX: Bug 16 - share the tuition-minus-payment debt calculation across financial views.
 from financial_calculations import (
-    calculate_student_debt,
-    calculate_enrollment_debt_breakdown,
-    session_fields_for_client,
     MAX_TEACHER_SESSION_PRICE,
+    calculate_enrollment_debt_breakdown,
+    calculate_student_debt,
+    session_fields_for_client,
 )
+from models import (
+    ActivityLog,
+    Attendance,
+    ClassRestoreLog,
+    Course,
+    Enrollment,
+    Installment,
+    InstituteSettings,
+    InstituteShare,
+    SessionLog,
+    Student,
+    Teacher,
+    Transaction,
+    User,
+    UserSession,
+)
+from schemas import (
+    BulkSmsRequest,
+    BulkSuspendRequest,
+    InstituteSettingsModel,
+    PendingTeacherItem,
+    PersonListItem,
+    PricingTableUpdateModel,
+    ShareConfigModel,
+    SmsHistoryItem,
+    SmsSendRequest,
+    TransactionTestData,
+    TransactionUpdate,
+)
+from storage import resolve_existing, storage_dir
 
 router = APIRouter()
 
@@ -140,20 +173,6 @@ def test_debt_calculation(db: Session = Depends(get_db), _: str = Depends(check_
 # ==========================================
 # 6. API های حضور و غیاب
 # ==========================================
-class AttendanceLogRequest(BaseModel):
-    course_id: int
-    date: str
-
-
-class AttendanceItem(BaseModel):
-    student_id: int
-    status: str
-
-
-class AttendanceSubmitData(BaseModel):
-    course_id: int
-    date: str
-    items: list[AttendanceItem]
 
 
 @router.post("/sms/send")
@@ -594,20 +613,6 @@ def get_student_full_profile(id: int, authorization: str | None = Header(None), 
 # ==========================================
 # 13. API پروفایل کامل معلم (Teacher Profile)
 # ==========================================
-class TeacherProfileInfo(BaseModel):
-    name: str
-    mobile: str
-    national_code: str
-    status: str  # فعال/غیرفعال
-    profile_image: str | None = None
-
-
-class FullTeacherProfile(BaseModel):
-    info: TeacherProfileInfo
-    total_students: int
-    total_revenue: int  # درآمدزایی کل
-    active_classes_count: int
-    classes: list[str]  # لیست نام کلاس‌ها
 
 
 @router.get("/config/share")
@@ -806,10 +811,10 @@ def get_parent_contacts(
 # ==========================================
 # Excel Export Endpoints
 # ==========================================
-import io
+
 from fastapi.responses import StreamingResponse
 from openpyxl import Workbook
-from openpyxl.styles import Font, Alignment, PatternFill
+from openpyxl.styles import Alignment, Font, PatternFill
 
 
 @router.get("/admin/transactions/list/excel")
@@ -896,17 +901,9 @@ def get_transactions_excel(search: str | None = None, db: Session = Depends(get_
     )
 
 
-from sqlalchemy import or_
 
 
 # مدل پاسخ برای لیست
-class PersonListItem(BaseModel):
-    id: int
-    name: str
-    national_code: str
-    mobile: str
-    role: str  # 'student' or 'teacher'
-    is_suspended: bool = False
 
 
 # 1. جستجوی دانش‌آموزان (همه یا با فیلتر)
@@ -1352,9 +1349,6 @@ def toggle_suspend_student(id: int, db: Session = Depends(get_db), _: str = Depe
 
 
 # 3. تاریخچه حضور و غیاب دانش‌آموز در یک کلاس خاص
-class StudentAttendanceHistoryRequest(BaseModel):
-    student_id: int
-    course_id: int
 
 
 @router.post("/test/transaction_logic")
@@ -1811,7 +1805,7 @@ def _archive_jalali(dt: datetime.datetime | None) -> dict:
     """تاریخ حذف به جلالی + روز هفته (اپ فارسی است؛ تاریخ میلادی برای کاربر بی‌معنی بود)."""
     if not dt:
         return {"deleted_at_jalali": "", "deleted_weekday": ""}
-    from today_summary import jalali_date_string, PERSIAN_DAY_NAMES
+    from today_summary import PERSIAN_DAY_NAMES, jalali_date_string
     return {
         "deleted_at_jalali": f"{jalali_date_string(dt.date())} {dt.strftime('%H:%M')}",
         "deleted_weekday": PERSIAN_DAY_NAMES.get(dt.weekday(), ""),
@@ -1969,8 +1963,8 @@ def _archived_class_people_report(db: Session, course, forgive_session_charges: 
       • مالی: اگر اسنپ‌شات لحظهٔ حذف موجود باشد همان (source=snapshot)، وگرنه محاسبهٔ ledger که
         پرداخت‌های واقعی‌اش هنگام حذف آرشیو نمی‌شوند (source=computed).
     """
-    from today_summary import parse_project_date, PERSIAN_DAY_NAMES
     from dependencies import display_name
+    from today_summary import PERSIAN_DAY_NAMES, parse_project_date
 
     # ---------- حضور و غیاب ----------
     att_rows = (
@@ -2409,6 +2403,18 @@ def restore_deleted_class(
             "student_id", "course_id", "enrollment_id", "session_id", "type", "amount",
             "share_teacher", "share_institute",
         )
+        # REFAC(P2c/B023): این تابع پیش‌تر **داخل** حلقه تعریف می‌شد و متغیرهای حلقه
+        # (`current`/`expected`) را late-bind می‌کرد. چون بی‌درنگ در همان تکرار مصرف می‌شد
+        # باگِ عملی نداشت، ولی تلهٔ معروف closure-over-loop-variable بود (ruff B023) و
+        # هر تکرار هم یک آبجکت تابع تازه می‌ساخت. حالا یک بار بیرون حلقه تعریف می‌شود و
+        # مقادیر را صریح به‌صورت پارامتر می‌گیرد ⇒ رفتار دقیقاً یکسان.
+        def _same_transaction_value(field, current_row, expected_row):
+            current_value = getattr(current_row, field)
+            expected_value = expected_row.get(field)
+            if field in ("share_teacher", "share_institute"):
+                current_value = current_value or 0
+            return current_value == expected_value
+
         for expected in transaction_rows:
             current = transaction_by_id[int(expected["id"])]
             if current.is_deleted is not True or bool(current.is_reversed):
@@ -2417,14 +2423,7 @@ def restore_deleted_class(
             if current.course_id != course.id and current.enrollment_id not in enrollment_id_set:
                 db.rollback()
                 raise HTTPException(status_code=409, detail="تراکنش ثبت‌شده به این کلاس تعلق ندارد؛ هیچ تغییری اعمال نشد")
-            def _same_transaction_value(field):
-                current_value = getattr(current, field)
-                expected_value = expected.get(field)
-                if field in ("share_teacher", "share_institute"):
-                    current_value = current_value or 0
-                return current_value == expected_value
-
-            if not all(_same_transaction_value(field) for field in transaction_fields):
+            if not all(_same_transaction_value(field, current, expected) for field in transaction_fields):
                 db.rollback()
                 raise HTTPException(status_code=409, detail="اطلاعات یکی از تراکنش‌ها پس از حذف تغییر کرده است؛ هیچ تغییری اعمال نشد")
 
@@ -2722,8 +2721,6 @@ def search_admin_teachers(query: str | None = None, db: Session = Depends(get_db
         for t in teachers
     ]
 
-
-import random
 
 # Pydantic models for credentials
 class TeacherCredentialsResponse(BaseModel):

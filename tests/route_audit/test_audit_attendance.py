@@ -2,8 +2,6 @@
 from __future__ import annotations
 
 from .clock import FIXED_NOW
-from .oracle import build_oracle
-
 
 ATTENDANCE_ROUTES = [
     ("GET", "/admin/live_sessions"),

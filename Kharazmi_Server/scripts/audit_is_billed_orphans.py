@@ -19,9 +19,9 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from models import (
-    SessionLocal,
     Attendance,
     Course,
+    SessionLocal,
     SessionLog,
     Settlement,
     Student,

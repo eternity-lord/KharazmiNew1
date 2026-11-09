@@ -1,12 +1,12 @@
 import unittest
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from fastapi import HTTPException
 
 import models
-from models import Branch, Resource, ResourceBooking, Student, Teacher, Course, Room, Transaction, Enrollment
-from routers.branches import create_branch, update_branch, list_branches, get_branch_stats
-from routers.calendar import check_scheduling_conflicts, ConflictCheckRequest
+from models import Branch, Course, Enrollment, Resource, ResourceBooking, Room, Student, Teacher, Transaction
+from routers.branches import get_branch_stats
+from routers.calendar import ConflictCheckRequest, check_scheduling_conflicts
 
 
 class TestKharazmiMultiBranch(unittest.TestCase):

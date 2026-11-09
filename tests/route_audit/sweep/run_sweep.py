@@ -15,7 +15,15 @@ from fastapi.testclient import TestClient
 
 from ..clock import freeze_loaded_server_modules
 from ..seed import restore_role_sessions, seed_database
-from .common import block_external_network_calls, inventory, operation, prepare_valid_route_fixture, request_parts, role_for, shape
+from .common import (
+    block_external_network_calls,
+    inventory,
+    operation,
+    prepare_valid_route_fixture,
+    request_parts,
+    role_for,
+    shape,
+)
 
 ROOT = Path(__file__).resolve().parents[3]
 OUT = Path(__file__).resolve().parent

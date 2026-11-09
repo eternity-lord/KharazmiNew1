@@ -10,8 +10,8 @@ from pathlib import Path
 from fastapi.testclient import TestClient
 
 from ..clock import freeze_loaded_server_modules
-from .common import block_external_network_calls
 from ..seed import restore_role_sessions
+from .common import block_external_network_calls
 from .large_seed import seed_large_list_database
 
 ROOT = Path(__file__).resolve().parents[3]

@@ -1,15 +1,15 @@
-import sys
-import os
 import inspect
+import os
+import sys
 
 # REFAC(P1): این اسکریپت از ریشهٔ Kharazmi_Server/ به scripts/ منتقل شد؛
 # پس مسیر bootstrap یک سطح بالاتر است (همان قرارداد بقیهٔ اسکریپت‌های همین پوشه).
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from fastapi import Depends
 from fastapi.params import Depends as DependsClass
+
+from dependencies import check_admin_access, check_user_login
 from main import app
-from dependencies import check_user_login, check_admin_access, require_permission
 
 # We will scan routers: homework, messages, exams
 target_prefixes = ["/homework", "/messages", "/exams", "/students/{student_id}/report_card"]

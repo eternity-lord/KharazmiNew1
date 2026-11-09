@@ -6,9 +6,8 @@ calculation would turn the test into a tautology.
 """
 from __future__ import annotations
 
-from collections import defaultdict
 from dataclasses import dataclass, field
-from decimal import Decimal, ROUND_HALF_UP
+from decimal import ROUND_HALF_UP, Decimal
 from typing import Any
 
 

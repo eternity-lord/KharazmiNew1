@@ -21,7 +21,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from models import SessionLocal, Student, Enrollment, Transaction
+from models import Enrollment, SessionLocal, Student, Transaction
 
 MONEY_IN_TYPES = ("deposit", "enrollment_payment", "tuition")
 

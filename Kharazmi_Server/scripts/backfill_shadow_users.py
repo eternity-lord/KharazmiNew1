@@ -20,8 +20,8 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from models import SessionLocal, Student
 from dependencies import ensure_student_shadow_users
+from models import SessionLocal, Student
 
 
 def main() -> int:

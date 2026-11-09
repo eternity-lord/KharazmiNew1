@@ -1,12 +1,25 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
-from typing import Annotated, List, Optional
-from pydantic import BaseModel, StringConstraints
 import datetime
+from typing import Annotated
 
-import models
-from models import AutomationRule, AutomationLog, Student, Teacher, Course, Enrollment, Attendance, Installment, Homework, Grade, Lead, Notification, SmsLog, SessionLog
-from dependencies import get_db, check_admin_access, check_user_login, ensure_student_shadow_users, NotificationService
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel, StringConstraints
+from sqlalchemy.orm import Session
+
+from dependencies import NotificationService, check_admin_access, ensure_student_shadow_users, get_db
+from models import (
+    Attendance,
+    AutomationLog,
+    AutomationRule,
+    Enrollment,
+    Grade,
+    Homework,
+    Installment,
+    Lead,
+    Notification,
+    SessionLog,
+    SmsLog,
+    Student,
+)
 
 router = APIRouter()
 

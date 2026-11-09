@@ -3,8 +3,7 @@
 import datetime
 import re
 from collections import defaultdict
-from typing import Dict, List, Optional, Set, Tuple
-from collections.abc import Iterable, Sequence
+from collections.abc import Iterable
 
 from sqlalchemy.orm import Session
 
@@ -21,7 +20,6 @@ from models import (
     User,
 )
 from today_summary import parse_project_date
-
 
 Identity = tuple[str, int]
 

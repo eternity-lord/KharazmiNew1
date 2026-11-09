@@ -1,17 +1,17 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Header
-from sqlalchemy.orm import Session
-from sqlalchemy import func, or_
-from typing import List, Optional, Dict, Any
-from pydantic import BaseModel
 import abc
-import datetime
+from typing import Any
+
+from fastapi import APIRouter, Depends, Header, HTTPException
+from pydantic import BaseModel
+from sqlalchemy import func
+from sqlalchemy.orm import Session
 
 import models
-from models import Student, Teacher, Course, Enrollment, Attendance, SessionLog, Grade, Transaction, Installment, Lead, UserSession, Notification
-from dependencies import get_db, check_user_login, get_session_student, get_session_parent
+from dependencies import check_user_login, get_db, get_session_parent, get_session_student
 
 # FIX: Bug 16 - share the tuition-minus-payment debt calculation across financial views.
 from financial_calculations import calculate_student_debt
+from models import Attendance, Course, Grade, Student, Transaction
 
 router = APIRouter()
 

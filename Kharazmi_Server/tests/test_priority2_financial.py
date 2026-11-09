@@ -255,7 +255,9 @@ def test_financial_reads_share_active_transaction_filters(ledger):
     assert chart["shares_chart"] == {"teacher": 40, "institute": 60}
     stats = analytics.get_analytics_dashboard(authorization=auth, db=ledger.db, _="admin")
     assert stats["total_turnover"] == 100
-    from today_summary import gregorian_to_jalali  # FIX (audit-v2/test-triage): گزارش شمسی‌کانونیکال؛ پارام میلادی بازه‌ی ناممکن می‌ساخت (…/09/31).
+    from today_summary import (
+        gregorian_to_jalali,  # FIX (audit-v2/test-triage): گزارش شمسی‌کانونیکال؛ پارام میلادی بازه‌ی ناممکن می‌ساخت (…/09/31).
+    )
     jy, jm, _ = gregorian_to_jalali(datetime.date.today())
     summary = reports.get_financial_summary(user_type="institute", year=jy, month=jm, authorization=auth, db=ledger.db, sub_role="admin")
     assert summary["monthly"]["collected"] == 100

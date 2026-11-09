@@ -1,28 +1,51 @@
-from pydantic import BaseModel
-from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile, Header, Request, Query
-from sqlalchemy.orm import Session, joinedload
-from typing import List, Optional, Union
-from sqlalchemy import desc, or_, text, func
-import io
-import uuid
-import os
 import datetime
-import secrets
+import io
 import json
+import os
+import secrets
+import uuid
+
+from fastapi import APIRouter, Depends, File, Header, HTTPException, Query, Request, UploadFile
+from fastapi.responses import StreamingResponse
+from openpyxl import Workbook
+from openpyxl.styles import Alignment, Font, PatternFill
+from pydantic import BaseModel
+from sqlalchemy import desc, or_
+from sqlalchemy.orm import Session
 
 import models
+from dependencies import (
+    check_admin_access,
+    check_admin_or_secretary_access,
+    check_user_login,
+    get_db,
+    hash_password,
+    limiter,
+    normalize_mobile,
+    validate_image_upload,
+)
+from financial_calculations import calculate_enrollment_debt_breakdown
 from models import (
-    Attendance, Course, Enrollment, Grade, InstituteShare, SessionLog, SmsLog, Student, Teacher, Transaction, User, UserSession, Settlement
+    Attendance,
+    Course,
+    Enrollment,
+    SessionLog,
+    Settlement,
+    Student,
+    Teacher,
+    Transaction,
+    User,
+    UserSession,
 )
 from schemas import (
-    HistoryRequest, LoginRequest, TeacherInfo, FullTeacherProfile, StudentCreate, TeacherCreate, CourseCreate, EnrollmentCreate, GradeCreate, GradeItem, AttendanceLogRequest, AttendanceItem, AttendanceSubmitData, SmsSendRequest, ChangePasswordRequest, StudentProfileInfo, FullStudentProfile, TeacherProfileInfo, FullTeacherProfile, ClassReportInfo, ClassStudentData, ClassSessionHistory, FullClassReport, ShareConfigModel, StudentUpdate, TeacherUpdate, PersonListItem, TransactionUpdate, StudentAttendanceHistoryRequest, AdvancedSearchItem, FinanceSubmitData, PrintReceiptRequest, TransactionTestData, SettleRequest, TeacherListItem
+    FullTeacherProfile,
+    SettleRequest,
+    TeacherCreate,
+    TeacherListItem,
+    TeacherProfileInfo,
+    TeacherUpdate,
 )
-from storage import storage_dir, resolve_existing
-from dependencies import get_db, check_admin_access, check_admin_or_secretary_access, check_user_login, get_enrollment_tuition_and_discount, SESSION_EXPIRY_DAYS, hash_password, verify_password, limiter, normalize_mobile, validate_image_upload
-from financial_calculations import calculate_enrollment_debt, calculate_enrollment_debt_breakdown
-from openpyxl import Workbook
-from openpyxl.styles import Font, Alignment, PatternFill
-from fastapi.responses import StreamingResponse
+from storage import resolve_existing, storage_dir
 
 router = APIRouter()
 
@@ -384,10 +407,6 @@ def get_teacher_incomplete_classes(
 # ==========================================
 # 11. API تغییر رمز عبور
 # ==========================================
-class ChangePasswordRequest(BaseModel):
-    mobile: str
-    old_password: str
-    new_password: str
 
 
 @router.get("/teachers/{id}/full_profile")
@@ -613,7 +632,6 @@ def update_teacher(teacher_id: int, data: TeacherUpdate, db: Session = Depends(g
 # ==========================================
 # Profile Image Upload Endpoints
 # ==========================================
-import uuid
 
 
 @router.post("/teachers/{id}/upload_photo")
@@ -1014,8 +1032,8 @@ def settle_teacher_sessions(
             pass
 
     # FIX H8-P3: پایه‌ی مالی تسویه — مبلغ منفی (خروجی صندوق)، تایپ جدید که در گزارش‌های درآمد شمرده نمی‌شود.
-    from today_summary import jalali_date_string  # lazy، مثل routers/analytics.py
     from dependencies import get_next_sequence_value  # lazy، مثل finance.py
+    from today_summary import jalali_date_string  # lazy، مثل routers/analytics.py
     payout = Transaction(
         course_id=None,
         amount=-total_amount,
@@ -1142,8 +1160,8 @@ def _write_settlement_reversal(db: Session, settlement: Settlement, reason: str,
         payout = db.query(Transaction).filter(
             Transaction.settlement_id == settlement.id, Transaction.type == "settlement_payout"
         ).first()
-    from today_summary import jalali_date_string
     from dependencies import get_next_sequence_value
+    from today_summary import jalali_date_string
     reversal = Transaction(
         course_id=None,
         amount=abs(int((payout.amount if payout else -settlement.total_amount) or 0)),
@@ -1213,8 +1231,8 @@ def edit_teacher_settlement(
     actor_id = _settlement_actor_id(db, authorization)
     session_ids, reversal = _write_settlement_reversal(db, settlement, req.reason, actor_id)
     new_amount = int(req.total_amount if req.total_amount is not None else settlement.total_amount)
-    from today_summary import jalali_date_string
     from dependencies import get_next_sequence_value
+    from today_summary import jalali_date_string
     payout = Transaction(
         course_id=None, amount=-new_amount, type="settlement_payout", target_wallet="teacher",
         date=jalali_date_string(datetime.date.today()), settlement_id=None,

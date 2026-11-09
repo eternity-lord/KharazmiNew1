@@ -12,20 +12,19 @@ Optimizations:
 
 import datetime
 import logging
-from typing import List, Optional
 
 from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session, joinedload, selectinload
-from sqlalchemy import desc, func
+from sqlalchemy import desc
+from sqlalchemy.orm import Session, joinedload
 
-import models
-from models import Course, SessionLog, Attendance, Transaction, ActivityLog, Student
-from dependencies import get_db, check_admin_access
+from dependencies import check_admin_access, get_db
+from models import ActivityLog, Attendance, Course, SessionLog, Transaction
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
 from pydantic import BaseModel
+
 
 class AuditAlert(BaseModel):
     type: str  # e.g., "suspicious_attendance", "rapid_deletion", "perfect_attendance"
@@ -288,7 +287,6 @@ def get_suspicious_patterns(
                 # Use joinedload not needed, just bulk fetch
                 attendances = db.query(Attendance).filter(Attendance.session_id.in_(relevant_sids)).all()
                 # Group by session_id and count
-                from collections import defaultdict as _dd
                 absent_by_course = defaultdict(int)
                 total_by_course = defaultdict(int)
                 # Build session_id -> course_id map
@@ -432,7 +430,6 @@ def count_suspicious_patterns(db: Session) -> int:
                 relevant_sids.extend([s.id for s in last10])
             if relevant_sids:
                 attendances = db.query(Attendance).filter(Attendance.session_id.in_(relevant_sids)).all()
-                from collections import defaultdict as _dd
                 absent_by_course = defaultdict(int)
                 total_by_course = defaultdict(int)
                 sid_to_cid = {}

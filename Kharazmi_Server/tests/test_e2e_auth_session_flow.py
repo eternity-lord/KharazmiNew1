@@ -23,7 +23,6 @@
 #
 # تست‌ها روی SQLite درون‌حافظه‌ای اجرا می‌شوند؛ Firebase/SMS/network واقعی و Android Gradle/device build در این suite اجرا نمی‌شوند.
 # source-contract بخش Android فقط wiring و API shape را نگه می‌دارد؛ token generation/delivery نیازمند device QA است.
-import datetime
 import os
 import re
 import unittest

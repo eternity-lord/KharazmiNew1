@@ -15,7 +15,6 @@
 import csv
 import datetime
 import io as _io
-import os
 import unittest
 
 from fastapi.testclient import TestClient

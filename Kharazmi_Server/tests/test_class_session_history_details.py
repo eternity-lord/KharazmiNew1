@@ -20,8 +20,8 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
 import models
-from schemas import AttendanceItem, AttendanceSubmitData
 from routers import attendance, classes
+from schemas import AttendanceItem, AttendanceSubmitData
 
 TOKEN = "class-history-token"
 # ۲۰۲۶/۰۹/۲۹ (میلادی) = سه‌شنبه؛ مبدل پروژه آن را به شمسی کانونیکال تبدیل می‌کند.

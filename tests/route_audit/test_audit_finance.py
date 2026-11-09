@@ -5,10 +5,7 @@ passing audit: the seed values and the independent oracle must agree.
 """
 from __future__ import annotations
 
-import pytest
-
 from .oracle import build_oracle
-
 
 FINANCE_ROUTES = [
     ("GET", "/finance/search_advanced"),

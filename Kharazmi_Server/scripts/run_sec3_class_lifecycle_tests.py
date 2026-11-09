@@ -1,7 +1,6 @@
-import httpx
-import sys
-import os
 import json
+
+import httpx
 
 URL_BASE = "http://localhost:8000"
 

@@ -1,4 +1,3 @@
-from pathlib import Path
 import re
 
 from scripts.generate_route_audit_docs import END, REPORT_DIR, ROOT, START, cell, extract_calls

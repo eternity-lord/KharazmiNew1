@@ -1,23 +1,44 @@
+import datetime
 import json
 import time as time_module
 
+from fastapi import APIRouter, Depends, Header, HTTPException
 from pydantic import BaseModel
-from fastapi import APIRouter, Depends, HTTPException, status, Header
-from sqlalchemy.orm import Session
-from typing import List, Optional, Union
-from sqlalchemy import desc, or_, text
+from sqlalchemy import desc
 from sqlalchemy.exc import IntegrityError
-import datetime
+from sqlalchemy.orm import Session
 
-import models
+from dependencies import (
+    check_admin_access,
+    check_user_login,
+    display_name,
+    get_db,
+    get_session_parent,
+    get_session_student,
+    validate_session_item_statuses,
+    validate_session_items_membership,
+)
+from financial_calculations import compute_session_shares
 from models import (
-    Attendance, Course, Enrollment, Grade, InstituteShare, SessionLog, SmsLog, Student, Teacher, Transaction, User, UserSession, LiveSession, InstituteSettings
+    Attendance,
+    Course,
+    Enrollment,
+    InstituteSettings,
+    LiveSession,
+    SessionLog,
+    Student,
+    Teacher,
+    Transaction,
+    UserSession,
 )
 from schemas import (
-    HistoryRequest, LoginRequest, TeacherInfo, FullTeacherProfile, StudentCreate, TeacherCreate, CourseCreate, EnrollmentCreate, GradeCreate, GradeItem, AttendanceLogRequest, AttendanceItem, AttendanceSubmitData, SmsSendRequest, ChangePasswordRequest, StudentProfileInfo, FullStudentProfile, TeacherProfileInfo, FullTeacherProfile, ClassReportInfo, ClassStudentData, ClassSessionHistory, FullClassReport, ShareConfigModel, StudentUpdate, TeacherUpdate, PersonListItem, TransactionUpdate, StudentAttendanceHistoryRequest, AdvancedSearchItem, FinanceSubmitData, PrintReceiptRequest, TransactionTestData
+    AttendanceItem,
+    AttendanceLogRequest,
+    AttendanceSubmitData,
+    HistoryRequest,
+    StudentAttendanceHistoryRequest,
 )
-from dependencies import get_db, check_admin_access, check_user_login, get_enrollment_tuition_and_discount, SESSION_EXPIRY_DAYS, get_session_student, get_session_parent, validate_session_items_membership, validate_session_item_statuses, display_name, safe_person_name
-from financial_calculations import compute_session_shares
+
 # FIX (F-S4): قرارداد واحد وضعیت حضور — هم در schema و هم در مسیرهای داخلی (کلاس زنده).
 from validation import validate_attendance_status
 
@@ -123,7 +144,7 @@ def _live_canonical_date(course_id: int, started_at_ts) -> str:
     """Return the canonical date used by manual session registration."""
     start_ts = float(started_at_ts or time_module.time())
     date_str = _greg_date_from_ts(start_ts)
-    from today_summary import parse_project_date, jalali_date_string
+    from today_summary import jalali_date_string, parse_project_date
     day = parse_project_date(date_str)
     return jalali_date_string(day) if day is not None else date_str
 
@@ -598,7 +619,7 @@ def get_class_attendance(req: AttendanceLogRequest, db: Session = Depends(get_db
             raise HTTPException(status_code=403, detail="شما مجاز به مشاهده اطلاعات این کلاس نیستید")
     # FIX (F-C4): تاریخ کانونیکال شمسی با مبدل مرکزی H3 — قبلاً رشته‌ی خام کلاینت مقایسه
     # می‌شد و ورودی میلادی ساکت خالی برمی‌گرداند. نامعتبر → [] (لحن read-path، مثل «جلسه‌ای نیست»).
-    from today_summary import parse_project_date, jalali_date_string  # lazy، مثل submit_session
+    from today_summary import jalali_date_string, parse_project_date  # lazy، مثل submit_session
     _qday = parse_project_date(req.date)
     if _qday is None:
         return []
@@ -656,7 +677,7 @@ def submit_session_and_calculate(
     # FIX (audit-v2/#13): تاریخ کانونیکال شمسی — ولیدیت + نرمالایز با مبدل مرکزی H3 (قبلاً رشته‌ی خام
     # کلاینت ذخیره/مقایسه می‌شد: «2026/09/12» در برابر «1405/06/21» روز متفاوت حساب می‌شد → دابل‌سشن
     # و دابل‌شارژ cross-client). نامعتبر → 422. بعد از 403ها (عدم لو وضعیت به غیرمجاز) و قبل از چک تکراری.
-    from today_summary import parse_project_date, jalali_date_string  # lazy، مثل finance
+    from today_summary import jalali_date_string, parse_project_date  # lazy، مثل finance
     _sday = parse_project_date(data.date)
     if _sday is None:
         raise HTTPException(status_code=422, detail="فرمت تاریخ جلسه معتبر نیست (yyyy/MM/dd شمسی یا میلادی)")
@@ -1089,7 +1110,7 @@ def edit_past_session(
     # FIX (audit-v2/#13): تاریخ کانونیکال شمسی — ولیدیت + نرمالایز با مبدل مرکزی H3 (قبلاً رشته‌ی خام
     # کلاینت ذخیره/مقایسه می‌شد: «2026/09/12» در برابر «1405/06/21» روز متفاوت حساب می‌شد → دابل‌سشن
     # و دابل‌شارژ cross-client). نامعتبر → 422. بعد از 403ها (عدم لو وضعیت به غیرمجاز) و قبل از چک تکراری.
-    from today_summary import parse_project_date, jalali_date_string  # lazy، مثل finance
+    from today_summary import jalali_date_string, parse_project_date  # lazy، مثل finance
     _sday = parse_project_date(data.date)
     if _sday is None:
         raise HTTPException(status_code=422, detail="فرمت تاریخ جلسه معتبر نیست (yyyy/MM/dd شمسی یا میلادی)")

@@ -16,8 +16,18 @@ from sqlalchemy.pool import StaticPool
 from dependencies import get_db
 from main import app
 from models import (
-    Attendance, Base, Branch, ClassDeletionRequest, Course, Enrollment, SessionLog, Student,
-    Teacher, Transaction, User, UserSession,
+    Attendance,
+    Base,
+    Branch,
+    ClassDeletionRequest,
+    Course,
+    Enrollment,
+    SessionLog,
+    Student,
+    Teacher,
+    Transaction,
+    User,
+    UserSession,
 )
 
 DELETED_A = datetime.datetime(2026, 9, 28, 7, 29)   # ۶ مهر ۱۴۰۵، دوشنبه

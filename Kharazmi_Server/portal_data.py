@@ -20,10 +20,9 @@
 #   upcoming_sessions[i] = {course_title: str, date: str, time: str}
 # نکتهٔ مهم مدل کلاینت: `max_score` در اپ **Int** است (Gson عدد اعشاری را رد می‌کند) ⇒ اینجا
 # همیشه عدد صحیح برگردانده می‌شود.
-import datetime
 import math
 
-from models import Course, Exam, ExamAttempt, Homework, HomeworkSubmission
+from models import Course, Exam, Homework, HomeworkSubmission
 
 # سقف ردیف‌ها در هر لیست — مثل سقف اعلان‌های پورتال (FIX(C1)) تا پاسخ برای خانوادهٔ
 # پرونده‌سنگین سبک بماند.

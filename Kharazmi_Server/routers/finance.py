@@ -1,32 +1,59 @@
-from pydantic import BaseModel, Field, field_validator  # FIX: Bug 22 - constrain online payment amounts at request validation.
-from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile, Header, Request
-from sqlalchemy.orm import Session, joinedload
-from sqlalchemy.exc import IntegrityError  # FIX (audit-v2/idempotency): شکار مسابقه‌ی retry هم‌زمان روی UNIQUE کلید
-from typing import List, Optional, Union
-from sqlalchemy import desc, or_, text, func, case
-import io
-import uuid
-import os
 import datetime
 import html
+import os
 import time  # O-05: چاپ حواله از time.time() برای ساخت print_job_id استفاده می‌کند
 
+from fastapi import APIRouter, Depends, Header, HTTPException, Request
+from pydantic import (  # FIX: Bug 22 - constrain online payment amounts at request validation.
+    BaseModel,
+    Field,
+    field_validator,
+)
+from sqlalchemy import case, func, or_
+from sqlalchemy.exc import IntegrityError  # FIX (audit-v2/idempotency): شکار مسابقه‌ی retry هم‌زمان روی UNIQUE کلید
+from sqlalchemy.orm import Session
+
 import models
-from models import (
-    Attendance, Course, Enrollment, Grade, InstituteShare, SessionLog, SmsLog, Student, Teacher, Transaction, User, UserSession, Installment, TransactionInstallmentAllocation
-)
-from schemas import (
-    HistoryRequest, LoginRequest, TeacherInfo, FullTeacherProfile, StudentCreate, TeacherCreate, CourseCreate, EnrollmentCreate, GradeCreate, GradeItem, AttendanceLogRequest, AttendanceItem, AttendanceSubmitData, SmsSendRequest, ChangePasswordRequest, StudentProfileInfo, FullStudentProfile, TeacherProfileInfo, FullTeacherProfile, ClassReportInfo, ClassStudentData, ClassSessionHistory, FullClassReport, ShareConfigModel, StudentUpdate, TeacherUpdate, PersonListItem, TransactionUpdate, StudentAttendanceHistoryRequest, AdvancedSearchItem, FinanceSubmitData, PrintReceiptRequest, TransactionTestData
-)
-from dependencies import get_db, check_admin_access, check_admin_or_secretary_access, check_user_login, check_student_access, get_enrollment_tuition_and_discount, SESSION_EXPIRY_DAYS, get_session_student, get_session_parent, display_name, safe_person_name  # FIX (L14/Y4): check_student_access برای 637
 
 # FIX: Bug 16 - share the tuition-minus-payment debt calculation across financial views.
-from dependencies import limiter  # FIX F-B1: ریت‌لیمیت کال‌بک پرداخت (endpoint پول بدون احراز).
-from financial_calculations import calculate_student_debt, calculate_enrollment_debt_breakdown, session_fields_for_client
+from dependencies import (  # FIX (L14/Y4): check_student_access برای 637
+    check_admin_access,
+    check_admin_or_secretary_access,
+    check_student_access,
+    check_user_login,
+    display_name,
+    get_db,
+    get_enrollment_tuition_and_discount,
+    get_session_parent,
+    get_session_student,
+    limiter,  # FIX F-B1: ریت‌لیمیت کال‌بک پرداخت (endpoint پول بدون احراز).
+)
+from financial_calculations import (
+    calculate_enrollment_debt_breakdown,
+    calculate_student_debt,
+    session_fields_for_client,
+)
+
+# FIX: Bug 11 - the existing refund audit write needs its model imported at runtime.
+from models import (
+    ActivityLog,
+    Attendance,
+    Course,
+    Enrollment,
+    Installment,
+    SessionLog,
+    SmsLog,
+    Student,
+    Teacher,
+    Transaction,
+    TransactionInstallmentAllocation,
+    User,
+    UserSession,
+)
+from schemas import AdvancedSearchItem, FinanceSubmitData, PrintReceiptRequest
+
 # FIX (F-T2): اعتبارسنجی مرکزی تاریخ/مبلغ قسط — یک منبع حقیقت برای هر دو مسیر ساخت قسط.
 from validation import validate_installment_amount, validate_jalali_due_date
-# FIX: Bug 11 - the existing refund audit write needs its model imported at runtime.
-from models import ActivityLog
 
 router = APIRouter()
 
@@ -551,9 +578,6 @@ def submit_payment(
 # ==========================================
 # 🖨️ چاپ و ذخیره PDF حواله
 # ==========================================
-class PrintReceiptRequest(BaseModel):
-    transaction_id: int
-    print_type: str  # "print" or "pdf"
 
 
 def _receipt_context(db: Session, trans) -> dict:
@@ -748,22 +772,15 @@ def get_student_class_status(student_id: int, course_id: int | None = None, cour
 # ==========================================
 # 🔥 تست منطق حذف و ویرایش تراکنش‌ها
 # ==========================================
-class TransactionTestData(BaseModel):
-    student_id: int
-    amount: int
-    target_wallet: str
-    description: str
-    payment_method: str
-    date: str
 
 
 # =========================================================================
 # 💰 بخش جدید: اضافه کردن قابلیت‌های مالی پیشرفته و رفع نواقص (Finance Upgrades)
 # =========================================================================
 
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse
+
 from payment_gateways import get_payment_gateway
-import models
 
 # --- Feature flag درگاه پرداخت آنلاین ---
 # پیش‌فرض false: تا اتصال درگاه واقعی بانکی، کال‌بک و صفحه‌ی شبیه‌ساز 404 می‌دهند.
@@ -2178,7 +2195,9 @@ def get_student_financial_dashboard(
             course = db.query(Course).filter(Course.id == enroll.course_id).first() if enroll else None
             c_title = course.title if course else "کلاس حذف شده"
 
-            from today_summary import parse_project_date  # FIX H3-B3: same B1 pattern — due_date is Jalali (lazy import)
+            from today_summary import (
+                parse_project_date,  # FIX H3-B3: same B1 pattern — due_date is Jalali (lazy import)
+            )
             today_date = datetime.datetime.now().date()
             _due = parse_project_date(i.due_date)
             status_text = "پرداخت شده" if i.is_paid else ("معوقه" if (_due is not None and _due < today_date) else "در انتظار")
@@ -2655,7 +2674,7 @@ def remind_debtors(
     (بدهکار ممکن است اصلاً قسط نداشته باشد). ارسال واقعی مثل بقیهٔ پروژه mock است
     (بدون `FCM_SERVER_KEY`/درگاه پیامک فعال) و فقط رکورد/لاگ می‌سازد. فقط ادمین.
     """
-    from routers.dunning import _jalali_now_str, _get_admin_username  # lazy: استفادهٔ مجدد، نه بازنویسی
+    from routers.dunning import _get_admin_username, _jalali_now_str  # lazy: استفادهٔ مجدد، نه بازنویسی
 
     ids = list(dict.fromkeys(int(sid) for sid in (req.student_ids or [])))
     if not ids:

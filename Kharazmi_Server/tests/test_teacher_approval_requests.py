@@ -19,10 +19,10 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
-from models import Base, Branch, Course, Teacher, User, UserSession
-from main import app
 from dependencies import get_db, limiter
-from routers.admin import approve_teacher, get_pending_teachers, reject_teacher
+from main import app
+from models import Base, Branch, Teacher, User, UserSession
+from routers.admin import approve_teacher, get_pending_teachers
 
 
 def valid_national_code(prefix8: str) -> str:

@@ -8,7 +8,6 @@ schedule rules directly unit-testable.
 import datetime
 import re
 import time
-from typing import Dict, List, Optional, Tuple
 
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
@@ -24,9 +23,7 @@ from models import (
     Settlement,
     Student,
     Teacher,
-    Transaction,
 )
-
 
 PERSIAN_DAY_NAMES = {
     0: "دوشنبه",

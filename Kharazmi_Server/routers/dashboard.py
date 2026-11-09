@@ -7,22 +7,22 @@ Performance: SQL-level filtering via Jalali string comparison, COUNT/SUM only, 6
 
 import datetime
 import time
-from typing import Optional
 
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
-from models import DeviceToken, Installment, Student
-from dependencies import get_db, check_admin_access
-from today_summary import jalali_date_string
+from dependencies import check_admin_access, get_db
+
 # FIX O-08: تعریف واحد «وصولی نقدی» از لایهٔ محاسبات مالی — همان تابعی که گزارش‌ها می‌خوانند.
 # FIX (گروه۲/آیتم۴): تعریف یگانهٔ «وصولی نقدی آموزشگاه» — همان تابعی که
 # `/admin/today_summary` («پرداخت امروز») استفاده می‌کند، تا دو عددِ یک روز در دو صفحهٔ اپ
 # یکی باشد. `calculate_institute_collected_revenue` (O-07/O-08) برای گزارش‌های ماه/سال و
 # نمودار درآمد دست‌نخورده باقی می‌ماند.
 from financial_calculations import calculate_institute_cash_collected
+from models import DeviceToken, Installment, Student
+from today_summary import jalali_date_string
 
 router = APIRouter()
 

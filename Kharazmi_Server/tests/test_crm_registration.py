@@ -1,11 +1,13 @@
 import unittest
-import models
-from models import SessionLocal, Student, Enrollment, Course, Transaction, Lead
+
 from sqlalchemy import create_engine, or_
 from sqlalchemy.orm import sessionmaker
+
+import models
 from dependencies import get_next_sequence_value
-from routers.crm import OnlineRegisterRequest, public_online_registration
-from fastapi import HTTPException
+from models import Course, Enrollment, Lead, Student, Transaction
+from routers.crm import OnlineRegisterRequest
+
 
 class TestKharazmiCRMRegistration(unittest.TestCase):
 

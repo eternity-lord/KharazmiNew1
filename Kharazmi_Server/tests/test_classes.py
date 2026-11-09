@@ -6,18 +6,18 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
-from models import Base, Branch, Course, Enrollment, Student, Teacher, User, UserSession, SequenceCounter
+from models import Base, Branch, Course, Enrollment, SequenceCounter, Student, Teacher, User, UserSession
 from routers.classes import (
+    DeletionRequestCreate,
+    add_enrollment,
+    approve_class_deletion,
     create_class,
+    delete_class_endpoint,
     get_all_classes,
     get_class_details,
-    suspend_class,
-    add_enrollment,
-    delete_class_endpoint,
-    request_class_deletion,
-    approve_class_deletion,
     list_class_deletion_requests,
-    DeletionRequestCreate,
+    request_class_deletion,
+    suspend_class,
 )
 from schemas import CourseCreate, EnrollmentCreate
 

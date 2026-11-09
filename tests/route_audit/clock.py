@@ -75,7 +75,6 @@ def freeze_loaded_server_modules():
     # same module-global clock proxy as the route handlers.
     if str(SERVER) not in sys.path:
         sys.path.insert(0, str(SERVER))
-    import today_summary  # type: ignore
 
     changes: list[tuple[object, str, object]] = []
     server_root = str(SERVER.resolve())

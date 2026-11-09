@@ -1,7 +1,6 @@
 # گروه ۶ — قراردادهای فیچرهای جدید ۲۴ تا ۲۹
 # این تست‌ها قراردادهای گروه ۶ را در backend و UI به‌صورت سریع regression-check می‌کنند.
 import os
-import re
 import unittest
 
 SERVER_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

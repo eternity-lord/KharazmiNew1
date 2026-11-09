@@ -11,7 +11,6 @@ from typing import Any
 
 from ..seed import seed_database
 
-
 BOUNDARY_TRANSACTION_ID = 99
 BOUNDARY_EXAM_ID = 99
 BOUNDARY_HOMEWORK_ID = 99

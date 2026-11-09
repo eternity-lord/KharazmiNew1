@@ -429,8 +429,6 @@ def test_message_send_logs_local_notification_and_duplicate_retry_exactly(
 def test_message_send_empty_body_missing_body_and_nonparticipant_are_no_write(
     client, auth_headers, db,
 ):
-    import models
-
     before = _database_snapshot(db)
     for payload, status_code, detail in (
         ({"body": "   "}, 400, "متن پیام نمی‌تواند خالی باشد"),

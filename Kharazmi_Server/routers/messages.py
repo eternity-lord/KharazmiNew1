@@ -1,17 +1,22 @@
 import os
-import datetime
 import random
 import re
-from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile, Header
+
+from fastapi import APIRouter, Depends, Header, HTTPException, UploadFile
 from pydantic import BaseModel
+from sqlalchemy import and_, desc
 from sqlalchemy.orm import Session
-from sqlalchemy import and_, desc, or_
 
 import models
-from models import Conversation, ConversationParticipant, Message, Course, Student, Teacher, Enrollment, User
+from dependencies import (
+    NotificationService,
+    get_db,
+    require_permission,
+    resolve_notification_recipient,
+    resolve_participant_keys,
+)
+from models import Conversation, ConversationParticipant, Course, Enrollment, Message, Student, Teacher, User
 from storage import storage_dir
-from dependencies import get_db, check_user_login, require_permission, NotificationService, resolve_participant_keys, resolve_notification_recipient
 
 router = APIRouter()
 

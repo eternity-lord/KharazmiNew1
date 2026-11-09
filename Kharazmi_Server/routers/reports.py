@@ -1,38 +1,50 @@
-from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile, Header
-from fastapi.responses import HTMLResponse, StreamingResponse
-from sqlalchemy.orm import Session, joinedload
-from typing import List, Optional, Union
-from sqlalchemy import desc, or_, text, func
-import io
-import html
-import uuid
-import os
 import datetime
+import html
+import io
+
+from fastapi import APIRouter, Depends, Header, HTTPException
+from fastapi.responses import HTMLResponse, StreamingResponse
 from openpyxl import Workbook
-from openpyxl.styles import Font, Alignment, PatternFill
+from openpyxl.styles import Alignment, Font, PatternFill
+from sqlalchemy import desc, func
+from sqlalchemy.orm import Session
 
 import models
-from models import (
-    Attendance, Course, Enrollment, Grade, InstituteShare, SessionLog, SmsLog, Student, Teacher, Transaction, User, UserSession, InstituteSettings, Installment
+from dependencies import (
+    check_admin_access,
+    check_admin_or_secretary_access,
+    check_student_access,
+    check_user_login,
+    display_name,
+    get_db,
+    resolve_effective_sub_role,
 )
-from schemas import (
-    HistoryRequest, LoginRequest, TeacherInfo, FullTeacherProfile, StudentCreate, TeacherCreate, CourseCreate, EnrollmentCreate, GradeCreate, GradeItem, AttendanceLogRequest, AttendanceItem, AttendanceSubmitData, SmsSendRequest, ChangePasswordRequest, StudentProfileInfo, FullStudentProfile, TeacherProfileInfo, FullTeacherProfile, ClassReportInfo, ClassStudentData, ClassSessionHistory, FullClassReport, ShareConfigModel, StudentUpdate, TeacherUpdate, PersonListItem, TransactionUpdate, StudentAttendanceHistoryRequest, AdvancedSearchItem, FinanceSubmitData, PrintReceiptRequest, TransactionTestData
-)
-from dependencies import get_db, check_admin_access, check_admin_or_secretary_access, check_user_login, check_student_access, get_enrollment_tuition_and_discount, SESSION_EXPIRY_DAYS, resolve_effective_sub_role, display_name, safe_person_name
 
 # FIX: Bug 16 - share the tuition-minus-payment debt calculation across financial views.
-from financial_calculations import calculate_student_debt, calculate_enrollment_debt_breakdown, branch_scope_clause
+from financial_calculations import branch_scope_clause, calculate_enrollment_debt_breakdown, calculate_student_debt
+from models import (
+    Attendance,
+    Course,
+    Enrollment,
+    Installment,
+    InstituteSettings,
+    SessionLog,
+    Student,
+    Teacher,
+    Transaction,
+    User,
+    UserSession,
+)
 
 router = APIRouter()
 
 from financial_calculations import (
-    calculate_institute_session_revenue,
     calculate_institute_collected_revenue,
-    count_undated_payments,
-    collected_revenue_rows,
-    calculate_total_turnover,
-    calculate_teacher_session_revenue,
+    calculate_institute_session_revenue,
     calculate_teacher_collected_revenue,
+    calculate_teacher_session_revenue,
+    collected_revenue_rows,
+    count_undated_payments,
     report_period_diagnostics,
 )
 from today_summary import jalali_date_string  # FIX O-07: برچسب قلم‌های زمانی نمودار، شمسی
