@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/spacing_small"
+    app:cardCornerRadius="@dimen/spacing_normal"
+    app:cardElevation="4dp"
+    app:cardBackgroundColor="@color/gold_bg_elevated"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackground">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/spacing_normal"
+        android:layoutDirection="rtl">
+
+        <!-- Header with teacher info -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="@dimen/spacing_normal">
+
+            <ImageView
+                android:id="@+id/imgTeacherIcon"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@android:drawable/ic_menu_my_calendar"
+                app:tint="@color/gold_primary"
+                android:background="@drawable/border_bg"
+                android:padding="@dimen/spacing_small"
+                android:layout_marginEnd="@dimen/spacing_normal"/>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tvTeacherName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    tools:text="استاد احمدی"
+                    android:textColor="@color/text_primary"
+                    android:textStyle="bold"
+                    android:textSize="18sp"/>
+
+                <TextView
+                    android:id="@+id/tvTeacherMobile"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    tools:text="📱 09123456789"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="14sp"
+                    android:layout_marginTop="4dp"/>
+
+                <TextView
+                    android:id="@+id/tvTeacherStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    tools:text="فعال"
+                    android:textColor="@color/status_success"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="4dp"
+                    android:background="@drawable/border_bg"
+                    android:layout_marginTop="6dp"/>
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- National code info -->
+        <TextView
+            android:id="@+id/tvNationalCode"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="کد ملی: 1234567890"
+            android:textColor="@color/text_secondary"
+            android:textSize="14sp"
+            android:layout_marginBottom="@dimen/spacing_normal"
+            android:drawableStart="@android:drawable/ic_lock_idle_lock"
+            android:drawablePadding="4dp"
+            android:drawableTint="@color/text_secondary"/>
+
+        <!-- Quick actions -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginTop="@dimen/spacing_small">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnCallTeacher"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:minHeight="@dimen/min_touch_target"
+                android:text="تماس"
+                android:textSize="12sp"
+                app:icon="@android:drawable/ic_menu_call"
+                app:iconSize="16dp"
+                app:iconGravity="textStart"
+                app:iconPadding="4dp"
+                android:layout_marginEnd="4dp"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnViewProfile"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:minHeight="@dimen/min_touch_target"
+                android:text="پروفایل"
+                android:textSize="12sp"
+                app:icon="@android:drawable/ic_menu_info_details"
+                app:iconSize="16dp"
+                app:iconGravity="textStart"
+                app:iconPadding="4dp"
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnViewClasses"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:minHeight="@dimen/min_touch_target"
+                android:text="کلاس‌ها"
+                android:textSize="12sp"
+                app:icon="@android:drawable/ic_menu_agenda"
+                app:iconSize="16dp"
+                app:iconGravity="textStart"
+                app:iconPadding="4dp"
+                android:layout_marginStart="4dp"/>
+        </LinearLayout>
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

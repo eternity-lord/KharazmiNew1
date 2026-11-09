@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layoutDirection="rtl"
+    android:background="@color/ds_bg_base">
+
+    <!-- سرصفحه + فیلترها؛ با اسکرول لیست جمع می‌شوند تا جای نتیجه‌ها بیشتر شود -->
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/ds_bg_base"
+        app:elevation="0dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_scrollFlags="scroll|enterAlways">
+
+            <!-- Hero -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_archive_hero"
+                android:orientation="vertical"
+                android:paddingStart="@dimen/spacing_normal"
+                android:paddingEnd="@dimen/spacing_normal"
+                android:paddingTop="@dimen/spacing_small"
+                android:paddingBottom="@dimen/spacing_large">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnArchiveBack"
+                    style="@style/Widget.Kharazmi.DS.Button.Ghost"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/arch_back"
+                    android:textColor="@color/archive_hero_text_dim" />
+
+                <TextView
+                    android:id="@+id/tvArchiveTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_tiny"
+                    android:text="@string/arch_title"
+                    android:textColor="@color/archive_hero_text"
+                    android:textSize="24sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvArchiveSubtitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_tiny"
+                    android:text="@string/arch_loading"
+                    android:textColor="@color/archive_hero_gold"
+                    android:textSize="13sp" />
+            </LinearLayout>
+
+            <!-- فیلترها -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/Widget.Kharazmi.DS.Card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/spacing_normal"
+                android:layout_marginEnd="@dimen/spacing_normal"
+                android:layout_marginTop="@dimen/spacing_normal"
+                android:layout_marginBottom="@dimen/spacing_small">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/spacing_normal">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/arch_filter_title"
+                        android:textAppearance="@style/TextAppearance.Kharazmi.DS.SectionTitle" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_small"
+                        android:orientation="horizontal">
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            style="@style/Widget.Kharazmi.DS.Input"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:hint="@string/arch_hint_title">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/etArchiveTitle"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:imeOptions="actionSearch"
+                                android:inputType="text"
+                                android:maxLines="1"
+                                android:textColor="@color/ds_text_primary" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            style="@style/Widget.Kharazmi.DS.Input"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/spacing_small"
+                            android:layout_weight="1"
+                            android:hint="@string/arch_hint_code">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/etArchiveCode"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:imeOptions="actionSearch"
+                                android:inputType="number"
+                                android:maxLines="1"
+                                android:textColor="@color/ds_text_primary" />
+                        </com.google.android.material.textfield.TextInputLayout>
+                    </LinearLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.Kharazmi.DS.Input"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_small"
+                        android:hint="@string/arch_hint_teacher">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etArchiveTeacher"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:imeOptions="actionSearch"
+                            android:inputType="text"
+                            android:maxLines="1"
+                            android:textColor="@color/ds_text_primary" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_small"
+                        android:orientation="horizontal">
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnArchiveFrom"
+                            style="@style/Widget.Kharazmi.DS.Button.Secondary"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/arch_date_from"
+                            android:textSize="12sp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnArchiveTo"
+                            style="@style/Widget.Kharazmi.DS.Button.Secondary"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/spacing_small"
+                            android:layout_weight="1"
+                            android:text="@string/arch_date_to"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnArchiveClear"
+                        style="@style/Widget.Kharazmi.DS.Button.Ghost"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/arch_clear"
+                        android:visibility="gone" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+        </LinearLayout>
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvArchivedClasses"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingStart="@dimen/spacing_normal"
+            android:paddingEnd="@dimen/spacing_normal"
+            android:paddingBottom="@dimen/spacing_large" />
+
+        <ProgressBar
+            android:id="@+id/progressArchive"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|center_horizontal"
+            android:layout_marginTop="@dimen/spacing_large"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/tvArchiveEmpty"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:padding="@dimen/spacing_large"
+            android:text="@string/arch_empty"
+            android:textAppearance="@style/TextAppearance.Kharazmi.DS.Body"
+            android:textColor="@color/ds_text_secondary"
+            android:visibility="gone" />
+    </FrameLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

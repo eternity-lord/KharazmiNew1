@@ -1,0 +1,323 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/gold_bg_base"
+    android:layoutDirection="rtl">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/gold_primary"
+        app:elevation="@dimen/elevation_appbar"
+    >
+        <androidx.appcompat.widget.Toolbar
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="آمار نموداری"
+                android:textColor="?attr/colorOnPrimary"
+                android:textAppearance="@style/TextAppearance.Kharazmi.PageTitle"/>
+        </androidx.appcompat.widget.Toolbar>
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/spacing_normal">
+
+            <!-- فیلترهای بازه زمانی بالا چارت‌ها -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:layout_marginBottom="@dimen/spacing_normal">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnFilterWeek"
+                    style="@style/Widget.Kharazmi.Button.Gold.Outline"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:text="هفته اخیر"
+                    android:textSize="12sp"
+                    android:textColor="@color/gold_primary"
+                    app:strokeColor="@color/gold_primary"
+                    app:cornerRadius="24dp"
+                    android:paddingVertical="10dp"
+                    android:layout_marginEnd="4dp"/>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnFilterMonth"
+                    style="@style/Widget.Kharazmi.Button.Gold.Outline"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:text="ماه اخیر"
+                    android:textSize="12sp"
+                    android:textColor="@color/gold_primary"
+                    app:strokeColor="@color/gold_primary"
+                    app:cornerRadius="24dp"
+                    android:paddingVertical="10dp"
+                    android:layout_marginHorizontal="4dp"/>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnFilterQuarter"
+                    style="@style/Widget.Kharazmi.Button.Gold.Outline"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:text="۳ ماه اخیر"
+                    android:textSize="12sp"
+                    android:textColor="@color/gold_primary"
+                    app:strokeColor="@color/gold_primary"
+                    app:cornerRadius="24dp"
+                    android:paddingVertical="10dp"
+                    android:layout_marginStart="4dp"/>
+            </LinearLayout>
+
+            <!-- قیف ثبت‌نام CRM؛ فقط برای admin از کد قابل‌نمایش است -->
+            <!-- FIX: Use the declared Widget.Kharazmi.Card.Gold style; remove repeated suffixes. -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardEnrollmentFunnel"
+                style="@style/Widget.Kharazmi.Card.Gold"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_normal">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/spacing_normal">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="قیف ثبت‌نام CRM"
+                        android:textAppearance="@style/TextAppearance.Kharazmi.SectionTitle"
+                        android:textColor="@color/gold_primary" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="از ورود سرنخ تا ثبت‌نام واقعی دانش‌آموز"
+                        android:textAppearance="@style/TextAppearance.Kharazmi.Caption"
+                        android:textColor="@color/text_secondary" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_normal"
+                        android:gravity="center"
+                        android:orientation="horizontal">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:gravity="center"
+                            android:orientation="vertical">
+                            <TextView
+                                android:id="@+id/tvFunnelTotal"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:fontFeatureSettings="tnum"
+                                android:text="0"
+                                android:textAppearance="@style/TextAppearance.Kharazmi.PageTitle"
+                                android:textColor="@color/status_info" />
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="کل سرنخ‌ها"
+                                android:textAppearance="@style/TextAppearance.Kharazmi.Caption" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:gravity="center"
+                            android:orientation="vertical">
+                            <TextView
+                                android:id="@+id/tvFunnelConverted"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:fontFeatureSettings="tnum"
+                                android:text="0"
+                                android:textAppearance="@style/TextAppearance.Kharazmi.PageTitle"
+                                android:textColor="@color/gold_primary" />
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="تبدیل‌شده"
+                                android:textAppearance="@style/TextAppearance.Kharazmi.Caption" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:gravity="center"
+                            android:orientation="vertical">
+                            <TextView
+                                android:id="@+id/tvFunnelRate"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:fontFeatureSettings="tnum"
+                                android:text="0%"
+                                android:textAppearance="@style/TextAppearance.Kharazmi.PageTitle"
+                                android:textColor="@color/status_success" />
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="نرخ تبدیل"
+                                android:textAppearance="@style/TextAppearance.Kharazmi.Caption" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <com.github.mikephil.charting.charts.BarChart
+                        android:id="@+id/enrollmentFunnelChart"
+                        android:layout_width="match_parent"
+                        android:layout_height="220dp"
+                        android:layout_marginTop="@dimen/spacing_small" />
+
+                    <TextView
+                        android:id="@+id/tvFunnelAverage"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:text="میانگین زمان تبدیل: ---"
+                        android:textAppearance="@style/TextAppearance.Kharazmi.Body"
+                        android:textColor="@color/text_primary"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- نمودار ۱: روند درآمد -->
+            <!-- FIX: Use the declared Widget.Kharazmi.Card.Gold style; remove repeated suffixes. -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/Widget.Kharazmi.Card.Gold"
+                android:layout_width="match_parent"
+                android:layout_height="350dp"
+                android:layout_marginBottom="@dimen/spacing_normal">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:padding="@dimen/spacing_normal">
+
+                    <TextView
+                        android:text="روند درآمد (۵ روز اخیر)"
+                        android:textAppearance="@style/TextAppearance.Kharazmi.SectionTitle"
+                        android:textColor="@color/text_primary"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="10dp"/>
+
+                    <com.github.mikephil.charting.charts.BarChart
+                        android:id="@+id/barChart"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"/>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- نمودار ۲: تفکیک جنسیتی دانش‌آموزان -->
+            <!-- FIX: Use the declared Widget.Kharazmi.Card.Gold style; remove repeated suffixes. -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/Widget.Kharazmi.Card.Gold"
+                android:layout_width="match_parent"
+                android:layout_height="350dp"
+                android:layout_marginBottom="@dimen/spacing_normal">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:padding="@dimen/spacing_normal">
+
+                    <TextView
+                        android:text="تفکیک دانش‌آموزان"
+                        android:textAppearance="@style/TextAppearance.Kharazmi.SectionTitle"
+                        android:textColor="@color/text_primary"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="10dp"/>
+
+                    <com.github.mikephil.charting.charts.PieChart
+                        android:id="@+id/pieChart"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"/>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- نمودار ۳: روند حضور و غیاب کل یا کلاس خاص -->
+            <!-- FIX: Use the declared Widget.Kharazmi.Card.Gold style; remove repeated suffixes. -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/Widget.Kharazmi.Card.Gold"
+                android:layout_width="match_parent"
+                android:layout_height="350dp"
+                android:layout_marginBottom="@dimen/spacing_normal">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:padding="@dimen/spacing_normal">
+
+                    <TextView
+                        android:id="@+id/tvAttendanceChartTitle"
+                        android:text="روند حضور و غیاب کل دانش‌آموزان"
+                        android:textAppearance="@style/TextAppearance.Kharazmi.SectionTitle"
+                        android:textColor="@color/text_primary"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="10dp"/>
+
+                    <com.github.mikephil.charting.charts.LineChart
+                        android:id="@+id/attendanceLineChart"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"/>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- نمودار ۴: سهم معلم در برابر آموزشگاه -->
+            <!-- FIX: Use the declared Widget.Kharazmi.Card.Gold style; remove repeated suffixes. -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/Widget.Kharazmi.Card.Gold"
+                android:layout_width="match_parent"
+                android:layout_height="350dp"
+                android:layout_marginBottom="@dimen/spacing_normal">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:padding="@dimen/spacing_normal">
+
+                    <TextView
+                        android:text="سهم وصولی معلم در برابر آموزشگاه"
+                        android:textAppearance="@style/TextAppearance.Kharazmi.SectionTitle"
+                        android:textColor="@color/text_primary"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="10dp"/>
+
+                    <com.github.mikephil.charting.charts.PieChart
+                        android:id="@+id/sharesPieChart"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"/>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

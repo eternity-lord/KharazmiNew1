@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/gold_bg_base"
+    android:layoutDirection="rtl">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/gold_primary"
+        app:elevation="@dimen/elevation_appbar">
+
+        <androidx.appcompat.widget.Toolbar
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize">
+
+            <TextView
+                android:id="@+id/tvLiveClassesTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="کلاس‌های در حال برگزاری"
+                android:textColor="?attr/colorOnPrimary"
+                android:textAppearance="@style/TextAppearance.Kharazmi.PageTitle" />
+        </androidx.appcompat.widget.Toolbar>
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <TextView
+        android:id="@+id/tvLiveRefreshNote"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="🔄 به‌روزرسانی خودکار هر ۱۵ ثانیه"
+        android:textColor="@color/status_warning"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        android:background="@color/status_warning_light"
+        android:padding="8dp"
+        android:gravity="center" />
+
+    <TextView
+        android:id="@+id/tvLiveEmpty"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="در حال حاضر هیچ کلاسی در حال برگزاری نیست."
+        android:textAppearance="@style/TextAppearance.Kharazmi.Body"
+        android:textColor="@color/text_secondary"
+        android:gravity="center"
+        android:padding="@dimen/spacing_large"
+        android:visibility="gone" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvLiveClasses"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:paddingBottom="@dimen/spacing_normal" />
+</LinearLayout>

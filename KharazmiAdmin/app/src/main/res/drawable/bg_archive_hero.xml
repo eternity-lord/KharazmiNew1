@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- سرصفحهٔ صفحات آرشیو: گرادیان نیوی→قهوه‌ای طلایی با گوشه‌های گرد پایین -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:angle="315"
+                android:startColor="@color/archive_hero_start"
+                android:endColor="@color/archive_hero_end"
+                android:type="linear" />
+            <corners
+                android:bottomLeftRadius="28dp"
+                android:bottomRightRadius="28dp" />
+        </shape>
+    </item>
+    <item
+        android:gravity="bottom"
+        android:height="3dp"
+        android:bottom="0dp">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/archive_hero_gold" />
+            <corners
+                android:bottomLeftRadius="28dp"
+                android:bottomRightRadius="28dp" />
+        </shape>
+    </item>
+</layer-list>

@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ====================================================================================
+     PHASE 2 — item_transaction_admin: ردیف تراکنش (کارت قابل اسکن)
+     شناسه‌های حفظ‌شده (TransactionManageActivity.kt):
+       tvStudentName / tvCourseName / tvAmount / tvDate / btnPrint / btnEdit / btnDelete
+     توجه: سرور در این لیست فقط ردیف‌های فعال را برمی‌گرداند
+     (is_deleted == False و is_reversed == False) و فیلد type هم در مدل اندروید bind نشده؛
+     بنابراین «چیپ نوع تراکنش» و «وضعیت حذف‌شده/برگشتی» بدون تغییر کد قابل نمایش نیستند.
+     ==================================================================================== -->
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    style="@style/Widget.Kharazmi.DS.Card"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/spacing_small"
+    android:layoutDirection="rtl">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/spacing_normal">
+
+        <!-- ردیف ۱: دانش‌آموز/بابت + تاریخ -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="top">
+
+            <ImageView
+                android:layout_width="@dimen/icon_medium"
+                android:layout_height="@dimen/icon_medium"
+                android:src="@drawable/ic_ds_person_24"
+                android:importantForAccessibility="no"
+                app:tint="@color/ds_accent"/>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="@dimen/spacing_snug"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tvStudentName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/ds_value_placeholder"
+                    android:textAppearance="@style/TextAppearance.Kharazmi.DS.Body"
+                    android:textStyle="bold"/>
+
+                <TextView
+                    android:id="@+id/tvCourseName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_2xs"
+                    android:text="@string/ds_value_placeholder"
+                    android:textAppearance="@style/TextAppearance.Kharazmi.DS.Caption"/>
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tvDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/spacing_small"
+                android:text="@string/ds_value_placeholder"
+                android:textAppearance="@style/TextAppearance.Kharazmi.DS.Caption"
+                android:fontFeatureSettings="tnum"/>
+        </LinearLayout>
+
+        <!-- مبلغ تراکنش (برجسته، رقم‌های هم‌عرض) -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_snug"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/ds_txn_amount_label"
+                android:textAppearance="@style/TextAppearance.Kharazmi.DS.Overline"/>
+
+            <TextView
+                android:id="@+id/tvAmount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/ds_value_placeholder"
+                android:textAppearance="@style/TextAppearance.Kharazmi.DS.Money"
+                android:fontFeatureSettings="tnum"/>
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/stroke_hairline"
+            android:layout_marginTop="@dimen/spacing_small"
+            android:layout_marginBottom="@dimen/spacing_small"
+            android:background="@color/ds_border"/>
+
+        <!-- اکشن‌ها: چاپ (خنثی) / ویرایش (هشدار) / حذف (خطرناک) -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="end">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnPrint"
+                style="@style/Widget.Kharazmi.DS.Button.Secondary"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginEnd="@dimen/spacing_xs"
+                android:minHeight="@dimen/min_touch_target"
+                android:minWidth="@dimen/min_touch_target"
+                android:text="@string/ds_txn_print"
+                android:textSize="@dimen/font_size_label"
+                android:contentDescription="@string/ds_txn_print"
+                app:icon="@drawable/ic_print"
+                app:iconSize="@dimen/icon_small"
+                app:iconGravity="textStart"
+                app:iconTint="@color/ds_text_secondary"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnEdit"
+                style="@style/Widget.Kharazmi.DS.Button.Secondary"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginEnd="@dimen/spacing_xs"
+                android:minHeight="@dimen/min_touch_target"
+                android:minWidth="@dimen/min_touch_target"
+                android:text="@string/ds_txn_edit"
+                android:textSize="@dimen/font_size_label"
+                android:contentDescription="@string/ds_txn_edit"
+                android:textColor="@color/ds_warning"
+                app:icon="@drawable/ic_ds_edit_24"
+                app:iconSize="@dimen/icon_small"
+                app:iconGravity="textStart"
+                app:iconTint="@color/ds_warning"
+                app:strokeColor="@color/ds_warning"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnDelete"
+                style="@style/Widget.Kharazmi.DS.Button.Secondary"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:minHeight="@dimen/min_touch_target"
+                android:minWidth="@dimen/min_touch_target"
+                android:text="@string/ds_txn_delete"
+                android:textSize="@dimen/font_size_label"
+                android:contentDescription="@string/ds_txn_delete"
+                android:textColor="@color/ds_danger"
+                app:icon="@drawable/ic_ds_delete_24"
+                app:iconSize="@dimen/icon_small"
+                app:iconGravity="textStart"
+                app:iconTint="@color/ds_danger"
+                app:strokeColor="@color/ds_danger"/>
+        </LinearLayout>
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="4dp"
+    app:cardCornerRadius="@dimen/spacing_small"
+    app:cardElevation="2dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="@dimen/spacing_normal"
+        android:gravity="center_vertical"
+        android:layoutDirection="rtl">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:fontFeatureSettings="tnum"
+        android:id="@+id/tvSettledAmount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="۶۰۰,۰۰۰ تومان"
+                android:textStyle="bold"
+                android:textColor="@color/status_success"
+                android:textSize="15sp" />
+
+            <TextView
+                android:id="@+id/tvSettlementDocument"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="12sp"
+                android:textColor="@color/text_secondary" />
+
+            <TextView
+                android:fontFeatureSettings="tnum"
+        android:id="@+id/tvSettledDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="📅 تاریخ تسویه: 1402/10/01"
+                android:textSize="12sp"
+                android:textColor="@color/text_secondary"
+                android:layout_marginTop="2dp" />
+        </LinearLayout>
+
+        <TextView
+            android:fontFeatureSettings="tnum"
+        android:id="@+id/tvSessionCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="۴ جلسه"
+            android:textStyle="normal"
+            android:textColor="@color/text_secondary"
+            android:textSize="13sp" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginStart="8dp">
+            <Button
+                android:id="@+id/btnReverseSettlement"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="برگشت" />
+            <Button
+                android:id="@+id/btnEditSettlement"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="تعدیل" />
+        </LinearLayout>
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/spacing_normal"
+    app:cardCornerRadius="@dimen/spacing_normal"
+    app:cardElevation="2dp"
+    app:cardBackgroundColor="@color/gold_bg_elevated">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="@dimen/spacing_normal"
+        android:gravity="center_vertical"
+        android:layoutDirection="rtl">
+
+        <!-- Circle Avatar Placeholder -->
+        <View
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@color/gold_border_subtle"
+            android:layout_marginLeft="@dimen/spacing_normal"/>
+
+        <!-- Text Placeholders -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <!-- Title Line -->
+            <View
+                android:layout_width="120dp"
+                android:layout_height="16dp"
+                android:background="@color/gold_border_subtle"
+                android:layout_marginBottom="@dimen/spacing_small"/>
+
+            <!-- Subtitle Line -->
+            <View
+                android:layout_width="180dp"
+                android:layout_height="12dp"
+                android:background="@color/gold_border_subtle"/>
+        </LinearLayout>
+
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

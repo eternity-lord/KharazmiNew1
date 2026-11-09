@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- یک دانش‌آموز در گزارش کلاس آرشیوشده: حضور/غیاب + مالی -->
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    style="@style/Widget.Kharazmi.DS.Card.Surface2"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/spacing_small"
+    android:layoutDirection="rtl">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/spacing_normal">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/tvStuName"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textAppearance="@style/TextAppearance.Kharazmi.DS.SectionTitle" />
+
+            <TextView
+                android:id="@+id/tvStuRate"
+                style="@style/Widget.Kharazmi.DS.Pill.Success"
+                android:layout_marginStart="@dimen/spacing_small" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tvStuCode"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_tiny"
+            android:textAppearance="@style/TextAppearance.Kharazmi.DS.Caption"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/tvStuAttendance"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_small"
+            android:lineSpacingExtra="4dp"
+            android:textAppearance="@style/TextAppearance.Kharazmi.DS.Body" />
+
+        <TextView
+            android:id="@+id/tvStuMoney"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_small"
+            android:lineSpacingExtra="4dp"
+            android:textAppearance="@style/TextAppearance.Kharazmi.DS.Body" />
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

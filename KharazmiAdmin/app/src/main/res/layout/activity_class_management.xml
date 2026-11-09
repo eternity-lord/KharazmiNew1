@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/gold_bg_base"
+    android:layoutDirection="rtl"
+>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+    >
+
+        <com.google.android.material.appbar.AppBarLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/gold_primary"
+            app:elevation="@dimen/elevation_appbar"
+        >
+            <androidx.appcompat.widget.Toolbar
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="مدیریت کلاس‌ها"
+                    android:textColor="?attr/colorOnPrimary"
+                    android:textAppearance="@style/TextAppearance.Kharazmi.PageTitle"
+                />
+            </androidx.appcompat.widget.Toolbar>
+        </com.google.android.material.appbar.AppBarLayout>
+
+        <!-- Search Card Wrapper -->
+        <!-- FIX: Use the declared Widget.Kharazmi.Card.Gold style; remove repeated suffixes. -->
+        <com.google.android.material.card.MaterialCardView
+            style="@style/Widget.Kharazmi.Card.Gold"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/spacing_normal"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="2dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="@dimen/spacing_normal"
+                android:orientation="vertical"
+            >
+
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.Kharazmi.Input.Gold"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="جستجو (کد یا نام کلاس)"
+                    app:startIconDrawable="@drawable/ic_search_24"
+                    app:startIconTint="@color/gold_primary"
+                >
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etSearchClass"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/text_primary"
+                        android:inputType="text"
+                    />
+                </com.google.android.material.textfield.TextInputLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Bulk action panel: modern styled Button -->
+        <LinearLayout
+            android:id="@+id/llClassBulkContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingHorizontal="@dimen/spacing_normal"
+            android:layout_marginBottom="@dimen/spacing_small"
+            android:visibility="gone">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnBulkSuspend"
+                style="@style/Widget.Kharazmi.Button.Gold"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="تعلیق کلاس‌های انتخاب‌شده"
+                app:backgroundTint="@color/gold_primary"
+                android:textColor="@color/text_on_gold"
+                app:iconTint="@color/text_on_gold"
+                app:icon="@android:drawable/ic_lock_lock"
+                app:iconGravity="textStart"/>
+        </LinearLayout>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvClasses"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingHorizontal="@dimen/spacing_small"
+            android:clipToPadding="false"
+            android:layoutAnimation="@anim/layout_animation_fall_down"/>
+    </LinearLayout>
+
+    <!-- FAB: styled with secondary accent color -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabAddClass"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|left"
+        android:layout_margin="@dimen/spacing_large"
+        android:src="@android:drawable/ic_input_add"
+        app:tint="?attr/colorOnSecondary"
+        app:backgroundTint="@color/gold_primary"
+        app:elevation="6dp"
+    />
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

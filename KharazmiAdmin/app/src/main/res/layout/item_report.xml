@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ====================================================================================
+     PHASE 2 — item_report: ردیف گزارش/گزارش‌ساز
+     شناسه‌ها بدون تغییر: cbSelectReport / tvAmount / tvName / tvDesc / tvDate
+     توجه: این چیدمان در حال حاضر توسط هیچ فایل Kotlinای inflate نمی‌شود؛
+     فقط ظاهر آن هم‌راستا با Design System فاز ۱ به‌روز شده است.
+     ==================================================================================== -->
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    style="@style/Widget.Kharazmi.DS.Card"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/spacing_small"
+    android:layoutDirection="rtl">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:minHeight="@dimen/min_touch_target"
+        android:padding="@dimen/spacing_normal"
+        android:gravity="center_vertical">
+
+        <!-- چک‌باکس انتخاب چندتایی (به‌صورت پیش‌فرض پنهان است و با کد کنترل می‌شود) -->
+        <CheckBox
+            android:id="@+id/cbSelectReport"
+            android:layout_width="@dimen/min_touch_target"
+            android:layout_height="@dimen/min_touch_target"
+            android:visibility="gone"
+            android:contentDescription="@string/ds_rpt_statement_title"/>
+
+        <!-- عنوان و توضیح -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="@dimen/spacing_snug"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/ds_value_placeholder"
+                android:textAppearance="@style/TextAppearance.Kharazmi.DS.Body"
+                android:textStyle="bold"/>
+
+            <TextView
+                android:id="@+id/tvDesc"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_2xs"
+                android:text="@string/ds_value_placeholder"
+                android:textAppearance="@style/TextAppearance.Kharazmi.DS.Caption"/>
+        </LinearLayout>
+
+        <!-- مبلغ (برجسته) و تاریخ -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/spacing_normal"
+            android:orientation="vertical"
+            android:gravity="end">
+
+            <TextView
+                android:id="@+id/tvAmount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/ds_value_placeholder"
+                android:textAppearance="@style/TextAppearance.Kharazmi.DS.Money"
+                android:fontFeatureSettings="tnum"/>
+
+            <TextView
+                android:id="@+id/tvDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_2xs"
+                android:text="@string/ds_value_placeholder"
+                android:textAppearance="@style/TextAppearance.Kharazmi.DS.Caption"
+                android:fontFeatureSettings="tnum"/>
+        </LinearLayout>
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

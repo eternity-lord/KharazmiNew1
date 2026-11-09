@@ -1,0 +1,249 @@
+{
+  "fixture": {
+    "decimal_max_score": 12.5,
+    "large_amount": 2147483649,
+    "null_optional_fields": [
+      "transactions.description",
+      "homeworks.description"
+    ],
+    "empty_strings": [
+      "transactions.date",
+      "homeworks.due_date"
+    ],
+    "empty_lists": [
+      "TeacherClassItem.students_preview"
+    ]
+  },
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/exams/student/list",
+      "status": 200,
+      "json": [
+        {
+          "id": 1,
+          "title": "آزمون منتشرشده",
+          "course_title": "ریاضی پایه فعال",
+          "date": "1405/06/25",
+          "duration": 60,
+          "description": "",
+          "due_date": "",
+          "max_score": 20.0,
+          "status": "attempted",
+          "score": 19.0
+        },
+        {
+          "id": 99,
+          "title": "آزمون مرزی اعشاری",
+          "course_title": "ریاضی پایه فعال",
+          "date": "1405/08/01",
+          "duration": 1,
+          "description": "",
+          "due_date": "",
+          "max_score": 12.5,
+          "status": "pending",
+          "score": null
+        }
+      ],
+      "status_500": false
+    },
+    {
+      "method": "GET",
+      "path": "/admin/transactions/list",
+      "status": 200,
+      "json": [
+        {
+          "id": 99,
+          "student_id": 1,
+          "student_name": "دانش‌آموز تست 1",
+          "course_id": null,
+          "course_name": "---",
+          "amount": 2147483649,
+          "date": "",
+          "description": null,
+          "type": "deposit"
+        },
+        {
+          "id": 6,
+          "student_id": 8,
+          "student_name": "دانش‌آموز تست 8",
+          "course_id": 2,
+          "course_name": "فیزیک دوکلاسه",
+          "amount": 125000,
+          "date": "2026-09-20",
+          "description": "پرداخت کارتی میلادی legacy",
+          "type": "deposit"
+        },
+        {
+          "id": 4,
+          "student_id": 6,
+          "student_name": "دانش‌آموز تست 6",
+          "course_id": null,
+          "course_name": "---",
+          "amount": 75000,
+          "date": "",
+          "description": "legacy بی‌تاریخ",
+          "type": "deposit"
+        },
+        {
+          "id": 3,
+          "student_id": 3,
+          "student_name": "دانش‌آموز تست 3",
+          "course_id": 3,
+          "course_name": "زبان معلق",
+          "amount": 250000,
+          "date": "1405/06/05",
+          "description": "legacy no course",
+          "type": "deposit"
+        },
+        {
+          "id": 2,
+          "student_id": 1,
+          "student_name": "دانش‌آموز تست 1",
+          "course_id": 2,
+          "course_name": "فیزیک دوکلاسه",
+          "amount": 500000,
+          "date": "1405/06/04",
+          "description": "پرداخت split",
+          "type": "deposit"
+        },
+        {
+          "id": 1,
+          "student_id": 1,
+          "student_name": "دانش‌آموز تست 1",
+          "course_id": 1,
+          "course_name": "ریاضی پایه فعال",
+          "amount": 300000,
+          "date": "1405/06/03",
+          "description": "پرداخت enrollment اول",
+          "type": "deposit"
+        }
+      ],
+      "status_500": false
+    },
+    {
+      "method": "GET",
+      "path": "/homework/parent/child/1",
+      "status": 200,
+      "json": [
+        {
+          "id": 1,
+          "course_title": "ریاضی پایه فعال",
+          "title": "تمرین هفته",
+          "description": "حل تمرین",
+          "due_date": "1405/07/01",
+          "status": "submitted",
+          "max_score": 20.0,
+          "score": null,
+          "feedback": null
+        },
+        {
+          "id": 99,
+          "course_title": "ریاضی پایه فعال",
+          "title": "تکلیف مرزی",
+          "description": "",
+          "due_date": "",
+          "status": "pending",
+          "max_score": 20.0,
+          "score": null,
+          "feedback": null
+        }
+      ],
+      "status_500": false
+    },
+    {
+      "method": "GET",
+      "path": "/teachers/1/incomplete_classes",
+      "status": 200,
+      "json": [
+        {
+          "id": 5,
+          "title": "کلاس در انتظار",
+          "code": "C-PEND",
+          "grade_level": "ابتدایی",
+          "bg_color": "#FFFFFF",
+          "students_preview": []
+        }
+      ],
+      "status_500": false
+    }
+  ],
+  "values": {
+    "exam_99_max_score": 12.5,
+    "transaction_99_amount": 2147483649,
+    "transaction_99_date": "",
+    "transaction_99_description": null,
+    "homework_99_description": "",
+    "homework_99_due_date": "",
+    "incomplete_students_preview_are_lists": true
+  },
+  "gson_vectors": {
+    "decimal_max_score": [],
+    "large_long_amount": [],
+    "null_optional": [],
+    "empty_string": [],
+    "empty_list": [
+      {
+        "field": "is_admin_approved",
+        "kind": "silent-zero",
+        "detail": "Gson leaves the non-null Boolean at False; a missing/null wire value can display a false default",
+        "line": 27,
+        "source": "KharazmiAdmin/app/src/main/java/com/example/kharazmiadmin/TeacherDashboardActivity.kt"
+      },
+      {
+        "field": "is_suspended",
+        "kind": "silent-zero",
+        "detail": "Gson leaves the non-null Boolean at False; a missing/null wire value can display a false default",
+        "line": 28,
+        "source": "KharazmiAdmin/app/src/main/java/com/example/kharazmiadmin/TeacherDashboardActivity.kt"
+      },
+      {
+        "field": "total_debt",
+        "kind": "silent-zero",
+        "detail": "Gson leaves the non-null Long at 0; a missing/null wire value can display a false default",
+        "line": 31,
+        "source": "KharazmiAdmin/app/src/main/java/com/example/kharazmiadmin/TeacherDashboardActivity.kt"
+      },
+      {
+        "field": "debt_to_teacher",
+        "kind": "silent-zero",
+        "detail": "Gson leaves the non-null Long at 0; a missing/null wire value can display a false default",
+        "line": 32,
+        "source": "KharazmiAdmin/app/src/main/java/com/example/kharazmiadmin/TeacherDashboardActivity.kt"
+      },
+      {
+        "field": "debt_to_institute",
+        "kind": "silent-zero",
+        "detail": "Gson leaves the non-null Long at 0; a missing/null wire value can display a false default",
+        "line": 33,
+        "source": "KharazmiAdmin/app/src/main/java/com/example/kharazmiadmin/TeacherDashboardActivity.kt"
+      }
+    ]
+  },
+  "gson_issue_count": 5,
+  "confirmed_contract_issue_count": 0,
+  "confirmed_contract_issues": [],
+  "unresolved_question": {
+    "id": "Q-006",
+    "fields": [
+      "debt_to_institute",
+      "debt_to_teacher",
+      "is_admin_approved",
+      "is_suspended",
+      "total_debt"
+    ],
+    "reason": "The incomplete-class dialog consumes only id/title/code; no visible behavior is yet established for these five model defaults."
+  },
+  "expected": {
+    "decimal_max_score": 12.5,
+    "large_long_amount": 2147483649,
+    "empty_strings": {
+      "transaction_date": "",
+      "homework_due_date": ""
+    },
+    "empty_lists_are_lists": true,
+    "gson_issue_count": 5,
+    "confirmed_contract_issue_count": 0,
+    "unresolved_question": "Q-006"
+  }
+}

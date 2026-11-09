@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- FIX: A keyed tag keeps an interrupted underline animation from fighting its replacement. -->
+    <item name="gold_nav_indicator_animator" type="id" />
+
+    <!-- FIX: A launch-only visual theme; the login screen immediately restores the existing application theme. -->
+    <style name="Theme.Kharazmi.Gold.Launch.Base" parent="Theme.GajAdmin">
+        <item name="android:windowBackground">@drawable/bg_gold_splash</item>
+        <item name="android:statusBarColor">@color/gold_bg_base</item>
+        <item name="android:navigationBarColor">@color/gold_bg_base</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+    <style name="Theme.Kharazmi.Gold.Launch" parent="Theme.Kharazmi.Gold.Launch.Base" />
+</resources>
+

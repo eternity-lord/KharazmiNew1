@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- DESIGN SYSTEM (Phase 2): دستگیره سوییچ تعلیق.
+     حالت روشن: دستگیره روشن (ds_text_primary) روی مسیر طلایی تیره → کنتراست 3.23:1 (≥3 برای اجزای UI).
+     حالت خاموش: دستگیره ds_text_secondary روی مسیر ds_bg_surface_3 → کنتراست 7.50:1. -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_checked="true" android:state_enabled="true" android:color="@color/ds_text_primary"/>
+    <item android:state_checked="true" android:color="@color/ds_text_disabled"/>
+    <item android:state_enabled="true" android:color="@color/ds_text_secondary"/>
+    <item android:color="@color/ds_text_disabled"/>
+</selector>

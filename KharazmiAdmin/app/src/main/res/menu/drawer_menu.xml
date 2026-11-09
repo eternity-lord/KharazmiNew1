@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group android:checkableBehavior="single">
+
+        <item
+            android:id="@+id/nav_dashboard"
+            android:icon="@android:drawable/ic_menu_rotate"
+            android:title="پیشخوان" />
+        <item
+            android:id="@+id/nav_admin_dashboard"
+            android:icon="@android:drawable/ic_menu_view"
+            android:title="@string/dashboard_nav" />
+        <item
+            android:id="@+id/nav_share_config"
+            android:icon="@android:drawable/ic_menu_manage"
+            android:title="تنظیم سهم آموزشگاه" />
+
+        <item
+            android:id="@+id/nav_approve_class"
+            android:icon="@android:drawable/ic_input_add"
+            android:title="تایید کلاس‌های جدید" />
+
+        <item
+            android:id="@+id/nav_deletion_requests"
+            android:icon="@android:drawable/ic_menu_delete"
+            android:title="تایید حذف کلاس‌ها" />
+
+        <item
+            android:id="@+id/nav_register"
+            android:icon="@android:drawable/ic_menu_add"
+            android:title="ثبت نام" />
+
+        <item
+            android:id="@+id/nav_havale"
+            android:icon="@android:drawable/ic_menu_edit"
+            android:title="ثبت و اصلاح حواله" />
+
+        <item
+            android:id="@+id/nav_classes"
+            android:icon="@android:drawable/ic_menu_agenda"
+            android:title="مدیریت کلاس‌ها" />
+
+        <item
+            android:id="@+id/nav_parents"
+            android:icon="@android:drawable/ic_menu_call"
+            android:title="دفترچه تلفن اولیا" />
+
+        <item
+            android:id="@+id/nav_attendance"
+            android:icon="@android:drawable/ic_menu_my_calendar"
+            android:title="حضور و غیاب" />
+
+        <item
+            android:id="@+id/nav_report"
+            android:icon="@android:drawable/ic_menu_sort_by_size"
+            android:title="گزارش‌گیری" />
+
+        <item
+            android:id="@+id/nav_chart"
+            android:icon="@android:drawable/ic_menu_gallery"
+            android:title="آمار نموداری" />
+
+        <item
+            android:id="@+id/nav_sms"
+            android:icon="@drawable/ic_group"
+            android:title="پیامک" />
+
+        <item
+            android:id="@+id/nav_pending"
+            android:icon="@android:drawable/ic_menu_manage"
+            android:title="تایید معلمان" />
+
+        <!-- FIX(admin-notifications): صفحه‌ی «مرکز اعلان‌ها» در مانیفست ثبت بود ولی هیچ ورودی/
+             کدی آن را باز نمی‌کرد ⇒ ادمین عملاً هیچ‌وقت اعلان‌ها را نمی‌دید. -->
+        <item
+            android:id="@+id/nav_notifications"
+            android:icon="@android:drawable/ic_popup_reminder"
+            android:title="@string/nav_notifications" />
+
+        <item
+            android:id="@+id/nav_settings"
+            android:icon="@android:drawable/ic_menu_preferences"
+            android:title="تنظیمات" />
+
+        <item
+            android:id="@+id/nav_institute_settings"
+            android:icon="@android:drawable/ic_menu_preferences"
+            android:title="تنظیمات آموزشگاه" />
+
+        <item
+            android:id="@+id/nav_deleted_classes"
+            android:icon="@android:drawable/ic_menu_delete"
+            android:title="کلاس‌های حذفی (آرشیو)" />
+
+        <item
+            android:id="@+id/nav_audit_radar"
+            android:icon="@android:drawable/ic_menu_search"
+            android:title="@string/nav_audit_radar" />
+
+        <item
+            android:id="@+id/nav_dunning"
+            android:icon="@android:drawable/ic_menu_send"
+            android:title="@string/dunning_nav" />
+
+    </group>
+</menu>

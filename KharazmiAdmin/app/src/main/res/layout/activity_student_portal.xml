@@ -1,0 +1,413 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/gold_bg_base"
+    android:layoutDirection="rtl">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/gold_primary"
+        app:elevation="@dimen/elevation_appbar"
+    >
+        <androidx.appcompat.widget.Toolbar
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize">
+            <TextView
+                android:id="@+id/tvPortalTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="پورتال دانش‌آموزان خوارزمی"
+                android:textColor="?attr/colorOnPrimary"
+                android:textAppearance="@style/TextAppearance.Kharazmi.PageTitle"/>
+        </androidx.appcompat.widget.Toolbar>
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <ViewFlipper
+        android:id="@+id/portalFlipper"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <!-- STEP 1: Student Login / OTP Request -->
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fillViewport="true">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center_horizontal"
+                android:padding="@dimen/spacing_large">
+
+                <!-- Logo Header -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="90dp"
+                    android:layout_height="90dp"
+                    app:cardCornerRadius="45dp"
+                    app:cardElevation="2dp"
+                    app:strokeColor="@color/gold_primary"
+                    app:strokeWidth="1.5dp"
+                    android:layout_marginBottom="@dimen/spacing_normal">
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:src="@drawable/ic_group"
+                        android:padding="20dp"
+                        app:tint="@color/gold_primary"/>
+                </com.google.android.material.card.MaterialCardView>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="ورود دانش‌آموز با رمز یک‌بار مصرف"
+                    android:textAppearance="@style/TextAppearance.Kharazmi.SectionTitle"
+                    android:textColor="@color/gold_primary"
+                    android:layout_marginBottom="@dimen/spacing_large"/>
+
+                <!-- Container Card -->
+                <!-- FIX: Use the declared Widget.Kharazmi.Card.Gold style; remove repeated suffixes. -->
+                <com.google.android.material.card.MaterialCardView
+                    style="@style/Widget.Kharazmi.Card.Gold"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:cardCornerRadius="20dp"
+                    android:layout_marginBottom="@dimen/spacing_large">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="@dimen/spacing_normal">
+
+                        <!-- Mobile Input -->
+                        <com.google.android.material.textfield.TextInputLayout
+                            style="@style/Widget.Kharazmi.Input.Gold"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="شماره همراه دانش‌آموز"
+                            app:startIconDrawable="@drawable/ic_call_24">
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/etStudentMobile"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="phone"
+                                android:fontFeatureSettings="tnum"
+                                android:maxLength="11" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnRequestOtp"
+                            style="@style/Widget.Kharazmi.Button.Gold"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_normal"
+                            android:textColor="@color/text_on_gold"
+                            android:text="ارسال کد تایید پیامکی"
+                            app:backgroundTint="@color/gold_primary" />
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="0.5dp"
+                            android:background="@color/gold_border_subtle"
+                            android:layout_marginTop="@dimen/spacing_normal"
+                            android:layout_marginBottom="@dimen/spacing_normal" />
+
+                        <!-- OTP Input (Visible after requesting) -->
+                        <LinearLayout
+                            android:id="@+id/llOtpContainer"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:visibility="gone">
+
+                            <com.google.android.material.textfield.TextInputLayout
+                                style="@style/Widget.Kharazmi.Input.Gold"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:hint="کد تایید ۵ رقمی"
+                                app:startIconDrawable="@android:drawable/ic_lock_lock">
+                                <com.google.android.material.textfield.TextInputEditText
+                                    android:id="@+id/etOtpCode"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:inputType="number"
+                                    android:fontFeatureSettings="tnum"
+                                    android:maxLength="5" />
+                            </com.google.android.material.textfield.TextInputLayout>
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btnLoginPortal"
+                                style="@style/Widget.Kharazmi.Button.Gold"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="@dimen/spacing_normal"
+                                android:text="تایید و ورود به پورتال"
+                                app:backgroundTint="@color/gold_primary"
+                                android:textColor="@color/text_on_gold" />
+                        </LinearLayout>
+
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+            </LinearLayout>
+        </ScrollView>
+
+        <!-- STEP 2: Student Portal Main Dashboard -->
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fillViewport="true">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/spacing_normal">
+
+                <!-- Header Name Card -->
+                <!-- FIX: Use the declared Widget.Kharazmi.Card.Gold style; remove repeated suffixes. -->
+                <com.google.android.material.card.MaterialCardView
+                    style="@style/Widget.Kharazmi.Card.Gold"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:cardCornerRadius="20dp"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="@color/gold_primary"
+                    android:layout_marginBottom="@dimen/spacing_normal">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:padding="@dimen/spacing_normal"
+                        android:gravity="center_vertical">
+
+                        <com.google.android.material.card.MaterialCardView
+                            android:layout_width="50dp"
+                            android:layout_height="50dp"
+                            app:cardCornerRadius="25dp"
+                            app:cardElevation="0dp"
+                            app:strokeWidth="1dp"
+                            app:strokeColor="@color/gold_border_subtle">
+                            <ImageView
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:src="@android:drawable/sym_def_app_icon"
+                                android:scaleType="centerInside"
+                                android:padding="8dp"
+                                app:tint="@color/gold_primary" />
+                        </com.google.android.material.card.MaterialCardView>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:layout_marginRight="12dp">
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:id="@+id/tvStudentName"
+                                android:text="دانش‌آموز: -"
+                                android:textAppearance="@style/TextAppearance.Kharazmi.SectionTitle"
+                                android:textColor="@color/text_primary"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:id="@+id/tvStudentCode"
+                                android:text="کد تحصیلی: -"
+                                android:textAppearance="@style/TextAppearance.Kharazmi.Caption"
+                                android:fontFeatureSettings="tnum"
+                                android:layout_marginTop="2dp"/>
+                        </LinearLayout>
+
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Section: Financial Wallet Summary -->
+                <!-- FIX: Use the declared Widget.Kharazmi.Card.Gold style; remove repeated suffixes. -->
+                <com.google.android.material.card.MaterialCardView
+                    style="@style/Widget.Kharazmi.Card.Gold"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:cardCornerRadius="20dp"
+                    android:layout_marginBottom="@dimen/spacing_normal">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="@dimen/spacing_normal">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="💳 بیلان و وضعیت شهریه من"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.SectionTitle"
+                            android:textColor="@color/gold_primary"
+                            android:textStyle="bold"
+                            android:layout_marginBottom="@dimen/spacing_small" />
+
+                        <LinearLayout
+                            android:orientation="horizontal"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:paddingVertical="4dp">
+                            <TextView android:text="مانده تراز مالی من:" android:textAppearance="@style/TextAppearance.Kharazmi.Body" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"/>
+                            <TextView android:id="@+id/tvStudentWalletBalance" android:text="---" android:textAppearance="@style/TextAppearance.Kharazmi.Body" android:textStyle="bold" android:textColor="@color/status_success" android:fontFeatureSettings="tnum" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:orientation="horizontal"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:paddingVertical="4dp">
+                            <TextView android:text="کل مانده بدهی شهریه:" android:textAppearance="@style/TextAppearance.Kharazmi.Body" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"/>
+                            <TextView android:id="@+id/tvStudentTotalDebt" android:text="---" android:textAppearance="@style/TextAppearance.Kharazmi.Body" android:textStyle="bold" android:textColor="?attr/colorError" android:fontFeatureSettings="tnum" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+                        </LinearLayout>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Section: Accordion items for other student details -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="اطلاعات تحصیلی و برنامه ریزی"
+                    android:textAppearance="@style/TextAppearance.Kharazmi.SectionTitle"
+                    android:textColor="@color/gold_primary"
+                    android:layout_marginHorizontal="@dimen/spacing_small"
+                    android:layout_marginBottom="@dimen/spacing_small"/>
+
+                <!-- FIX: Use the declared Widget.Kharazmi.Card.Gold style; remove repeated suffixes. -->
+                <com.google.android.material.card.MaterialCardView
+                    style="@style/Widget.Kharazmi.Card.Gold"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:cardCornerRadius="20dp"
+                    android:layout_marginBottom="40dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:paddingHorizontal="@dimen/spacing_normal">
+
+                        <!-- Item: Classes -->
+                        <TextView
+                            android:id="@+id/btnViewClasses"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="📚 برنامه هفتگی و کلاس‌های من"
+                            android:paddingVertical="16dp"
+                            android:textColor="@color/text_primary"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.Body"
+                            android:drawableLeft="@android:drawable/ic_media_play"
+                            android:drawablePadding="8dp"
+                            android:background="?attr/selectableItemBackground"/>
+
+                        <View android:layout_width="match_parent" android:layout_height="0.5dp" android:background="@color/gold_border_subtle" />
+
+                        <!-- Item: Attendance -->
+                        <TextView
+                            android:id="@+id/btnViewAttendance"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="🟢 تاریخچه حضور و غیاب کلاسی من"
+                            android:paddingVertical="16dp"
+                            android:textColor="@color/text_primary"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.Body"
+                            android:drawableLeft="@android:drawable/ic_media_play"
+                            android:drawablePadding="8dp"
+                            android:background="?attr/selectableItemBackground"/>
+
+                        <View android:layout_width="match_parent" android:layout_height="0.5dp" android:background="@color/gold_border_subtle" />
+
+                        <!-- Item: Grades -->
+                        <TextView
+                            android:id="@+id/btnViewGrades"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="📝 کارنامه نمرات کلاسی من"
+                            android:paddingVertical="16dp"
+                            android:textColor="@color/text_primary"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.Body"
+                            android:drawableLeft="@android:drawable/ic_media_play"
+                            android:drawablePadding="8dp"
+                            android:background="?attr/selectableItemBackground"/>
+
+                        <View android:layout_width="match_parent" android:layout_height="0.5dp" android:background="@color/gold_border_subtle" />
+
+                        <!-- Item: Homework -->
+                        <TextView
+                            android:id="@+id/btnViewHomework"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="📝 تکالیف کلاسی و تمرین‌های من"
+                            android:paddingVertical="16dp"
+                            android:textColor="@color/text_primary"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.Body"
+                            android:drawableLeft="@android:drawable/ic_media_play"
+                            android:drawablePadding="8dp"
+                            android:background="?attr/selectableItemBackground"/>
+
+                        <View android:layout_width="match_parent" android:layout_height="0.5dp" android:background="@color/gold_border_subtle" />
+
+                        <!-- Item: Exams -->
+                        <TextView
+                            android:id="@+id/btnViewExams"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="📅 سررسید آزمون‌ها و امتحانات من"
+                            android:paddingVertical="16dp"
+                            android:textColor="@color/text_primary"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.Body"
+                            android:drawableLeft="@android:drawable/ic_media_play"
+                            android:drawablePadding="8dp"
+                            android:background="?attr/selectableItemBackground"/>
+
+                        <View android:layout_width="match_parent" android:layout_height="0.5dp" android:background="@color/gold_border_subtle" />
+
+                        <!-- Item: Installments -->
+                        <TextView
+                            android:id="@+id/btnViewInstallments"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="💰 لیست سررسید اقساط شهریه من"
+                            android:paddingVertical="16dp"
+                            android:textColor="@color/text_primary"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.Body"
+                            android:drawableLeft="@android:drawable/ic_media_play"
+                            android:drawablePadding="8dp"
+                            android:background="?attr/selectableItemBackground"/>
+
+                        <View android:layout_width="match_parent" android:layout_height="0.5dp" android:background="@color/gold_border_subtle" />
+
+                        <!-- Item: Notifications -->
+                        <TextView
+                            android:id="@+id/btnViewNotifications"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="🔔 اطلاعیه‌ها و اعلان‌های رسمی من"
+                            android:paddingVertical="16dp"
+                            android:textColor="@color/text_primary"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.Body"
+                            android:drawableLeft="@android:drawable/ic_media_play"
+                            android:drawablePadding="8dp"
+                            android:background="?attr/selectableItemBackground"/>
+
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+            </LinearLayout>
+        </ScrollView>
+
+    </ViewFlipper>
+
+</LinearLayout>

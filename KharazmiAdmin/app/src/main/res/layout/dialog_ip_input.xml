@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ====================================================================================
+     DESIGN SYSTEM (Phase 1) — ورودی آدرس سرور / کد جلسه
+     نکته: کلاس EditText و شناسه etIpInput حفظ شده‌اند؛ MainActivity در حالت «اصلاح جلسه»
+     خودش inputType را به عدد تغییر می‌دهد و hint را ست می‌کند (بدون تغییر در منطق).
+     ==================================================================================== -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layoutDirection="rtl"
+    android:orientation="vertical"
+    android:padding="@dimen/spacing_normal">
+
+    <EditText
+        android:id="@+id/etIpInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_input_gold"
+        android:hint="@string/ds_ip_hint"
+        android:importantForAutofill="no"
+        android:inputType="textUri"
+        android:minHeight="@dimen/min_touch_target"
+        android:paddingStart="@dimen/spacing_snug"
+        android:paddingEnd="@dimen/spacing_snug"
+        android:textColor="@color/ds_text_primary"
+        android:textColorHint="@color/ds_text_disabled"
+        android:textDirection="ltr" />
+</LinearLayout>

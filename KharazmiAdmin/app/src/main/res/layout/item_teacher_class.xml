@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/spacing_small"
+    app:cardCornerRadius="@dimen/spacing_small"
+    app:cardElevation="2dp"
+    app:cardBackgroundColor="@color/gold_bg_elevated"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackground">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/spacing_normal"
+        android:layoutDirection="rtl">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="4dp">
+
+            <TextView
+                android:id="@+id/tvClassName"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                tools:text="ریاضی کنکور"
+                android:textColor="@color/text_primary"
+                android:textStyle="bold"
+                android:textSize="16sp"/>
+
+            <TextView
+                android:id="@+id/tvClassStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="فعال"
+                android:textColor="@color/status_success"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="4dp"
+                android:background="@drawable/border_bg"
+                android:layout_marginStart="@dimen/spacing_small"/>
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tvClassCode"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="کد: 3406"
+            android:textColor="@color/text_secondary"
+            android:textSize="14sp"
+            android:layout_marginBottom="4dp"/>
+
+        <TextView
+            android:id="@+id/tvClassDetails"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="پایه دهم"
+            android:textColor="@color/text_secondary"
+            android:textSize="12sp"
+            android:drawableStart="@android:drawable/ic_menu_info_details"
+            android:drawablePadding="4dp"
+            android:drawableTint="@color/text_secondary"/>
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

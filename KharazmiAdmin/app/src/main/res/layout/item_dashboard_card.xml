@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/spacing_small"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackground"
+    app:cardBackgroundColor="@color/gold_bg_elevated"
+    app:cardCornerRadius="20dp"
+    app:cardElevation="4dp"
+    app:strokeColor="@color/gold_border_subtle"
+    app:strokeWidth="1dp"
+>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp"
+        android:layoutDirection="rtl"
+    >
+
+        <!-- Icon and Title Row -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="@dimen/spacing_normal"
+        >
+
+            <!-- Icon Container -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                app:cardBackgroundColor="@color/gold_primary_light"
+                app:cardCornerRadius="@dimen/spacing_normal"
+                app:cardElevation="0dp"
+            >
+
+                <ImageView
+                    android:id="@+id/ivIcon"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_gravity="center"
+                    app:tint="@color/gold_primary"
+                />
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Title and Subtitle -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:layout_marginStart="@dimen/spacing_normal"
+            >
+
+                <TextView
+                    android:id="@+id/tvTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    tools:text="مدیریت کلاس‌ها"
+                    android:textAppearance="@style/TextAppearance.GajAdmin.Subtitle1"
+                    android:textColor="@color/text_primary"
+                    android:textStyle="bold"
+                />
+
+                <TextView
+                    android:id="@+id/tvSubtitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    tools:text="ایجاد و مدیریت کلاس‌های آموزشی"
+                    android:textAppearance="@style/TextAppearance.GajAdmin.Caption"
+                    android:textColor="@color/text_secondary"
+                    android:layout_marginTop="2dp"
+                />
+            </LinearLayout>
+
+            <!-- Chevron Indicator -->
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_arrow_forward_24"
+                app:tint="@color/text_disabled"
+            />
+        </LinearLayout>
+
+        <!-- Divider -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/gold_border_subtle"
+            android:layout_marginBottom="@dimen/spacing_normal"
+        />
+
+        <!-- Stats Row -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+        >
+
+            <!-- Primary Stat -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+            >
+
+                <TextView
+                    android:id="@+id/tvPrimaryValue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    tools:text="۲۴"
+                    android:textAppearance="@style/TextAppearance.GajAdmin.Headline5"
+                    android:textColor="@color/gold_primary"
+                    android:textStyle="bold"
+                />
+
+                <TextView
+                    android:id="@+id/tvPrimaryLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    tools:text="کلاس فعال"
+                    android:textAppearance="@style/TextAppearance.GajAdmin.Caption"
+                    android:textColor="@color/text_secondary"
+                    android:layout_marginTop="2dp"
+                />
+            </LinearLayout>
+
+            <!-- Secondary Stat -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+            >
+
+                <TextView
+                    android:id="@+id/tvSecondaryValue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    tools:text="۱۸۵"
+                    android:textAppearance="@style/TextAppearance.GajAdmin.Headline5"
+                    android:textColor="@color/gold_primary"
+                    android:textStyle="bold"
+                />
+
+                <TextView
+                    android:id="@+id/tvSecondaryLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    tools:text="دانش‌آموز"
+                    android:textAppearance="@style/TextAppearance.GajAdmin.Caption"
+                    android:textColor="@color/text_secondary"
+                    android:layout_marginTop="2dp"
+                />
+            </LinearLayout>
+
+            <!-- Tertiary Stat -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+            >
+
+                <TextView
+                    android:id="@+id/tvTertiaryValue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    tools:text="۱۲"
+                    android:textAppearance="@style/TextAppearance.GajAdmin.Headline5"
+                    android:textColor="@color/status_success"
+                    android:textStyle="bold"
+                />
+
+                <TextView
+                    android:id="@+id/tvTertiaryLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    tools:text="معلم"
+                    android:textAppearance="@style/TextAppearance.GajAdmin.Caption"
+                    android:textColor="@color/text_secondary"
+                    android:layout_marginTop="2dp"
+                />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Status Badge -->
+        <TextView
+            android:id="@+id/tvStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_normal"
+            android:background="@drawable/chip_background"
+            android:gravity="center"
+            android:paddingHorizontal="12dp"
+            android:paddingVertical="4dp"
+            tools:text="فعال"
+            android:textAppearance="@style/TextAppearance.GajAdmin.Caption"
+            android:textColor="@color/status_success"
+            android:textStyle="normal"
+        />
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

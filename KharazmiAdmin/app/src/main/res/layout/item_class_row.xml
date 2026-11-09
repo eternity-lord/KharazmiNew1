@@ -1,0 +1,376 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="12dp"
+    android:layout_marginVertical="6dp"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackground"
+    app:cardBackgroundColor="@color/gold_bg_elevated"
+    app:cardCornerRadius="20dp"
+    app:cardElevation="4dp"
+    app:strokeColor="@color/gold_border_subtle"
+    app:strokeWidth="1dp"
+>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/spacing_normal"
+        android:layoutDirection="rtl"
+    >
+
+        <!-- Header Row -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="@dimen/spacing_normal"
+        >
+
+            <!-- چک باکس جدید برای تعلیق گروهی کلاس‌ها -->
+            <CheckBox
+                android:id="@+id/cbSelectClass"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/spacing_small"
+                android:visibility="gone"/>
+
+            <!-- Class Info -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+            >
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                >
+
+                    <TextView
+                        android:id="@+id/tvClassTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        tools:text="ریاضی کنکور"
+                        android:textAppearance="@style/TextAppearance.GajAdmin.Subtitle1"
+                        android:textColor="@color/text_primary"
+                        android:textStyle="bold"
+                    />
+
+                    <TextView
+                        android:id="@+id/tvClassCode"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        tools:text="(3406)"
+                        android:textAppearance="@style/TextAppearance.GajAdmin.Caption"
+                        android:textColor="@color/text_secondary"
+                        android:layout_marginStart="@dimen/spacing_small"
+                    />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/tvTeacherName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    tools:text="مدرس: استاد احمدی"
+                    android:textAppearance="@style/TextAppearance.GajAdmin.Body2"
+                    android:textColor="@color/text_secondary"
+                    android:layout_marginTop="4dp"
+                />
+            </LinearLayout>
+
+            <!-- Status Badge -->
+            <TextView
+                android:id="@+id/tvStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/chip_background"
+                android:gravity="center"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="6dp"
+                tools:text="فعال"
+                android:textAppearance="@style/TextAppearance.GajAdmin.Caption"
+                android:textColor="@color/status_success"
+                android:textStyle="normal"
+            />
+        </LinearLayout>
+
+        <!-- Tags Row -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="@dimen/spacing_normal"
+        >
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipGradeLevel"
+                style="@style/GajChipStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="پایه دهم"
+                android:layout_marginEnd="@dimen/spacing_small"
+            />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipGender"
+                style="@style/GajChipStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="زن"
+                android:layout_marginEnd="@dimen/spacing_small"
+            />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipSessionCount"
+                style="@style/GajChipStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="۱۲ جلسه"
+            />
+        </LinearLayout>
+
+        <!-- Students Preview -->
+        <LinearLayout
+            android:id="@+id/ll_student_preview"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginBottom="@dimen/spacing_normal"
+            android:padding="@dimen/spacing_normal"
+            android:background="@color/gold_bg_elevated_variant"
+            android:visibility="gone"
+        >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="دانش‌آموزان:"
+                android:textAppearance="@style/TextAppearance.GajAdmin.Caption"
+                android:textColor="@color/text_secondary"
+                android:textStyle="bold"
+                android:layout_marginBottom="@dimen/spacing_small"
+            />
+
+            <TextView
+                android:id="@+id/tvStudents"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="در حال بارگذاری..."
+                android:textAppearance="@style/TextAppearance.GajAdmin.Body2"
+                android:textColor="@color/text_secondary"
+            />
+        </LinearLayout>
+
+        <!-- Divider -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/gold_border_subtle"
+            android:layout_marginBottom="@dimen/spacing_normal"
+        />
+
+        <!-- Financial Info -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginBottom="@dimen/spacing_normal"
+        >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="وضعیت مالی:"
+                android:textAppearance="@style/TextAppearance.GajAdmin.Caption"
+                android:textColor="@color/text_secondary"
+                android:textStyle="bold"
+                android:layout_marginBottom="@dimen/spacing_small"
+            />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+            >
+
+                <!-- Teacher Debt -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:padding="@dimen/spacing_small"
+                    android:background="@color/gold_bg_elevated_variant"
+                    android:layout_marginEnd="4dp"
+                    android:backgroundTint="@color/status_info_light"
+                >
+
+                    <TextView
+                        android:fontFeatureSettings="tnum"
+        android:id="@+id/tvTeacherDebt"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        tools:text="۱,۲۰۰,۰۰۰"
+                        android:textAppearance="@style/TextAppearance.GajAdmin.Subtitle2"
+                        android:textColor="@color/status_info"
+                        android:textStyle="bold"
+                    />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="بدهی معلم"
+                        android:textAppearance="@style/TextAppearance.GajAdmin.Caption"
+                        android:textColor="@color/text_secondary"
+                        android:layout_marginTop="2dp"
+                    />
+                </LinearLayout>
+
+                <!-- Institute Debt -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:padding="@dimen/spacing_small"
+                    android:background="@color/gold_bg_elevated_variant"
+                    android:layout_marginStart="4dp"
+                    android:backgroundTint="@color/status_success_light"
+                >
+
+                    <TextView
+                        android:fontFeatureSettings="tnum"
+        android:id="@+id/tvInstituteDebt"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        tools:text="۱,۳۰۰,۰۰۰"
+                        android:textAppearance="@style/TextAppearance.GajAdmin.Subtitle2"
+                        android:textColor="@color/status_success"
+                        android:textStyle="bold"
+                    />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="بدهی آموزشگاه"
+                        android:textAppearance="@style/TextAppearance.GajAdmin.Caption"
+                        android:textColor="@color/text_secondary"
+                        android:layout_marginTop="2dp"
+                    />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- یادداشت «بدهی بابت چند جلسه» — فقط برای همین کلاس؛ بدون داده پنهان می‌ماند -->
+            <TextView
+                android:id="@+id/tvDebtSessionsNote"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_small"
+                android:gravity="center"
+                android:textAppearance="@style/TextAppearance.GajAdmin.Caption"
+                android:textColor="@color/text_secondary"
+                android:visibility="gone"
+                tools:text="📚 بدهی بابت ۱ جلسهٔ ثبت‌شدهٔ همین کلاس"
+                tools:visibility="visible" />
+        </LinearLayout>
+
+        <!-- Top 10 Students Section -->
+        <LinearLayout
+            android:id="@+id/ll_top_students"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginBottom="@dimen/spacing_normal"
+            android:padding="@dimen/spacing_normal"
+            android:background="@color/gold_bg_elevated_variant"
+            android:visibility="gone"
+        >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="۱۰ دانش‌آموز برتر:"
+                android:textAppearance="@style/TextAppearance.GajAdmin.Caption"
+                android:textColor="@color/text_secondary"
+                android:textStyle="bold"
+                android:layout_marginBottom="@dimen/spacing_small"
+            />
+
+            <TextView
+                android:id="@+id/tvTopStudents"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="در حال بارگذاری..."
+                android:textAppearance="@style/TextAppearance.GajAdmin.Body2"
+                android:textColor="@color/text_secondary"
+            />
+        </LinearLayout>
+
+        <!-- Action Buttons -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+        >
+
+            <!-- Suspend Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSuspend"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:minHeight="@dimen/min_touch_target"
+                android:layout_weight="1"
+                android:layout_marginEnd="@dimen/spacing_small"
+                android:background="@drawable/button_state_selector"
+                android:text="تعلیق"
+                android:textAppearance="@style/TextAppearance.GajAdmin.Button"
+                android:textAllCaps="false"
+                android:textColor="@color/text_on_gold"
+                android:textSize="12sp"
+                app:cornerRadius="@dimen/spacing_small"
+                app:icon="@android:drawable/ic_lock_lock"
+                app:iconGravity="textStart"
+                app:iconPadding="4dp"
+                app:iconSize="16dp"
+                app:iconTint="@color/text_on_gold"
+            />
+
+            <!-- Invoice Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnRegisterInvoice"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:minHeight="@dimen/min_touch_target"
+                android:layout_weight="1"
+                android:layout_marginStart="@dimen/spacing_small"
+                android:backgroundTint="@color/gold_primary"
+                android:text="ثبت حواله"
+                android:textAppearance="@style/TextAppearance.GajAdmin.Button"
+                android:textColor="@color/text_on_gold"
+                android:textSize="12sp"
+                app:cornerRadius="@dimen/spacing_small"
+                app:icon="@android:drawable/ic_menu_add"
+                app:iconGravity="textStart"
+                app:iconPadding="4dp"
+                app:iconSize="16dp"
+                app:iconTint="@color/text_on_gold"
+            />
+        </LinearLayout>
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

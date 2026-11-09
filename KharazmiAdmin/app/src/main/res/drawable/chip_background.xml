@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Selected state -->
+    <item android:state_selected="true" android:state_enabled="true">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/gaj_primary_light" />
+            <corners android:radius="16dp" />
+            <stroke android:width="1.5dp" android:color="@color/gaj_primary" />
+        </shape>
+    </item>
+
+    <!-- Checked state -->
+    <item android:state_checked="true" android:state_enabled="true">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/gaj_primary" />
+            <corners android:radius="16dp" />
+            <stroke android:width="1.5dp" android:color="@color/gaj_primary_dark" />
+        </shape>
+    </item>
+
+    <!-- Pressed state -->
+    <item android:state_pressed="true" android:state_enabled="true">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/gaj_primary_variant" />
+            <corners android:radius="16dp" />
+            <stroke android:width="1.5dp" android:color="@color/gaj_primary" />
+        </shape>
+    </item>
+
+    <!-- Enabled state -->
+    <item android:state_enabled="true">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/gaj_surface" />
+            <corners android:radius="16dp" />
+            <stroke android:width="1dp" android:color="@color/gaj_border" />
+        </shape>
+    </item>
+
+    <!-- Disabled state -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/gaj_surface_dark" />
+            <corners android:radius="16dp" />
+            <stroke android:width="1dp" android:color="@color/gaj_divider" />
+        </shape>
+    </item>
+</selector>

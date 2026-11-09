@@ -1,0 +1,220 @@
+<resources>
+    <color name="black">#121212</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <!-- Primary Colors - OLD (kept as fallback) -->
+    <color name="gaj_primary">#00695C</color>
+    <color name="gaj_primary_dark">#004D40</color>
+    <color name="gaj_primary_light">#4DB6AC</color>
+    <color name="gaj_primary_variant">#00796B</color>
+
+    <!-- Secondary/Accent Colors -->
+    <color name="gaj_accent">#FFC107</color>
+    <color name="gaj_accent_dark">#FF8F00</color>
+    <color name="gaj_accent_light">#FFECB3</color>
+
+    <!-- Surface Colors -->
+    <color name="gaj_background">#F8F9FA</color>
+    <color name="gaj_surface">#FFFFFF</color>
+    <color name="gaj_surface_variant">#F5F5F5</color>
+    <color name="gaj_surface_dark">#E0E0E0</color>
+
+    <!-- Text Colors -->
+    <color name="gaj_text_primary">#212121</color>
+    <color name="gaj_text_secondary">#757575</color>
+    <color name="gaj_text_hint">#5F6368</color>
+    <color name="gaj_text_on_primary">#FFFFFF</color>
+    <color name="gaj_text_on_accent">#212121</color>
+
+    <!-- Semantic Colors -->
+    <color name="gaj_success">#4CAF50</color>
+    <color name="gaj_success_light">#C8E6C9</color>
+    <color name="gaj_warning">#FF9800</color>
+    <color name="gaj_warning_light">#FFE0B2</color>
+    <color name="gaj_error">#B00020</color>
+    <color name="gaj_error_light">#FFCDD2</color>
+    <color name="gaj_info">#2196F3</color>
+    <color name="gaj_info_light">#BBDEFB</color>
+
+    <!-- Status Colors -->
+    <color name="gaj_active">#4CAF50</color>
+    <color name="gaj_pending">#FF9800</color>
+    <color name="gaj_suspended">#F44336</color>
+    <color name="gaj_completed">#2196F3</color>
+
+    <!-- Chart Colors -->
+    <color name="gaj_chart_1">#00695C</color>
+    <color name="gaj_chart_2">#4DB6AC</color>
+    <color name="gaj_chart_3">#FFC107</color>
+    <color name="gaj_chart_4">#FF8F00</color>
+    <color name="gaj_chart_5">#2196F3</color>
+    <color name="gaj_chart_6">#4CAF50</color>
+
+    <!-- Interactive States -->
+    <color name="gaj_ripple_primary">#1A00695C</color>
+    <color name="gaj_ripple_accent">#1AFFC107</color>
+    <color name="gaj_pressed_overlay">#0A000000</color>
+    <color name="gaj_focused_overlay">#14000000</color>
+    <color name="gaj_hovered_overlay">#08000000</color>
+
+    <!-- Border & Divider -->
+    <color name="gaj_border">#E0E0E0</color>
+    <color name="gaj_divider">#EEEEEE</color>
+    <color name="gaj_outline">#BDBDBD</color>
+
+    <!-- Legacy Colors (for backward compatibility) -->
+    <color name="gaj_red_error">#B00020</color>
+    <color name="gaj_green_dark">#00695C</color>
+    <color name="gaj_green_text">#004D40</color>
+    <color name="gaj_red_text">#B00020</color>
+    <color name="gaj_gray_bg">#F8F9FA</color>
+    <color name="gaj_gray_light">#F5F5F5</color>
+    <color name="gaj_gray_hint">#9E9E9E</color>
+    <color name="gaj_orange">#EF6C00</color>
+
+    <!-- Bottom Navigation -->
+    <color name="bottom_nav_icon_tint">@drawable/bottom_nav_tint_selector</color>
+    <color name="bottom_nav_text_tint">@drawable/bottom_nav_tint_selector</color>
+
+    <!-- Selection Colors -->
+    <color name="gaj_selected_background">#E3F2FD</color>
+    <color name="gaj_highlight">#FFF9C4</color>
+
+    <!-- ==================== GOLD/DARK REDESIGN TOKENS (NEW) ==================== -->
+    <!-- Backgrounds - extracted from ED Academy map -->
+    <color name="gold_bg_base">#F7F8FA</color>          <!-- پس‌زمینه اصلی، مشکی مایل به نیوی -->
+    <color name="gold_bg_elevated">#FFFFFF</color>       <!-- کارت‌ها، شیت‌ها -->
+    <color name="gold_bg_elevated_2">#F1F3F7</color>     <!-- کارت روی کارت، دیالوگ -->
+    <color name="gold_border_subtle">#D5DBE5</color>     <!-- بوردر ظریف دور کارت‌ها -->
+
+    <!-- Gold accent -->
+    <color name="gold_primary">#A66B0A</color>           <!-- طلایی اصلی -->
+    <color name="gold_primary_light">#C8922C</color>     <!-- برای گرادینت بالای دکمه -->
+    <color name="gold_primary_dark">#7E4F00</color>       <!-- برای گرادینت پایین دکمه / حالت pressed -->
+    <color name="gold_glow">#33A66B0A</color>              <!-- سایه/گلوی نیمه‌شفاف دور دکمه -->
+    <color name="gold_ripple">#668A5A00</color>           <!-- ripple طلایی روشن‌تر alpha 40% -->
+
+    <!-- Text - new palette -->
+    <color name="text_primary">#172033</color>
+    <!-- FIX: Readable secondary/disabled Gold text on elevated and disabled surfaces. -->
+    <color name="text_secondary">#475569</color>
+    <color name="text_disabled">#64748B</color>
+    <color name="text_on_gold">#0D0F13</color>           <!-- متن روی دکمه طلایی همیشه مشکی -->
+
+    <!-- Status (برای اعلان‌ها، حاضری، هشدارها) -->
+    <color name="status_success">#167C4B</color>
+    <color name="status_success_deep">#146C43</color>
+    <color name="status_danger">#B3261E</color>
+    <color name="status_info">#1557A6</color>
+    <color name="status_warning">#8A5A00</color> <!-- هم‌رنگ طلایی -->
+    <color name="status_info_deep">#1557A6</color>
+    <color name="status_warning_deep">#8A5A00</color>
+    <color name="status_neutral_deep">#475569</color>
+
+    <!-- Gold button states -->
+    <color name="gold_button_disabled_bg">#E2E6EC</color>
+    <color name="gold_button_disabled_text">@color/text_disabled</color>
+    <color name="gold_input_focused">#A66B0A</color>
+    <color name="gold_input_error">#B3261E</color>
+
+    <!-- Card states -->
+    <color name="gold_card_border_default">#D5DBE5</color>
+    <color name="gold_card_border_focused">#A66B0A</color>
+    <color name="gold_card_border_error">#B3261E</color>
+
+    <!-- Missing light variants for backward compat -->
+    <color name="gold_bg_elevated_variant">#EEF1F5</color>
+    <color name="status_success_light">#E5F4EC</color>
+    <color name="status_warning_light">#FFF4D6</color>
+    <color name="status_info_light">#E7F0FC</color>
+    <color name="status_danger_light">#FCE9E7</color>
+
+    <!-- FIX: Opaque muted-gold fill keeps sent messages distinct without washing out light text. -->
+    <color name="gold_chat_sent_bg">#FFF1CF</color>
+
+    <!-- ==================== DESIGN SYSTEM (Phase 1) — SEMANTIC TOKENS ====================
+         این بلوک «معنایی» است و توکن‌های تزئینی موجود (gold_*) دست‌نخورده می‌مانند.
+         قاعده: رنگ معنایی = وضعیت (موفق/هشدار/خطر/اطلاع/بدهی/اعتبار)، رنگ تزئینی = برند/طلایی.
+         هیچ‌کدام از رنگ‌های قدیمی حذف نشده‌اند تا صفحات قدیمی سالم بمانند. -->
+
+    <!-- FIX: item_dunning_draft.xml این رنگ را ارجاع می‌داد ولی هیچ‌جا تعریف نشده بود (خطای resource linking).
+         مقدار آن با رنگ سطوح محوِ موجود هم‌خانواده انتخاب شده است. -->
+    <color name="gold_bg_subtle">#F3F4F6</color>
+
+    <!-- سطوح (از کم‌عمق به عمیق) -->
+    <color name="ds_bg_base">@color/gold_bg_base</color>
+    <color name="ds_bg_surface">@color/gold_bg_elevated</color>
+    <color name="ds_bg_surface_2">@color/gold_bg_elevated_2</color>
+    <color name="ds_bg_surface_3">#E8ECF2</color>
+    <color name="ds_bg_surface_disabled">@color/gold_button_disabled_bg</color>
+    <color name="ds_border">@color/gold_border_subtle</color>
+    <color name="ds_border_strong">#AAB4C3</color>
+
+    <!-- اکسنت برند (طلایی) — محدود و هدفمند -->
+    <color name="ds_accent">@color/gold_primary</color>
+    <color name="ds_accent_soft">@color/gold_primary_light</color>
+    <color name="ds_accent_strong">@color/gold_primary_dark</color>
+    <color name="ds_on_accent">@color/text_on_gold</color>
+
+    <!-- متن -->
+    <color name="ds_text_primary">@color/text_primary</color>
+    <color name="ds_text_secondary">@color/text_secondary</color>
+    <color name="ds_text_disabled">@color/text_disabled</color>
+
+    <!-- معنایی: موفق -->
+    <color name="ds_success">@color/status_success</color>
+    <color name="ds_success_container">@color/status_success_light</color>
+    <color name="ds_success_on_container">#146C43</color>
+
+    <!-- معنایی: هشدار -->
+    <color name="ds_warning">@color/status_warning</color>
+    <color name="ds_warning_container">@color/status_warning_light</color>
+    <color name="ds_warning_on_container">#6E4900</color>
+
+    <!-- معنایی: خطر -->
+    <color name="ds_danger">@color/status_danger</color>
+    <color name="ds_danger_container">@color/status_danger_light</color>
+    <color name="ds_danger_on_container">#8F1D18</color>
+    <!-- DESIGN SYSTEM (Phase 2): سطح پرشده خطر — تیره‌تر از ds_danger تا متن سفید کنتراست ≥4.5 بگیرد -->
+    <color name="ds_danger_deep">#B03A33</color>
+    <color name="ds_danger_deep_pressed">#8E2B25</color>
+
+    <!-- معنایی: اطلاع -->
+    <color name="ds_info">@color/status_info</color>
+    <color name="ds_info_container">@color/status_info_light</color>
+    <color name="ds_info_on_container">#0B4A83</color>
+
+    <!-- خنثی (برای چیپ/پیل‌های بی‌وضعیت) -->
+    <color name="ds_neutral">@color/text_secondary</color>
+    <color name="ds_neutral_container">@color/ds_bg_surface_3</color>
+
+    <!-- مالی: بدهی/اعتبار — هرگز فقط با رنگ نمایش داده نشوند (متن/آیکون الزامی است) -->
+    <color name="ds_debt">@color/status_danger</color>
+    <color name="ds_debt_container">@color/status_danger_light</color>
+    <color name="ds_debt_on_container">@color/ds_danger_on_container</color>
+    <color name="ds_credit">@color/status_success</color>
+    <color name="ds_credit_container">@color/status_success_light</color>
+    <color name="ds_credit_on_container">@color/ds_success_on_container</color>
+
+    <!-- گروه‌بندی بصری کارت‌های داشبورد (اولویت، نه تزئین) -->
+    <color name="ds_group_ops">@color/gold_primary</color>
+    <color name="ds_group_tools">#8FA6C9</color>
+    <color name="ds_group_finance">@color/status_success</color>
+    <color name="ds_group_academic">@color/status_info</color>
+    <color name="ds_group_admin">@color/status_warning</color>
+    <color name="ds_group_critical">@color/status_danger</color>
+
+    <!-- حالت‌های تعاملی -->
+    <color name="ds_ripple">@color/gold_ripple</color>
+    <color name="ds_ripple_neutral">#22FFFFFF</color>
+    <color name="ds_scrim">#99000000</color>
+
+
+    <!-- آرشیو کلاس‌های حذف‌شده: سرصفحهٔ تیره‌ی ثابت در هر دو تم (متن سفید/طلایی همیشه خوانا) -->
+    <color name="archive_hero_start">#1B2438</color>
+    <color name="archive_hero_end">#3A2A12</color>
+    <color name="archive_hero_text">#FFFFFF</color>
+    <color name="archive_hero_text_dim">#E6D7B4</color>
+    <color name="archive_hero_gold">#E0B45A</color>
+    <color name="archive_hero_pill">#29FFFFFF</color>
+</resources>

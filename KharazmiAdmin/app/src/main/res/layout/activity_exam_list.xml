@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/gold_bg_base"
+    android:layoutDirection="rtl">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/gold_primary"
+        app:elevation="@dimen/elevation_appbar"
+    >
+        <androidx.appcompat.widget.Toolbar
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize">
+            <TextView
+                android:id="@+id/tvExamTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="آزمون‌های آنلاین خوارزمی"
+                android:textColor="?attr/colorOnPrimary"
+                android:textAppearance="@style/TextAppearance.Kharazmi.PageTitle"/>
+        </androidx.appcompat.widget.Toolbar>
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <ViewFlipper
+        android:id="@+id/examFlipper"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <!-- STATE 1: Exam List -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:padding="@dimen/spacing_normal">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="آزمون‌های آنلاین مستمر"
+                android:textAppearance="@style/TextAppearance.Kharazmi.SectionTitle"
+                android:textColor="@color/gold_primary"
+                android:layout_marginHorizontal="@dimen/spacing_small"
+                android:layout_marginBottom="@dimen/spacing_small"/>
+
+            <!-- FIX: Use the declared Widget.Kharazmi.Card.Gold style; remove repeated suffixes. -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/Widget.Kharazmi.Card.Gold"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                app:cardCornerRadius="20dp"
+                android:layout_marginBottom="@dimen/spacing_normal">
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvExams"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:padding="@dimen/spacing_small"
+                    android:layoutAnimation="@anim/layout_animation_fall_down"/>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Quick Report Card button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnViewReportCard"
+                style="@style/Widget.Kharazmi.Button.Gold"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/text_on_gold"
+                android:text="📊 مشاهده و دانلود کارنامه رسمی من"
+                app:backgroundTint="@color/gold_primary" />
+
+        </LinearLayout>
+
+        <!-- STATE 2: Online Exam Attempt / Questions View -->
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fillViewport="true">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/spacing_normal">
+
+                <!-- Timer / Title header card -->
+                <!-- FIX: Use the declared Widget.Kharazmi.Card.Gold style; remove repeated suffixes. -->
+                <com.google.android.material.card.MaterialCardView
+                    style="@style/Widget.Kharazmi.Card.Gold"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:cardCornerRadius="20dp"
+                    app:strokeColor="@color/gold_primary"
+                    app:strokeWidth="1dp"
+                    android:layout_marginBottom="@dimen/spacing_normal">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:padding="@dimen/spacing_normal"
+                        android:gravity="center_vertical">
+
+                        <TextView
+                            android:layout_height="wrap_content"
+                            android:id="@+id/tvActiveExamTitle"
+                            android:text="آزمون ریاضی فصل دوم"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.SectionTitle"
+                            android:textColor="@color/text_primary"
+                            android:textStyle="bold"
+                            android:layout_width="0dp"
+                            android:layout_weight="1" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/tvExamTimer"
+                            android:text="⏳ زمان: ۶۰ دقیقه"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.Body"
+                            android:fontFeatureSettings="tnum"
+                            android:textColor="@color/gold_primary"
+                            android:textStyle="bold"/>
+
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Questions list / container -->
+                <!-- FIX: Use the declared Widget.Kharazmi.Card.Gold style; remove repeated suffixes. -->
+                <com.google.android.material.card.MaterialCardView
+                    style="@style/Widget.Kharazmi.Card.Gold"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:cardCornerRadius="20dp"
+                    android:layout_marginBottom="@dimen/spacing_normal">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="@dimen/spacing_normal">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/tvQuestionNumber"
+                            android:text="سوال شماره ۱:"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.SectionTitle"
+                            android:textColor="@color/gold_primary"
+                            android:layout_marginBottom="@dimen/spacing_small"/>
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/tvQuestionText"
+                            android:text="حاصل عبارت زیر را بدست آورید؟"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.Body"
+                            android:layout_marginBottom="@dimen/spacing_large"/>
+
+                        <!-- Options for Multiple Choice -->
+                        <RadioGroup
+                            android:id="@+id/rgOptions"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:layout_marginBottom="@dimen/spacing_large"
+                            android:visibility="gone">
+
+                            <RadioButton
+                                android:id="@+id/rbOption1"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="گزینه اول"
+                                android:padding="8dp"/>
+
+                            <RadioButton
+                                android:id="@+id/rbOption2"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="گزینه دوم"
+                                android:padding="8dp"/>
+
+                            <RadioButton
+                                android:id="@+id/rbOption3"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="گزینه سوم"
+                                android:padding="8dp"/>
+
+                            <RadioButton
+                                android:id="@+id/rbOption4"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="گزینه چهارم"
+                                android:padding="8dp"/>
+                        </RadioGroup>
+
+                        <!-- Input for Short Answer / Descriptive -->
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/tilShortAnswer"
+                            style="@style/Widget.Kharazmi.Input.Gold"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="پاسخ کوتاه یا تشریحی شما"
+                            android:visibility="gone"
+                            android:layout_marginBottom="@dimen/spacing_large">
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/etAnswerText"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:textColor="@color/text_primary"/>
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Navigation buttons -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnSubmitExam"
+                        style="@style/Widget.Kharazmi.Button.Gold"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="ثبت و تحویل نهایی پاسخ‌برگ"
+                        app:backgroundTint="@color/gold_primary"
+                        android:textColor="@color/text_on_gold" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+        </ScrollView>
+
+    </ViewFlipper>
+
+</LinearLayout>

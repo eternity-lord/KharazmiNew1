@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/gold_bg_base"
+    android:layoutDirection="rtl"
+>
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/gold_primary"
+        app:elevation="@dimen/elevation_appbar"
+    >
+        <androidx.appcompat.widget.Toolbar
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+        >
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="ثبت کلاس جدید (تعرفه جلسه‌ای)"
+                android:textColor="?attr/colorOnPrimary"
+                android:textAppearance="@style/TextAppearance.Kharazmi.PageTitle"
+            />
+        </androidx.appcompat.widget.Toolbar>
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+    >
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/spacing_normal"
+        >
+
+            <!-- Card wrapper for class inputs (Balanced personality) -->
+            <!-- FIX: Use the declared Widget.Kharazmi.Card.Gold style; remove repeated suffixes. -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/Widget.Kharazmi.Card.Gold"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_normal"
+                app:cardCornerRadius="18dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/spacing_normal">
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.Kharazmi.Input.Gold"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="نام درس">
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etClassTitle"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="text"
+                            android:textColor="@color/text_primary"
+                        />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                        app:boxCornerRadiusTopStart="14dp"
+                        app:boxCornerRadiusTopEnd="14dp"
+                        app:boxCornerRadiusBottomStart="14dp"
+                        app:boxCornerRadiusBottomEnd="14dp"
+                        app:boxStrokeColor="@color/gold_primary"
+                        app:hintTextColor="@color/gold_primary"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_normal"
+                        android:hint="انتخاب معلم"
+                        app:startIconDrawable="@drawable/ic_calendar_24"
+                    >
+                        <AutoCompleteTextView
+                            android:id="@+id/acTeacher"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="text"
+                            android:textColor="@color/text_primary"
+                        />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <!-- Grade and Education Type Row -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginTop="@dimen/spacing_normal"
+                        android:baselineAligned="false"
+                    >
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                            app:boxCornerRadiusTopStart="14dp"
+                            app:boxCornerRadiusTopEnd="14dp"
+                            app:boxCornerRadiusBottomStart="14dp"
+                            app:boxCornerRadiusBottomEnd="14dp"
+                            app:boxStrokeColor="@color/gold_primary"
+                            app:hintTextColor="@color/gold_primary"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:layout_marginLeft="6dp"
+                            android:hint="پایه"
+                        >
+                            <AutoCompleteTextView
+                                android:id="@+id/acGrade"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="none"
+                                android:text="دوازدهم"
+                                android:textColor="@color/text_primary"
+                            />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                            app:boxCornerRadiusTopStart="14dp"
+                            app:boxCornerRadiusTopEnd="14dp"
+                            app:boxCornerRadiusBottomStart="14dp"
+                            app:boxCornerRadiusBottomEnd="14dp"
+                            app:boxStrokeColor="@color/gold_primary"
+                            app:hintTextColor="@color/gold_primary"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:layout_marginRight="6dp"
+                            android:hint="نوع آموزش"
+                        >
+                            <AutoCompleteTextView
+                                android:id="@+id/acEduType"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="none"
+                                android:text="تقویتی"
+                                android:textColor="@color/text_primary"
+                            />
+                        </com.google.android.material.textfield.TextInputLayout>
+                    </LinearLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.Kharazmi.Input.Gold"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_normal"
+                        android:hint="شهریه درخواستی معلم برای هر جلسه (تومان)"
+                        app:startIconDrawable="@drawable/ic_history_24"
+                    >
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etTeacherPrice"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="number"
+                            android:textColor="@color/text_primary"
+                            android:textStyle="bold"
+                            android:fontFeatureSettings="tnum"
+                        />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="نکته: سهم آموزشگاه به صورت خودکار بر اساس تعداد شاگردان به این مبلغ اضافه می‌شود."
+                        android:textAppearance="@style/TextAppearance.Kharazmi.Caption"
+                        android:layout_marginTop="6dp"
+                    />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="0.5dp"
+                        android:background="@color/gold_border_subtle"
+                        android:layout_marginTop="@dimen/spacing_normal"
+                        android:layout_marginBottom="@dimen/spacing_normal"
+                    />
+
+                    <!-- Color Picker Section -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                    >
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="رنگ پس زمینه کارت کلاس:"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.Body"
+                            android:textColor="@color/text_primary"
+                        />
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnColorPicker"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:backgroundTint="@color/ds_bg_surface_disabled"
+                            android:layout_marginRight="12dp"
+                            style="@style/Widget.Kharazmi.Button.Gold.Outline"
+                            app:cornerRadius="10dp"
+                            app:strokeWidth="1dp"
+                        />
+                    </LinearLayout>
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Submit button styled with central style -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSubmitClass"
+                style="@style/Widget.Kharazmi.Button.Gold"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/text_on_gold"
+                android:text="ثبت کلاس"
+                app:backgroundTint="@color/gold_primary"
+                app:elevation="@dimen/elevation_button"
+                android:layout_marginHorizontal="@dimen/spacing_small"
+                android:layout_marginBottom="@dimen/spacing_normal"
+            />
+
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

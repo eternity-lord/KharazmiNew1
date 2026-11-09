@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ====================================================================================
+     DESIGN SYSTEM (Phase 1) — Drawer Header
+     ==================================================================================== -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/ds_bg_surface"
+    android:gravity="bottom"
+    android:layoutDirection="rtl"
+    android:orientation="vertical"
+    android:paddingStart="@dimen/spacing_normal"
+    android:paddingEnd="@dimen/spacing_normal"
+    android:paddingTop="@dimen/spacing_large"
+    android:paddingBottom="@dimen/spacing_normal"
+    android:theme="@style/ThemeOverlay.AppCompat.Dark">
+
+    <com.google.android.material.card.MaterialCardView
+        style="@style/Widget.Kharazmi.DS.Card.Surface2"
+        android:layout_width="@dimen/avatar_size"
+        android:layout_height="@dimen/avatar_size"
+        android:layout_gravity="start"
+        app:cardCornerRadius="@dimen/corner_radius_card"
+        app:strokeColor="@color/ds_accent">
+
+        <ImageView
+            android:layout_width="@dimen/icon_xlarge"
+            android:layout_height="@dimen/icon_xlarge"
+            android:layout_gravity="center"
+            android:contentDescription="@string/ds_drawer_logo_desc"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_gold_splash_logo"
+            app:tint="@color/ds_accent" />
+    </com.google.android.material.card.MaterialCardView>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_snug"
+        android:text="@string/ds_drawer_user_default"
+        android:textAppearance="@style/TextAppearance.Kharazmi.DS.SectionTitle" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_2xs"
+        android:text="@string/ds_drawer_subtitle"
+        android:textAppearance="@style/TextAppearance.Kharazmi.DS.Caption" />
+
+    <!-- خروج از حساب: متن + آیکون، نه فقط رنگ -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_snug"
+        android:gravity="center_vertical"
+        android:minHeight="@dimen/min_touch_target"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:layout_width="@dimen/icon_small"
+            android:layout_height="@dimen/icon_small"
+            android:importantForAccessibility="no"
+            android:src="@drawable/ic_ds_danger_24"
+            app:tint="@color/ds_danger" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/spacing_small"
+            android:text="@string/ds_drawer_logout"
+            android:textAppearance="@style/TextAppearance.Kharazmi.DS.Caption"
+            android:textColor="@color/ds_danger_on_container" />
+    </LinearLayout>
+
+</LinearLayout>

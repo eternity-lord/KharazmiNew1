@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/layoutCommunicationRow"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layoutDirection="rtl"
+    android:orientation="vertical"
+    android:paddingVertical="4dp">
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardCommunicationBubble"
+        style="@style/Widget.Kharazmi.Card.Gold"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="0dp"
+        android:maxWidth="320dp"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="1dp"
+        app:strokeColor="@color/gold_border_subtle"
+        app:strokeWidth="1dp">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minWidth="220dp"
+            android:orientation="vertical"
+            android:paddingHorizontal="@dimen/spacing_normal"
+            android:paddingVertical="@dimen/spacing_small">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/tvCommunicationType"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="پیام داخلی"
+                    android:textAppearance="@style/TextAppearance.Kharazmi.Caption"
+                    android:textColor="@color/gold_primary"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvCommunicationDate"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/spacing_small"
+                    android:layout_weight="1"
+                    android:fontFeatureSettings="tnum"
+                    android:gravity="end"
+                    android:text="1405/06/02 12:30"
+                    android:textAppearance="@style/TextAppearance.Kharazmi.Caption"
+                    android:textColor="@color/text_secondary" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tvCommunicationParties"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="از: مدیریت  ←  به: دانش‌آموز"
+                android:textAppearance="@style/TextAppearance.Kharazmi.Caption"
+                android:textColor="@color/text_secondary" />
+
+            <TextView
+                android:id="@+id/tvCommunicationSummary"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:lineSpacingExtra="3dp"
+                android:text="خلاصه پیام ارتباطی"
+                android:textAppearance="@style/TextAppearance.Kharazmi.Body"
+                android:textColor="@color/text_primary" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+</LinearLayout>

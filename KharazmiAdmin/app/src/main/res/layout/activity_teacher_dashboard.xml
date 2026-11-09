@@ -1,0 +1,557 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/gold_bg_base"
+    android:layoutDirection="rtl"
+>
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/gold_primary"
+        app:elevation="@dimen/elevation_appbar"
+    >
+        <androidx.appcompat.widget.Toolbar
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+        >
+
+            <TextView
+                android:id="@+id/tvTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="پنل معلم"
+                android:textColor="?attr/colorOnPrimary"
+                android:textAppearance="@style/TextAppearance.Kharazmi.PageTitle"
+                android:layout_gravity="start"
+            />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:orientation="horizontal"
+            >
+
+                <ImageView
+                    android:id="@+id/btnRefresh"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_refresh_24"
+                    app:tint="?attr/colorOnPrimary"
+                    android:padding="@dimen/spacing_normal"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                />
+
+                <ImageView
+                    android:id="@+id/btnLogout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@android:drawable/ic_lock_power_off"
+                    app:tint="?attr/colorOnPrimary"
+                    android:padding="@dimen/spacing_normal"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                />
+            </LinearLayout>
+
+        </androidx.appcompat.widget.Toolbar>
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+    >
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:padding="@dimen/spacing_normal"
+        >
+
+            <TextView
+                android:id="@+id/tvWelcome"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="خوش آمدید"
+                android:textAppearance="@style/TextAppearance.Kharazmi.PageTitle"
+                android:textColor="@color/gold_primary"
+                android:textStyle="bold"
+                android:layout_marginBottom="@dimen/spacing_large"
+            />
+
+            <!-- وضعیت امروز معلم: کلاس زنده/بعدی + خلاصه هفته -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardTeacherToday"
+                style="@style/Widget.Kharazmi.Card.Gold"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="0dp"
+                android:layout_marginBottom="@dimen/spacing_normal">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/spacing_normal">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="وضعیت امروز"
+                        android:textAppearance="@style/TextAppearance.Kharazmi.SectionTitle"
+                        android:textColor="@color/gold_primary" />
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/cardTeacherTodayStatus"
+                        style="@style/Widget.Kharazmi.Card.Gold"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="0dp"
+                        android:layout_marginTop="@dimen/spacing_small"
+                        android:visibility="gone"
+                        app:strokeWidth="1dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal"
+                            android:padding="@dimen/spacing_small">
+
+                            <TextView
+                                android:id="@+id/tvTeacherTodayStatus"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="کلاس بعدیت"
+                                android:textAppearance="@style/TextAppearance.Kharazmi.Body"
+                                android:textStyle="bold" />
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btnTeacherTodayAction"
+                                style="@style/Widget.Kharazmi.Button.Gold"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="@dimen/spacing_small"
+                                android:text="شروع کلاس" />
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_small"
+                        android:text="خلاصه هفته"
+                        android:textAppearance="@style/TextAppearance.Kharazmi.Caption"
+                        android:textColor="@color/gold_primary"
+                        android:textStyle="bold" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:orientation="horizontal"
+                        android:baselineAligned="false">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:gravity="center"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/tvTeacherWeekSessions"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="—"
+                                android:textAppearance="@style/TextAppearance.Kharazmi.SectionTitle"
+                                android:textColor="@color/gold_primary" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="جلسات تدریس‌شده این هفته"
+                                android:textAppearance="@style/TextAppearance.Kharazmi.Caption" />
+                        </LinearLayout>
+
+                        <View
+                            android:layout_width="0.5dp"
+                            android:layout_height="38dp"
+                            android:background="@color/gold_border_subtle" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:gravity="center"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/tvTeacherWeekUnsettled"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="—"
+                                android:textAppearance="@style/TextAppearance.Kharazmi.SectionTitle"
+                                android:textColor="@color/gold_primary" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="طلب تسویه‌نشده هفته (تومان)"
+                                android:textAppearance="@style/TextAppearance.Kharazmi.Caption" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardPendingApproval"
+                style="@style/Widget.Kharazmi.Card.Gold"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_normal"
+                android:visibility="gone"
+                android:clickable="true"
+                android:focusable="true">
+                <TextView
+                    android:id="@+id/tvPendingApproval"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="@dimen/spacing_normal"
+                    android:text="pending_classes"
+                    android:textStyle="bold"
+                    android:textColor="@color/gold_primary" />
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Teacher 6-menu Grid Layout -->
+            <GridLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:columnCount="2"
+                android:rowCount="3"
+                android:alignmentMode="alignMargins"
+                android:columnOrderPreserved="false"
+            >
+
+                <!-- ۱. ثبت نام دانش آموز -->
+                <!-- FIX: Use the declared Widget.Kharazmi.Card.Gold style; remove repeated suffixes. -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardRegisterStudent"
+                    style="@style/Widget.Kharazmi.Card.Gold"
+                    android:layout_width="0dp"
+                    android:layout_height="140dp"
+                    android:layout_columnWeight="1"
+                    android:layout_margin="4dp"
+                    app:cardCornerRadius="18dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                >
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:padding="@dimen/spacing_normal"
+                    >
+                        <ImageView
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:src="@drawable/ic_add_24"
+                            app:tint="@color/gold_primary"
+                        />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="ثبت نام\nدانش‌آموز"
+                            android:textAlignment="center"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.Body"
+                            android:textStyle="bold"
+                            android:layout_marginTop="10dp"
+                            android:textColor="@color/text_primary"
+                        />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- ۲. ثبت کلاس جدید -->
+                <!-- FIX: Use the declared Widget.Kharazmi.Card.Gold style; remove repeated suffixes. -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardRegisterClass"
+                    style="@style/Widget.Kharazmi.Card.Gold"
+                    android:layout_width="0dp"
+                    android:layout_height="140dp"
+                    android:layout_columnWeight="1"
+                    android:layout_margin="4dp"
+                    app:cardCornerRadius="18dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                >
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:padding="@dimen/spacing_normal"
+                    >
+                        <ImageView
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:src="@drawable/ic_history_24"
+                            app:tint="@color/gold_primary"
+                        />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="ثبت کلاس\nجدید"
+                            android:textAlignment="center"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.Body"
+                            android:textStyle="bold"
+                            android:layout_marginTop="10dp"
+                            android:textColor="@color/text_primary"
+                        />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- ۳. حضور و غیاب -->
+                <!-- FIX: Use the declared Widget.Kharazmi.Card.Gold style; remove repeated suffixes. -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardAttendance"
+                    style="@style/Widget.Kharazmi.Card.Gold"
+                    android:layout_width="0dp"
+                    android:layout_height="140dp"
+                    android:layout_columnWeight="1"
+                    android:layout_margin="4dp"
+                    app:cardCornerRadius="18dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                >
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:padding="@dimen/spacing_normal"
+                    >
+                        <ImageView
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:src="@drawable/ic_calendar_24"
+                            app:tint="@color/gold_primary"
+                        />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="حضور و غیاب"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.Body"
+                            android:textStyle="bold"
+                            android:layout_marginTop="10dp"
+                            android:textColor="@color/text_primary"
+                        />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- ۴. ثبت حواله -->
+                <!-- FIX: Use the declared Widget.Kharazmi.Card.Gold style; remove repeated suffixes. -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardFastInvoice"
+                    style="@style/Widget.Kharazmi.Card.Gold"
+                    android:layout_width="0dp"
+                    android:layout_height="140dp"
+                    android:layout_columnWeight="1"
+                    android:layout_margin="4dp"
+                    app:cardCornerRadius="18dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                >
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:padding="@dimen/spacing_normal"
+                    >
+
+                        <ImageView
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:src="@drawable/ic_arrow_forward_24"
+                            app:tint="@color/gold_primary"
+                        />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="ثبت حواله"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.Body"
+                            android:textStyle="bold"
+                            android:layout_marginTop="10dp"
+                            android:textColor="@color/text_primary"
+                        />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="(جدید)"
+                            android:textSize="10sp"
+                            android:textColor="@color/gold_primary"
+                        />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- ۵. کلاس های ناقص -->
+                <!-- FIX: Use the declared Widget.Kharazmi.Card.Gold style; remove repeated suffixes. -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardIncompleteClasses"
+                    style="@style/Widget.Kharazmi.Card.Gold"
+                    android:layout_width="0dp"
+                    android:layout_height="140dp"
+                    android:layout_columnWeight="1"
+                    android:layout_margin="4dp"
+                    app:cardCornerRadius="18dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                >
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:padding="@dimen/spacing_normal"
+                    >
+                        <ImageView
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:src="@android:drawable/ic_dialog_alert"
+                            app:tint="@color/gold_primary"
+                        />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="کلاس‌های ناقص"
+                            android:textAlignment="center"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.Body"
+                            android:textStyle="bold"
+                            android:layout_marginTop="10dp"
+                            android:textColor="@color/text_primary"
+                        />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- ۶. گزارش مالی -->
+                <!-- FIX: Use the declared Widget.Kharazmi.Card.Gold style; remove repeated suffixes. -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardReports"
+                    style="@style/Widget.Kharazmi.Card.Gold"
+                    android:layout_width="0dp"
+                    android:layout_height="140dp"
+                    android:layout_columnWeight="1"
+                    android:layout_margin="4dp"
+                    app:cardCornerRadius="18dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                >
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:padding="@dimen/spacing_normal"
+                    >
+                        <ImageView
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:src="@drawable/ic_history_24"
+                            app:tint="@color/gold_primary"
+                        />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="گزارش مالی"
+                            android:textAlignment="center"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.Body"
+                            android:textStyle="bold"
+                            android:layout_marginTop="10dp"
+                            android:textColor="@color/text_primary"
+                        />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+            </GridLayout>
+
+            <!-- 🎥 کلاس زنده (Live) - جدید 🆕 -->
+            <!-- FIX: Use the declared Widget.Kharazmi.Card.Gold style; remove repeated suffixes. -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardStartLive"
+                style="@style/Widget.Kharazmi.Card.Gold"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="20dp"
+                app:strokeColor="@color/status_danger"
+                app:strokeWidth="1.5dp"
+                android:layout_marginTop="@dimen/spacing_normal"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:padding="@dimen/spacing_normal">
+
+                    <TextView
+                        android:id="@+id/tvLiveButtonTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="▶️ شروع کلاس زنده"
+                        android:textAppearance="@style/TextAppearance.Kharazmi.SectionTitle"
+                        android:textColor="@color/status_danger"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvLiveButtonSub"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="برگزاری جلسه به‌صورت زنده + ثبت لحظه‌ای حضور"
+                        android:textAppearance="@style/TextAppearance.Kharazmi.Caption"
+                        android:textColor="@color/text_primary"
+                        android:layout_marginTop="4dp" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="0.5dp"
+                android:background="@color/gold_border_subtle"
+                android:layout_marginTop="@dimen/spacing_large"
+                android:layout_marginBottom="@dimen/spacing_large"
+            />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="لیست کلاس‌های شما"
+                android:textAppearance="@style/TextAppearance.Kharazmi.SectionTitle"
+                android:textColor="@color/gold_primary"
+                android:layout_marginBottom="@dimen/spacing_small"
+            />
+
+            <!-- List wrapped inside clean flat layout -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvMyClasses"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:nestedScrollingEnabled="false"
+                android:layoutAnimation="@anim/layout_animation_fall_down"/>
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+</LinearLayout>

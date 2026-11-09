@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- FIX: Use the declared Widget.Kharazmi.Card.Gold style; remove repeated suffixes. -->
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    style="@style/Widget.Kharazmi.Card.Gold"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/spacing_normal"
+        android:layoutDirection="rtl">
+
+        <CheckBox
+            android:id="@+id/cbPendingClass"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="انتخاب برای عملیات گروهی"
+            android:layout_gravity="start" />
+
+        <TextView
+            android:id="@+id/tvTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="عنوان کلاس"
+            android:textStyle="bold"
+            android:textColor="@color/text_primary"
+            android:textSize="16sp"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="@dimen/spacing_small">
+
+            <TextView
+                android:id="@+id/tvCode"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="کد: 123"
+                android:textSize="12sp"/>
+
+            <TextView
+                android:id="@+id/tvTeacher"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="مدرس: نام مدرس"
+                android:textSize="12sp"
+                android:textColor="@color/gold_primary"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="4dp">
+
+            <TextView
+                android:id="@+id/tvSchedule"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="زمان: شنبه 16:00"
+                android:textSize="12sp"/>
+
+            <TextView
+                android:fontFeatureSettings="tnum"
+        android:id="@+id/tvPrice"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="شهریه: 0 تومان"
+                android:textSize="12sp"
+                android:textColor="@color/gold_primary"/>
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tvPendingIssue"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/status_danger"
+            android:textSize="12sp"
+            android:visibility="gone" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/gold_border_subtle"
+            android:layout_marginTop="@dimen/spacing_normal"
+            android:layout_marginBottom="@dimen/spacing_normal"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnRejectClass"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:minHeight="@dimen/min_touch_target"
+                android:maxLines="2"
+                android:layout_weight="1"
+                android:layout_marginEnd="6dp"
+                android:text="رد کردن"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="@color/white"
+                app:backgroundTint="@color/ds_danger_deep"
+                app:icon="@android:drawable/ic_menu_delete"
+                app:iconGravity="textStart"
+                app:iconTint="@color/white"
+                app:cornerRadius="@dimen/spacing_small"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnApproveClass"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:minHeight="@dimen/min_touch_target"
+                android:maxLines="2"
+                android:layout_weight="1"
+                android:layout_marginStart="6dp"
+                android:textColor="@color/text_on_gold"
+                android:text="تایید کلاس"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                app:backgroundTint="@color/gold_primary"
+                app:icon="@android:drawable/checkbox_on_background"
+                app:iconTint="@color/text_on_gold"
+                app:iconGravity="textStart"
+                app:cornerRadius="@dimen/spacing_small"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

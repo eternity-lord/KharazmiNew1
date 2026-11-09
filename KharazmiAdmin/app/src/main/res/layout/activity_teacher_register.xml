@@ -1,0 +1,448 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/gold_bg_base"
+    android:layoutDirection="rtl"
+>
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBarLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:elevation="0dp"
+        app:layout_constraintTop_toTopOf="parent"
+    >
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@color/gold_bg_elevated"
+        >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="ثبت نام معلم جدید"
+                android:textColor="?attr/colorOnPrimary"
+                android:textAppearance="@style/TextAppearance.Kharazmi.PageTitle"
+            />
+        </androidx.appcompat.widget.Toolbar>
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <com.google.android.material.progressindicator.LinearProgressIndicator
+        android:id="@+id/stepProgress"
+        android:layout_width="match_parent"
+        android:layout_height="4dp"
+        android:progress="33"
+        app:trackColor="@color/gold_border_subtle"
+        app:indicatorColor="@color/gold_primary"
+        app:layout_constraintTop_toBottomOf="@id/appBarLayout"
+    />
+
+    <ViewFlipper
+        android:id="@+id/viewFlipper"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:inAnimation="@anim/slide_in_right"
+        android:outAnimation="@anim/slide_out_left"
+        app:layout_constraintBottom_toTopOf="@id/bottomNavContainer"
+        app:layout_constraintTop_toBottomOf="@id/stepProgress"
+    >
+
+        <!-- Step 1: Personal Details inside a warm, clean card -->
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fillViewport="true"
+        >
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/spacing_normal"
+            >
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="مرحله ۱: مشخصات فردی"
+                    android:textAppearance="@style/TextAppearance.Kharazmi.SectionTitle"
+                    android:textColor="@color/gold_primary"
+                    android:layout_marginHorizontal="@dimen/spacing_small"
+                    android:layout_marginBottom="@dimen/spacing_small"
+                />
+
+                <com.google.android.material.card.MaterialCardView
+                    style="@style/Widget.Kharazmi.Card.Gold"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:cardCornerRadius="20dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="@dimen/spacing_normal">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:baselineAligned="false"
+                        >
+
+                            <com.google.android.material.textfield.TextInputLayout
+                                style="@style/Widget.Kharazmi.Input.Gold"
+                                android:layout_width="0dp"
+                                android:layout_weight="1"
+                                android:layout_height="wrap_content"
+                                android:layout_marginEnd="6dp"
+                                android:hint="نام"
+                            >
+                                <com.google.android.material.textfield.TextInputEditText
+                                    android:id="@+id/etTFirstName"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:inputType="textPersonName"
+                                    android:textColor="@color/text_primary"
+                                />
+                            </com.google.android.material.textfield.TextInputLayout>
+
+                            <com.google.android.material.textfield.TextInputLayout
+                                style="@style/Widget.Kharazmi.Input.Gold"
+                                android:layout_width="0dp"
+                                android:layout_weight="1"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="6dp"
+                                android:hint="نام خانوادگی"
+                            >
+                                <com.google.android.material.textfield.TextInputEditText
+                                    android:id="@+id/etTLastName"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:inputType="textPersonName"
+                                    android:textColor="@color/text_primary"
+                                />
+                            </com.google.android.material.textfield.TextInputLayout>
+                        </LinearLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            style="@style/Widget.Kharazmi.Input.Gold"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_normal"
+                            android:hint="نام پدر"
+                        >
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/etTFatherName"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="textPersonName"
+                                android:textColor="@color/text_primary"
+                            />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            style="@style/Widget.Kharazmi.Input.Gold"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_normal"
+                            android:hint="کد ملی"
+                            app:counterEnabled="true"
+                            app:counterMaxLength="10"
+                        >
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/etTNationalCode"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="number"
+                                android:fontFeatureSettings="tnum"
+                                android:maxLength="10"
+                                android:textColor="@color/text_primary"
+                            />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            style="@style/Widget.Kharazmi.Input.Gold"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_normal"
+                            android:hint="تاریخ تولد"
+                            app:endIconMode="clear_text"
+                            app:startIconDrawable="@android:drawable/ic_menu_my_calendar"
+                            app:startIconTint="@color/gold_primary"
+                        >
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/etTBirthDate"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="none"
+                                android:textColor="@color/text_primary"
+                                android:fontFeatureSettings="tnum"
+                                android:focusable="false"
+                                android:clickable="true"
+                                android:cursorVisible="false"
+                            />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+            </LinearLayout>
+        </ScrollView>
+
+        <!-- Step 2: Contact Details inside a warm, clean card -->
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fillViewport="true"
+        >
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/spacing_normal"
+            >
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="مرحله ۲: اطلاعات تماس و شخصی"
+                    android:textAppearance="@style/TextAppearance.Kharazmi.SectionTitle"
+                    android:textColor="@color/gold_primary"
+                    android:layout_marginHorizontal="@dimen/spacing_small"
+                    android:layout_marginBottom="@dimen/spacing_small"
+                />
+
+                <com.google.android.material.card.MaterialCardView
+                    style="@style/Widget.Kharazmi.Card.Gold"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:cardCornerRadius="20dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="@dimen/spacing_normal">
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            style="@style/Widget.Kharazmi.Input.Gold"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="شماره همراه (نام کاربری)"
+                            app:startIconDrawable="@android:drawable/ic_menu_call"
+                            app:startIconTint="@color/gold_primary"
+                        >
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/etTMobile"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="phone"
+                                android:textColor="@color/text_primary"
+                                android:fontFeatureSettings="tnum"
+                            />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                            app:boxCornerRadiusTopStart="14dp"
+                            app:boxCornerRadiusTopEnd="14dp"
+                            app:boxCornerRadiusBottomStart="14dp"
+                            app:boxCornerRadiusBottomEnd="14dp"
+                            app:boxStrokeColor="@color/gold_primary"
+                            app:hintTextColor="@color/gold_primary"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_normal"
+                            android:hint="وضعیت تاهل"
+                        >
+                            <AutoCompleteTextView
+                                android:id="@+id/acTMarital"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="none"
+                                android:text="متاهل"
+                                android:textColor="@color/text_primary"
+                            />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                            app:boxCornerRadiusTopStart="14dp"
+                            app:boxCornerRadiusTopEnd="14dp"
+                            app:boxCornerRadiusBottomStart="14dp"
+                            app:boxCornerRadiusBottomEnd="14dp"
+                            app:boxStrokeColor="@color/gold_primary"
+                            app:hintTextColor="@color/gold_primary"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_normal"
+                            android:hint="جنسیت"
+                        >
+                            <AutoCompleteTextView
+                                android:id="@+id/acTGender"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="none"
+                                android:text="آقا"
+                                android:textColor="@color/text_primary"
+                            />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+            </LinearLayout>
+        </ScrollView>
+
+        <!-- Step 3: Employment Details inside a warm, clean card -->
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fillViewport="true"
+        >
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/spacing_normal"
+            >
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="مرحله ۳: اطلاعات شغلی و امنیتی"
+                    android:textAppearance="@style/TextAppearance.Kharazmi.SectionTitle"
+                    android:textColor="@color/gold_primary"
+                    android:layout_marginHorizontal="@dimen/spacing_small"
+                    android:layout_marginBottom="@dimen/spacing_small"
+                />
+
+                <com.google.android.material.card.MaterialCardView
+                    style="@style/Widget.Kharazmi.Card.Gold"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:cardCornerRadius="20dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="@dimen/spacing_normal">
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                            app:boxCornerRadiusTopStart="14dp"
+                            app:boxCornerRadiusTopEnd="14dp"
+                            app:boxCornerRadiusBottomStart="14dp"
+                            app:boxCornerRadiusBottomEnd="14dp"
+                            app:boxStrokeColor="@color/gold_primary"
+                            app:hintTextColor="@color/gold_primary"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="نوع قرارداد همکاری"
+                            app:startIconDrawable="@android:drawable/ic_menu_agenda"
+                            app:startIconTint="@color/gold_primary"
+                        >
+                            <AutoCompleteTextView
+                                android:id="@+id/acTEmployment"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="none"
+                                android:text="رسمی"
+                                android:textColor="@color/text_primary"
+                            />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            style="@style/Widget.Kharazmi.Input.Gold"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_normal"
+                            android:hint="شماره کارت بانکی (جهت واریز)"
+                            app:startIconDrawable="@drawable/ic_save_24"
+                            app:startIconTint="@color/gold_primary"
+                            app:counterEnabled="true"
+                            app:counterMaxLength="16"
+                        >
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/etTCardNumber"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="number"
+                                android:fontFeatureSettings="tnum"
+                                android:maxLength="16"
+                                android:textColor="@color/text_primary"
+                            />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+            </LinearLayout>
+        </ScrollView>
+
+    </ViewFlipper>
+
+    <!-- Bottom buttons styled with central pill style -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/bottomNavContainer"
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:background="@color/gold_bg_elevated"
+        android:padding="@dimen/spacing_normal"
+        android:elevation="16dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+    >
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/gold_border_subtle"
+            app:layout_constraintTop_toTopOf="parent"
+        />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnPrevious"
+            style="@style/Widget.Kharazmi.Button.Gold.Outline"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="مرحله قبل"
+            android:textColor="@color/text_primary"
+            app:strokeColor="@color/gold_border_subtle"
+            app:cornerRadius="24dp"
+            android:paddingVertical="10dp"
+            android:textSize="13sp"
+            app:layout_constraintWidth_percent="0.45"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:visibility="invisible"
+            tools:visibility="visible"
+        />
+
+        <com.example.kharazmiadmin.GoldButton
+            android:id="@+id/btnNext"
+            style="@style/Widget.Kharazmi.Button.Gold"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="مرحله بعد"
+            app:backgroundTint="@color/gold_primary"
+            app:layout_constraintWidth_percent="0.45"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+        />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

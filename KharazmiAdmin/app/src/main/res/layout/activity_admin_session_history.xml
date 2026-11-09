@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:orientation="vertical" android:padding="16dp" android:layoutDirection="rtl">
+    <!-- filter controls; item rows expose tvProblemFlags and btnReopenSession. -->
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+        <EditText android:id="@+id/etSessionFlag" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:hint="پرچم: attendance_missing / started_late / auto_ended" />
+        <Button android:id="@+id/btnFilterSessions" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="فیلتر" />
+        <Button android:id="@+id/btnExportSessions" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Excel" />
+    </LinearLayout>
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+        <EditText android:id="@+id/etSessionDateFrom" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:hint="از تاریخ 1405/01/01" />
+        <EditText android:id="@+id/etSessionDateTo" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:hint="تا تاریخ 1405/12/29" />
+        <EditText android:id="@+id/etSessionSearch" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:hint="جستجوی کلاس/معلم" />
+    </LinearLayout>
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+        <EditText android:id="@+id/etSessionStatus" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:hint="وضعیت جلسه" />
+        <EditText android:id="@+id/etSessionTeacherId" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:hint="شناسه معلم" android:inputType="number" />
+        <EditText android:id="@+id/etSessionCourseId" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:hint="شناسه کلاس" android:inputType="number" />
+    </LinearLayout>
+    <androidx.recyclerview.widget.RecyclerView android:id="@+id/rvAdminSessionHistory" android:layout_width="match_parent" android:layout_height="match_parent" />
+</LinearLayout>

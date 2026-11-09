@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/cardArchivedClass"
+    style="@style/Widget.Kharazmi.DS.Card.Interactive"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="@dimen/spacing_small"
+    android:layout_marginBottom="@dimen/spacing_small"
+    android:layoutDirection="rtl">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <!-- نوار رنگیِ هویت کلاس (رنگ خود کلاس؛ بدون رنگ ⇒ طلایی) -->
+        <View
+            android:id="@+id/viewArchivedStripe"
+            android:layout_width="6dp"
+            android:layout_height="match_parent"
+            android:background="@color/ds_accent" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:padding="@dimen/spacing_normal">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/tvArchivedTitle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:maxLines="2"
+                    android:ellipsize="end"
+                    android:textAppearance="@style/TextAppearance.Kharazmi.DS.SectionTitle" />
+
+                <TextView
+                    android:id="@+id/tvArchivedCode"
+                    style="@style/Widget.Kharazmi.DS.Pill.Info"
+                    android:layout_marginStart="@dimen/spacing_small" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tvArchivedTeacher"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_tiny"
+                android:textAppearance="@style/TextAppearance.Kharazmi.DS.Body"
+                android:textColor="@color/ds_text_secondary" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_small"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/tvArchivedStudents"
+                    style="@style/Widget.Kharazmi.DS.Pill.Neutral" />
+
+                <TextView
+                    android:id="@+id/tvArchivedSessions"
+                    style="@style/Widget.Kharazmi.DS.Pill.Neutral"
+                    android:layout_marginStart="@dimen/spacing_small" />
+
+                <TextView
+                    android:id="@+id/tvArchivedForgiven"
+                    style="@style/Widget.Kharazmi.DS.Pill.Warning"
+                    android:layout_marginStart="@dimen/spacing_small"
+                    android:visibility="gone" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tvArchivedDeleted"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_small"
+                android:textAppearance="@style/TextAppearance.Kharazmi.DS.Caption" />
+        </LinearLayout>
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

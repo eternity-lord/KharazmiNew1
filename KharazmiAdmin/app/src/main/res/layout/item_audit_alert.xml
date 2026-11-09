@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/cardAlert"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="4dp"
+    android:layout_marginVertical="6dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="2dp"
+    app:strokeWidth="2dp"
+    app:strokeColor="@color/gold_border_subtle">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="12dp"
+        android:layoutDirection="rtl">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/tvAlertType"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="suspicious_attendance"
+                android:textAppearance="@style/TextAppearance.Kharazmi.Caption"
+                android:textStyle="bold"
+                android:textColor="@color/text_primary" />
+
+            <TextView
+                android:id="@+id/tvAlertSeverity"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="4dp"
+                android:text="HIGH"
+                android:textAppearance="@style/TextAppearance.Kharazmi.Caption"
+                android:textStyle="bold"
+                android:textColor="@color/white"
+                android:background="@android:color/transparent" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tvAlertTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="عنوان هشدار"
+            android:textAppearance="@style/TextAppearance.Kharazmi.SectionTitle"
+            android:textColor="@color/text_primary" />
+
+        <TextView
+            android:id="@+id/tvAlertDesc"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:text="توضیحات هشدار"
+            android:textAppearance="@style/TextAppearance.Kharazmi.Body"
+            android:textColor="@color/text_secondary"
+            android:lineSpacingExtra="4dp" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0.5dp"
+            android:layout_marginTop="8dp"
+            android:background="@color/gold_border_subtle" />
+
+        <TextView
+            android:id="@+id/tvAlertEntity"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:text="موجودیت: نام"
+            android:textAppearance="@style/TextAppearance.Kharazmi.Caption"
+            android:textColor="@color/text_secondary" />
+
+        <TextView
+            android:id="@+id/tvAlertDetected"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:text="شناسایی: 2024-01-01"
+            android:textAppearance="@style/TextAppearance.Kharazmi.Caption"
+            android:textColor="@color/text_secondary"
+            android:fontFeatureSettings="tnum" />
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

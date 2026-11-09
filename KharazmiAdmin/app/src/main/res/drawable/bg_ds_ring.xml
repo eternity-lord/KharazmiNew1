@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- DESIGN SYSTEM: حلقه دور آیکون حالت خالی -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+    <solid android:color="@color/ds_bg_surface_2" />
+    <stroke
+        android:width="2dp"
+        android:color="@color/ds_border_strong" />
+</shape>

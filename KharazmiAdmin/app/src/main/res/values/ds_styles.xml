@@ -1,0 +1,333 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ====================================================================================
+     DESIGN SYSTEM (Phase 1) — Kharazmi
+     ====================================================================================
+     این فایل «مرجع واحد» استایل‌ها و TextAppearanceهای سیستم طراحی است.
+     - فونتی که استفاده می‌شود همان @font/app_font است (بدون جایگزینی تصادفی).
+     - جهت (RTL) از خود layout می‌آید و اینجا دخالت نمی‌کند.
+     - هیچ استایل/رنگ قدیمی حذف نشده؛ این‌ها افزوده‌اند و صفحات قدیمی دست‌نخورده‌اند.
+     - شعاع و ارتفاع محدود و ثابت: فقط از توکن‌های dimens.xml استفاده می‌شود.
+     - در values-night تعریف مجدد نشده‌اند تا در حالت شب/روز یکسان بمانند.
+     ==================================================================================== -->
+<resources>
+
+    <!-- ==================== ۱) TYPOGRAPHY ==================== -->
+
+    <!-- عنوان صفحه -->
+    <style name="TextAppearance.Kharazmi.DS.PageTitle" parent="TextAppearance.MaterialComponents.Headline6">
+        <item name="android:textSize">@dimen/font_size_page_title</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/ds_text_primary</item>
+        <item name="android:fontFamily">@font/app_font</item>
+    </style>
+
+    <!-- عنوان بخش -->
+    <style name="TextAppearance.Kharazmi.DS.SectionTitle" parent="TextAppearance.MaterialComponents.Subtitle1">
+        <item name="android:textSize">@dimen/font_size_section_title</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/ds_text_primary</item>
+        <item name="android:fontFamily">@font/app_font</item>
+    </style>
+
+    <!-- متن اصلی -->
+    <style name="TextAppearance.Kharazmi.DS.Body" parent="TextAppearance.MaterialComponents.Body1">
+        <item name="android:textSize">@dimen/font_size_body</item>
+        <item name="android:textStyle">normal</item>
+        <item name="android:textColor">@color/ds_text_primary</item>
+        <item name="android:fontFamily">@font/app_font</item>
+        <item name="android:lineSpacingMultiplier">1.3</item>
+    </style>
+
+    <!-- متن کمکی -->
+    <style name="TextAppearance.Kharazmi.DS.Caption" parent="TextAppearance.MaterialComponents.Caption">
+        <item name="android:textSize">@dimen/font_size_caption</item>
+        <item name="android:textStyle">normal</item>
+        <item name="android:textColor">@color/ds_text_secondary</item>
+        <item name="android:fontFamily">@font/app_font</item>
+        <item name="android:lineSpacingMultiplier">1.25</item>
+    </style>
+
+    <!-- مبالغ (رقم‌های هم‌عرض) -->
+    <style name="TextAppearance.Kharazmi.DS.Money" parent="TextAppearance.MaterialComponents.Body1">
+        <item name="android:textSize">@dimen/font_size_money</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:maxLines">2</item>
+        <item name="android:gravity">center</item>
+        <item name="android:lineSpacingMultiplier">1.0</item>
+        <item name="android:textColor">@color/ds_accent</item>
+        <item name="android:fontFamily">@font/app_font</item>
+        <item name="android:fontFeatureSettings">tnum</item>
+    </style>
+
+    <!-- متن خطا (کنار همان فیلد/مورد) -->
+    <style name="TextAppearance.Kharazmi.DS.Error" parent="TextAppearance.MaterialComponents.Caption">
+        <item name="android:textSize">@dimen/font_size_caption</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/ds_danger</item>
+        <item name="android:fontFamily">@font/app_font</item>
+    </style>
+
+    <!-- متن وضعیت (همیشه همراه رنگ + آیکون) -->
+    <style name="TextAppearance.Kharazmi.DS.Status" parent="TextAppearance.MaterialComponents.Caption">
+        <item name="android:textSize">@dimen/font_size_status</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/ds_text_secondary</item>
+        <item name="android:fontFamily">@font/app_font</item>
+    </style>
+
+    <!-- برچسب کوچک -->
+    <style name="TextAppearance.Kharazmi.DS.Label" parent="TextAppearance.MaterialComponents.Caption">
+        <item name="android:textSize">@dimen/font_size_label</item>
+        <item name="android:textColor">@color/ds_text_secondary</item>
+        <item name="android:fontFamily">@font/app_font</item>
+    </style>
+
+    <!-- مقدار KPI -->
+    <style name="TextAppearance.Kharazmi.DS.KpiValue" parent="TextAppearance.MaterialComponents.Headline5">
+        <item name="android:textSize">@dimen/font_size_kpi_value</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:maxLines">2</item>
+        <item name="android:gravity">center</item>
+        <item name="android:lineSpacingMultiplier">1.0</item>
+        <item name="android:textColor">@color/ds_accent</item>
+        <item name="android:fontFamily">@font/app_font</item>
+        <item name="android:fontFeatureSettings">tnum</item>
+    </style>
+
+    <!-- متن بالای عنوان -->
+    <style name="TextAppearance.Kharazmi.DS.Overline" parent="TextAppearance.MaterialComponents.Caption">
+        <item name="android:textSize">@dimen/font_size_overline</item>
+        <item name="android:textColor">@color/ds_text_disabled</item>
+        <item name="android:letterSpacing">0.08</item>
+        <item name="android:fontFamily">@font/app_font</item>
+    </style>
+
+    <!-- ==================== ۲) BUTTONS ==================== -->
+
+    <!-- دکمه اصلی (اکشن اصلی هر صفحه) -->
+    <style name="Widget.Kharazmi.DS.Button.Primary" parent="Widget.Kharazmi.Button.Gold">
+        <item name="android:minHeight">@dimen/min_touch_target</item>
+        <item name="android:minWidth">@dimen/min_touch_target</item>
+        <item name="cornerRadius">@dimen/corner_radius_button</item>
+        <item name="elevation">@dimen/elevation_button</item>
+        <item name="rippleColor">@color/ds_ripple</item>
+        <item name="android:textColor">@color/gold_button_text</item>
+    </style>
+
+    <!-- دکمه ثانویه (اکشن‌های فرعی؛ کاملاً متمایز از دکمه اصلی) -->
+    <style name="Widget.Kharazmi.DS.Button.Secondary" parent="Widget.Kharazmi.Button.Gold.Outline">
+        <item name="android:minHeight">@dimen/min_touch_target</item>
+        <item name="android:minWidth">@dimen/min_touch_target</item>
+        <item name="cornerRadius">@dimen/corner_radius_button</item>
+        <item name="strokeWidth">@dimen/stroke_emphasis</item>
+        <item name="rippleColor">@color/ds_ripple</item>
+    </style>
+
+    <!-- دکمه متنی (کم‌اهمیت‌ترین اکشن) -->
+    <style name="Widget.Kharazmi.DS.Button.Ghost" parent="Widget.MaterialComponents.Button.TextButton">
+        <item name="android:minHeight">@dimen/min_touch_target</item>
+        <item name="android:textSize">@dimen/font_size_body</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:maxLines">2</item>
+        <item name="android:gravity">center</item>
+        <item name="android:lineSpacingMultiplier">1.0</item>
+        <item name="android:textColor">@color/ds_accent</item>
+        <item name="rippleColor">@color/ds_ripple</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+    </style>
+
+    <!-- دکمه خطر (حذف/لغو) -->
+    <style name="Widget.Kharazmi.DS.Button.Danger" parent="Widget.MaterialComponents.Button">
+        <item name="android:minHeight">@dimen/min_touch_target</item>
+        <item name="android:textSize">@dimen/font_size_body</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:maxLines">2</item>
+        <item name="android:gravity">center</item>
+        <item name="android:lineSpacingMultiplier">1.0</item>
+        <item name="android:textColor">@color/ds_button_danger_text</item>
+        <item name="backgroundTint">@color/ds_button_danger_bg</item>
+        <item name="cornerRadius">@dimen/corner_radius_button</item>
+        <item name="rippleColor">@color/ds_ripple_neutral</item>
+        <item name="elevation">@dimen/elevation_none</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="android:stateListAnimator">@null</item>
+    </style>
+
+    <!-- ==================== ۳) CARDS ==================== -->
+
+    <!-- کارت سطح ۱ (سطح پیش‌فرض محتوا) -->
+    <style name="Widget.Kharazmi.DS.Card" parent="Widget.MaterialComponents.CardView">
+        <item name="cardCornerRadius">@dimen/corner_radius_card</item>
+        <item name="cardElevation">@dimen/elevation_card</item>
+        <item name="cardBackgroundColor">@color/ds_bg_surface</item>
+        <item name="strokeColor">@color/ds_card_stroke</item>
+        <item name="strokeWidth">@dimen/stroke_hairline</item>
+    </style>
+
+    <!-- کارت سطح ۲ (درون کارت دیگر / دیالوگ) -->
+    <style name="Widget.Kharazmi.DS.Card.Surface2" parent="Widget.Kharazmi.DS.Card">
+        <item name="cardBackgroundColor">@color/ds_bg_surface_2</item>
+        <item name="cardElevation">@dimen/elevation_none</item>
+    </style>
+
+    <!-- کارت قابل لمس (تعاملی) -->
+    <style name="Widget.Kharazmi.DS.Card.Interactive" parent="Widget.Kharazmi.DS.Card">
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+        <item name="rippleColor">@color/ds_ripple</item>
+        <item name="android:minHeight">@dimen/min_touch_target</item>
+    </style>
+
+    <!-- کارت وضعیت: موفق -->
+    <style name="Widget.Kharazmi.DS.Card.Status.Success" parent="Widget.Kharazmi.DS.Card">
+        <item name="cardBackgroundColor">@color/ds_success_container</item>
+        <item name="strokeColor">@color/ds_card_stroke_success</item>
+    </style>
+
+    <!-- کارت وضعیت: هشدار -->
+    <style name="Widget.Kharazmi.DS.Card.Status.Warning" parent="Widget.Kharazmi.DS.Card">
+        <item name="cardBackgroundColor">@color/ds_warning_container</item>
+        <item name="strokeColor">@color/ds_card_stroke_warning</item>
+    </style>
+
+    <!-- کارت وضعیت: خطر -->
+    <style name="Widget.Kharazmi.DS.Card.Status.Danger" parent="Widget.Kharazmi.DS.Card">
+        <item name="cardBackgroundColor">@color/ds_danger_container</item>
+        <item name="strokeColor">@color/ds_card_stroke_danger</item>
+    </style>
+
+    <!-- کارت وضعیت: اطلاع -->
+    <style name="Widget.Kharazmi.DS.Card.Status.Info" parent="Widget.Kharazmi.DS.Card">
+        <item name="cardBackgroundColor">@color/ds_info_container</item>
+        <item name="strokeColor">@color/ds_card_stroke_info</item>
+    </style>
+
+    <!-- ==================== ۴) TEXT FIELDS ==================== -->
+
+    <!-- فیلد ورودی استاندارد: مرز واضح + focus و error قابل‌تشخیص -->
+    <style name="Widget.Kharazmi.DS.Input" parent="Widget.Kharazmi.Input.Gold">
+        <item name="boxStrokeColor">@color/ds_input_stroke</item>
+        <item name="boxStrokeErrorColor">@color/ds_danger</item>
+        <item name="boxStrokeWidth">@dimen/stroke_hairline</item>
+        <item name="boxStrokeWidthFocused">@dimen/stroke_emphasis</item>
+        <item name="boxCornerRadiusTopStart">@dimen/corner_radius_card</item>
+        <item name="boxCornerRadiusTopEnd">@dimen/corner_radius_card</item>
+        <item name="boxCornerRadiusBottomStart">@dimen/corner_radius_card</item>
+        <item name="boxCornerRadiusBottomEnd">@dimen/corner_radius_card</item>
+        <item name="boxBackgroundMode">outline</item>
+        <item name="boxBackgroundColor">@color/ds_bg_surface_2</item>
+        <item name="hintTextColor">@color/ds_text_secondary</item>
+        <item name="android:textColorHint">@color/ds_text_secondary</item>
+        <item name="hintTextAppearance">@style/TextAppearance.Kharazmi.DS.Caption</item>
+        <item name="errorTextColor">@color/ds_danger</item>
+        <item name="errorTextAppearance">@style/TextAppearance.Kharazmi.DS.Error</item>
+        <item name="errorIconTint">@color/ds_danger</item>
+        <item name="endIconTint">@color/ds_text_secondary</item>
+        <item name="startIconTint">@color/ds_text_secondary</item>
+        <item name="android:minHeight">@dimen/min_touch_target</item>
+    </style>
+
+    <!-- فیلد غیرفعال -->
+    <style name="Widget.Kharazmi.DS.Input.Disabled" parent="Widget.Kharazmi.DS.Input">
+        <item name="boxBackgroundColor">@color/ds_bg_surface_disabled</item>
+        <item name="android:textColorHint">@color/ds_text_disabled</item>
+    </style>
+
+    <!-- ==================== ۵) CHIPS ==================== -->
+
+    <style name="Widget.Kharazmi.DS.Chip" parent="Widget.MaterialComponents.Chip.Choice">
+        <item name="chipBackgroundColor">@color/ds_chip_bg</item>
+        <item name="chipStrokeColor">@color/ds_chip_stroke</item>
+        <item name="chipStrokeWidth">@dimen/stroke_hairline</item>
+        <item name="cornerRadius">@dimen/corner_radius_pill</item>
+        <item name="android:textColor">@color/ds_chip_text</item>
+        <item name="android:textSize">@dimen/font_size_caption</item>
+        <item name="chipMinHeight">@dimen/min_touch_target</item>
+        <!-- FIX(chip-multiline): Chip فقط تک‌خطی است؛ singleLine=false یا maxLines>1 در سازندهٔ Chip
+             استثنای «Chip does not support multi-line text» می‌دهد (کرش inflate) — پس تک‌خطی قفل می‌شود. -->
+        <item name="android:singleLine">true</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:paddingVertical">6dp</item>
+        <item name="ensureMinTouchTargetSize">true</item>
+        <item name="checkedIconVisible">false</item>
+        <item name="chipIconVisible">false</item>
+    </style>
+
+    <style name="Widget.Kharazmi.DS.Chip.Tag" parent="Widget.MaterialComponents.Chip.Action">
+        <item name="chipBackgroundColor">@color/ds_chip_bg</item>
+        <item name="chipStrokeColor">@color/ds_chip_stroke</item>
+        <item name="chipStrokeWidth">@dimen/stroke_hairline</item>
+        <item name="cornerRadius">@dimen/corner_radius_pill</item>
+        <item name="android:textColor">@color/ds_chip_text</item>
+        <item name="android:textSize">@dimen/font_size_caption</item>
+        <item name="chipMinHeight">@dimen/min_touch_target</item>
+        <!-- FIX(chip-multiline): همان دلیل استایل بالا — Chip چندخطی پشتیبانی نمی‌شود. -->
+        <item name="android:singleLine">true</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:paddingVertical">6dp</item>
+        <item name="ensureMinTouchTargetSize">true</item>
+        <item name="checkedIconVisible">false</item>
+        <item name="chipIconVisible">false</item>
+    </style>
+
+    <!-- ==================== ۶) MISC ==================== -->
+
+    <!-- پیل وضعیت: رنگ + متن (هرگز فقط رنگ) -->
+    <style name="Widget.Kharazmi.DS.Pill" parent="">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:minHeight">@dimen/pill_height</item>
+        <item name="android:paddingStart">@dimen/spacing_small</item>
+        <item name="android:paddingEnd">@dimen/spacing_small</item>
+        <item name="android:paddingTop">@dimen/spacing_tiny</item>
+        <item name="android:paddingBottom">@dimen/spacing_tiny</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textAppearance">@style/TextAppearance.Kharazmi.DS.Status</item>
+    </style>
+
+    <style name="Widget.Kharazmi.DS.Pill.Success" parent="Widget.Kharazmi.DS.Pill">
+        <item name="android:background">@drawable/bg_ds_pill_success</item>
+        <item name="android:textColor">@color/ds_success_on_container</item>
+    </style>
+
+    <style name="Widget.Kharazmi.DS.Pill.Warning" parent="Widget.Kharazmi.DS.Pill">
+        <item name="android:background">@drawable/bg_ds_pill_warning</item>
+        <item name="android:textColor">@color/ds_warning_on_container</item>
+    </style>
+
+    <style name="Widget.Kharazmi.DS.Pill.Danger" parent="Widget.Kharazmi.DS.Pill">
+        <item name="android:background">@drawable/bg_ds_pill_danger</item>
+        <item name="android:textColor">@color/ds_danger_on_container</item>
+    </style>
+
+    <style name="Widget.Kharazmi.DS.Pill.Info" parent="Widget.Kharazmi.DS.Pill">
+        <item name="android:background">@drawable/bg_ds_pill_info</item>
+        <item name="android:textColor">@color/ds_info_on_container</item>
+    </style>
+
+    <style name="Widget.Kharazmi.DS.Pill.Neutral" parent="Widget.Kharazmi.DS.Pill">
+        <item name="android:background">@drawable/bg_ds_pill_neutral</item>
+        <item name="android:textColor">@color/ds_text_secondary</item>
+    </style>
+
+    <!-- جداکننده عمودی نازک داخل KPI -->
+    <style name="Widget.Kharazmi.DS.Divider.Vertical" parent="">
+        <item name="android:layout_width">@dimen/stroke_hairline</item>
+        <item name="android:layout_height">@dimen/kpi_divider_height</item>
+        <item name="android:background">@color/ds_border</item>
+    </style>
+
+    <!-- سرصفحه بخش داخل داشبورد -->
+    <style name="Widget.Kharazmi.DS.SectionHeader" parent="">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textAppearance">@style/TextAppearance.Kharazmi.DS.Overline</item>
+        <item name="android:paddingStart">@dimen/spacing_small</item>
+        <item name="android:paddingEnd">@dimen/spacing_small</item>
+        <item name="android:paddingTop">@dimen/spacing_snug</item>
+        <item name="android:paddingBottom">@dimen/spacing_xs</item>
+    </style>
+
+</resources>
