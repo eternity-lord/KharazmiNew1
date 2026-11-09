@@ -106,7 +106,7 @@ def create_class(course: CourseCreate, override: bool = False, db: Session = Dep
         current_user = get_current_user(authorization, db)
         branch_id = resolve_creation_branch(db, user=current_user, requested_branch_id=course.branch_id)
 
-    course_data = course.dict()
+    course_data = course.model_dump()
     course_data["code"] = next_code
     course_data["branch_id"] = branch_id
     # قرارداد legacy حفظ می‌شود: هر کلاس تازه تا تصمیم صریح approve در صف می‌ماند؛

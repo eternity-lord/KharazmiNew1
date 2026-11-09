@@ -65,7 +65,7 @@ def register_student(request: Request, student: StudentCreate, db: Session = Dep
     # branch صریح فعال، وگرنه فقط branch فعالِ تک‌شعبه‌ای؛ در حالت مبهم 400 واضح (تخمین ممنوع).
     branch_id = resolve_creation_branch(db, requested_branch_id=student.branch_id)
 
-    student_data = student.dict()
+    student_data = student.model_dump()
     student_data["student_code"] = next_code
     student_data["student_mobile"] = student_mobile
     student_data["parent_mobile"] = parent_mobile
@@ -754,7 +754,7 @@ def update_student(student_id: int, data: StudentUpdate, db: Session = Depends(g
     # FIX (audit-v2/#15): نوشتن با UPDATE مشروط روی version (الگوی ممیزی with_for_update) — گیت خواندن
     # بالا فقط fail-fast است؛ اگر ویرایش موازی بین خواندن و نوشتن کامیت شده باشد، version حرکت کرده و
     # این rowcount صفر می‌دهد → 409 (قبلاً lost-update ساکت بود چون قفل روی SQLite بی‌اثر است).
-    update_data = data.dict(exclude_unset=True)
+    update_data = data.model_dump(exclude_unset=True)
     _update = {}
     for key, value in update_data.items():
         if key == "version":

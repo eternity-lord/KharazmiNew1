@@ -83,7 +83,7 @@ def register_teacher(request: Request, teacher: TeacherCreate, db: Session = Dep
             raise  # درخواست صریح نامعتبر باید خطا بدهد
         _resolved_branch_id = None  # بدون منبع قابل‌اعتماد ⇒ همان رفتار قبلی (بدون شعبه)
 
-    teacher_data = teacher.dict()
+    teacher_data = teacher.model_dump()
     teacher_data["teacher_code"] = next_code
     teacher_data["mobile"] = teacher_mobile
     teacher_data["password"] = hash_password(initial_password) # رمز عبور به صورت هش شده ذخیره می‌شود
@@ -555,7 +555,7 @@ def update_teacher(teacher_id: int, data: TeacherUpdate, db: Session = Depends(g
     _old_mob = teacher.mobile  # FIX H20-B3: برای سینک سایه (قبل از بازنویسی حلقه)
 
     # Update only provided fields
-    update_data = data.dict(exclude_unset=True)
+    update_data = data.model_dump(exclude_unset=True)
     for key, value in update_data.items():
         if key == "version":
             continue
