@@ -127,6 +127,52 @@ def _source_facts(source: str) -> tuple[str, str, str, str]:
     )
 
 
+def _service_body_source(endpoint: Any, source: str) -> str:
+    """اگر handler یک «پوستهٔ HTTP» باشد، منبعِ بدنهٔ دامنه را برگردان.
+
+    از فاز P3b بدنهٔ دامنه‌ایِ handlerها در لایهٔ سرویس (`services/*.py`) زندگی می‌کند و
+    روتر فقط پوسته‌ای نازک نگه می‌دارد: همان دکوراتور، همان امضا (قرارداد HTTP و
+    تزریق‌ها) و بدنه‌ای که صرفاً آرگومان‌ها را به تابعِ سرویس پاس می‌دهد. ledger نباید
+    به‌خاطر این جابه‌جایی اطلاعاتش را از دست بدهد (کلیدهای پاسخ، خواندن/نوشتن‌های ORM،
+    ستون‌ها و side-effectها)، پس شکلِ پوسته را تشخیص می‌دهیم و تحلیل را روی تابعِ
+    همان‌نام در ماژول سرویس انجام می‌دهیم. `file:line` و `handler` عمداً به روتر اشاره
+    می‌کنند چون route همان‌جا ثبت شده است.
+
+    شکلِ پذیرفته‌شده (دقیق و محدود، تا هرگز چیزی را اشتباه دنبال نکند): بدنهٔ تابع —
+    بدون docstring — دقیقاً یک عبارت `return <ماژول>.<همان نام تابع>(...)` باشد و
+    `<ماژول>` هم در فضای همان ماژولِ روتر یک ماژولِ واقعی باشد.
+    """
+    name = getattr(endpoint, "__name__", None)
+    if not name:
+        return source
+    try:
+        tree = ast.parse(source)
+    except SyntaxError:
+        return source
+    fn = next((node for node in tree.body
+               if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and node.name == name), None)
+    if fn is None:
+        return source
+    statements = [node for node in fn.body
+                  if not (isinstance(node, ast.Expr) and isinstance(node.value, ast.Constant)
+                          and isinstance(node.value.value, str))]
+    if len(statements) != 1 or not isinstance(statements[0], ast.Return):
+        return source
+    call = statements[0].value
+    if not (isinstance(call, ast.Call) and isinstance(call.func, ast.Attribute)
+            and isinstance(call.func.value, ast.Name) and call.func.attr == name):
+        return source
+    owner = inspect.getmodule(endpoint)
+    service = getattr(owner, call.func.value.id, None) if owner is not None else None
+    target = getattr(service, name, None) if inspect.ismodule(service) else None
+    if not callable(target):
+        return source
+    try:
+        return "".join(inspect.getsourcelines(target)[0])
+    except (OSError, TypeError):
+        return source
+
+
 def extract(output: Path | None) -> list[dict[str, str]]:
     root = _project_root()
     sys.path.insert(0, str(root / "Kharazmi_Server"))
@@ -166,6 +212,8 @@ def extract(output: Path | None) -> list[dict[str, str]]:
             try:
                 source_lines, line = inspect.getsourcelines(endpoint)
                 source = "".join(source_lines)
+                # P3b: پوسته‌های HTTP را به بدنهٔ دامنه در لایهٔ سرویس دنبال کن.
+                source = _service_body_source(endpoint, source)
             except (OSError, TypeError):
                 line = "نامشخص"
                 source = ""

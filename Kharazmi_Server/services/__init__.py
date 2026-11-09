@@ -26,11 +26,45 @@
     bootstrap سرور پوشهٔ `Kharazmi_Server/` را روی `sys.path` می‌گذارند؛ به همین دلیل
     `services` در `pyproject.toml` زیرِ `known-first-party` ثبت شده است.
 
+قاعدهٔ اضافه‌شده در P3b — «پوستهٔ HTTP»:
+    P3a آجرهای *مشترک* را بیرون کشید؛ P3b **بدنهٔ خودِ handlerها** را هم به این لایه
+    آورد. شکلِ کار این است:
+
+        @router.post("/attendance/submit_session")          # ← decorator در روتر می‌ماند
+        def submit_session_and_calculate(                   # ← نام و امضا در روتر می‌ماند
+            data: AttendanceSubmitData, db: Session = Depends(get_db), ...
+        ):
+            # docstring هم در روتر می‌ماند ← FastAPI آن را description می‌کند
+            return session_submission.submit_session_and_calculate(data, db, ...)
+
+    چرا handler در روتر حذف نمی‌شود و فقط واگذار می‌کند؟
+      ۱. امضای handler (annotationها + `Depends`/`Header`) **قرارداد OpenAPI** است؛ اگر
+         تابع سرویس جای آن در route ثبت شود، باید تزریق‌ها را بازتعریف کرد و هیچ سودی ندارد.
+      ۲. این handlerها قراردادِ فرا-HTTP دارند: ده‌ها تست و `scripts/run_financial_audit.py`
+         آن‌ها را مستقیم از `routers.*` — گاهی با آرگومان **پوزیشنال** — صدا می‌زنند
+         (مثلاً `admin.delete_transaction(transaction.id, db=..., _="admin")`) و
+         `finalize_live_session` هم `submit_session_and_calculate` را با
+         `_system_caller="live_system"` فراخوانی می‌کند.
+    نتیجه: نام، ترتیب پارامترها و پاسخ JSON دقیقاً مثل قبل می‌ماند و بدنهٔ دامنه در این
+    لایه است. تضمینِ این ادعا مکانیکی است: اسکریپتِ راستی‌آزمایی، بدنهٔ هر تابعِ منتقل‌شده
+    و همچنین decorator/امضا/docstringِ هر پوسته را با `git HEAD` **بایت‌به‌بایت** مقایسه می‌کند.
+
+    یک استثنای مستند: `pay_installment_manually` در `routers/finance.py` عمداً پوسته نشده،
+    چون `test_tuition_installments_audit.py::test_s23b` نام `ActivityLog` را روی فضایِ
+    همان ماژولِ روتر `monkeypatch` می‌کند تا «خطا در آخرین قدم» را شبیه‌سازی کند؛ اگر بدنه
+    به این لایه می‌آمد، آن patch بی‌اثر می‌شد و تست **سبزِ کاذب** می‌داد (چیزی که دقیقاً
+    برای سنجشِ rollback نوشته شده است).
+
 ماژول‌ها:
-    branch_scope     — دامنهٔ شعبهٔ مؤثرِ کاربر (branch isolation)، قاعده‌ای عرضی
-    class_archive    — گزارش فقط‌خواندنیِ کلاس‌های حذف‌شده + منبعِ بازیابی (provenance)
-    class_lifecycle  — اسنپ‌شات/اجرای حذف کلاس و ثبت تصمیم در ActivityLog
-    debtor_report    — منبع یگانهٔ «ردیف بدهکار» (لیست، نمای گروهی، پیامک، CSV/Excel)
-    live_session     — آجرهای جلسهٔ زنده (تسخیر اتمیک، upsert حضور، گاردها، استثنا)
-    scheduling       — پارسِ بازهٔ ساعت، تداخل روزهای هفته، یافتن کلاس‌های متعارض
+    branch_scope        — دامنهٔ شعبهٔ مؤثرِ کاربر (branch isolation)، قاعده‌ای عرضی
+    class_archive       — گزارش فقط‌خواندنیِ کلاس‌های حذف‌شده + منبعِ بازیابی (provenance)
+    class_lifecycle     — اسنپ‌شات/اجرای حذف کلاس و ثبت تصمیم در ActivityLog
+    class_reports       — فهرست کلاس‌ها + گزارش کامل یک کلاس (P3b)
+    debtor_report       — منبع یگانهٔ «ردیف بدهکار» (لیست، نمای گروهی، پیامک، CSV/Excel)
+    enrollment          — ثبت‌نام دانش‌آموز در کلاس و اثرهای مالی‌اش (P3b)
+    live_session        — آجرهای جلسهٔ زنده (تسخیر اتمیک، upsert حضور، گاردها، استثنا)
+    session_submission  — ثبت جلسهٔ کلاسی + ویرایش جلسهٔ گذشته: سهم‌ها، شارژ، جریمه (P3b)
+    student_profile     — پروفایل کامل یک دانش‌آموز برای صفحهٔ ادمین (P3b)
+    transaction_admin   — حذف/ویرایش تراکنش از سمت ادمین + هلپرِ تقسیم مبلغ (P3b)
+    scheduling          — پارسِ بازهٔ ساعت، تداخل روزهای هفته، یافتن کلاس‌های متعارض
 """
