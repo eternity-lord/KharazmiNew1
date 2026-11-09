@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- پیل نیمه‌شفاف روی سرصفحهٔ تیرهٔ آرشیو -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="@color/archive_hero_pill" />
+    <corners android:radius="@dimen/corner_radius_pill" />
+</shape>

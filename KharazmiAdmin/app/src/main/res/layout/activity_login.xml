@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ====================================================================================
+     DESIGN SYSTEM (Phase 1) — Login
+     ====================================================================================
+     تغییرات فقط ظاهری‌اند: هیچ View ID، hint، inputType، endIconMode، قرارداد Intent یا
+     منطق LoginActivity تغییر نکرده است. ساختار جدید:
+       NestedScrollView  → صفحه در موبایل کوچک اسکرول می‌شود و با adjustResize کیبورد
+                           دکمه ورود را پنهان نمی‌کند.
+       hierarchy         → لوگو/برند ← کارت فرم ← اکشن‌های ثانویه ← نسخه (کم‌اهمیت، پایین)
+     ==================================================================================== -->
+<androidx.core.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/ds_bg_base"
+    android:clipToPadding="false"
+    android:fillViewport="true"
+    android:layoutDirection="rtl"
+    android:paddingBottom="@dimen/spacing_small"
+    android:scrollbars="none">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="@dimen/spacing_large"
+        android:paddingEnd="@dimen/spacing_large"
+        android:paddingTop="@dimen/spacing_normal"
+        android:paddingBottom="@dimen/spacing_normal">
+
+        <!-- تنظیمات آدرس سرور (حفظ رفتار: همان ImageView و همان لیسنر) -->
+        <ImageView
+            android:id="@+id/btnIpSettings"
+            android:layout_width="@dimen/min_touch_target"
+            android:layout_height="@dimen/min_touch_target"
+            android:layout_marginTop="@dimen/spacing_xs"
+            android:background="@drawable/bg_ds_ripple_borderless"
+            android:contentDescription="@string/ds_login_settings_desc"
+            android:padding="@dimen/spacing_snug"
+            android:src="@drawable/ic_ds_settings_24"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="@color/ds_text_secondary" />
+
+        <!-- بخش لوگو و برند -->
+        <LinearLayout
+            android:id="@+id/logoSection"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_xlarge"
+            android:gravity="center"
+            android:orientation="vertical"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <com.google.android.material.card.MaterialCardView
+                style="@style/Widget.Kharazmi.DS.Card"
+                android:layout_width="@dimen/logo_box_size"
+                android:layout_height="@dimen/logo_box_size"
+                app:cardCornerRadius="@dimen/corner_radius_large"
+                app:cardElevation="@dimen/elevation_none"
+                app:strokeColor="@color/ds_border">
+
+                <ImageView
+                    android:layout_width="@dimen/logo_glyph_size"
+                    android:layout_height="@dimen/logo_glyph_size"
+                    android:layout_gravity="center"
+                    android:contentDescription="@string/ds_login_logo_desc"
+                    android:src="@drawable/ic_calendar_24"
+                    app:tint="@color/ds_accent" />
+            </com.google.android.material.card.MaterialCardView>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_normal"
+                android:text="@string/ds_login_brand"
+                android:textAppearance="@style/TextAppearance.Kharazmi.DS.PageTitle" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_tiny"
+                android:gravity="center"
+                android:text="@string/ds_login_subtitle"
+                android:textAppearance="@style/TextAppearance.Kharazmi.DS.Caption" />
+        </LinearLayout>
+
+        <!-- کارت فرم ورود -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/loginFormCard"
+            style="@style/Widget.Kharazmi.DS.Card"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_large"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/logoSection">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/spacing_large">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginBottom="@dimen/spacing_large"
+                    android:text="@string/login_title"
+                    android:textAppearance="@style/TextAppearance.Kharazmi.DS.SectionTitle" />
+
+                <!-- شماره موبایل: ابتدای فرم با حداقل ۴۸dp ارتفاع لمس -->
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.Kharazmi.DS.Input"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/ds_login_mobile_hint"
+                    app:startIconContentDescription="@string/ds_login_mobile_hint"
+                    app:startIconDrawable="@drawable/ic_call_24">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etMobile"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:autofillHints="phone"
+                        android:fontFeatureSettings="tnum"
+                        android:inputType="phone"
+                        android:maxLines="1"
+                        android:textColor="@color/ds_text_primary"
+                        android:textColorHint="@color/ds_text_disabled"
+                        tools:text="09123456789" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- رمز عبور: hint/inputType/endIconMode دقیقاً مثل قبل -->
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.Kharazmi.DS.Input"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_normal"
+                    android:hint="@string/login_password_hint"
+                    app:endIconContentDescription="@string/login_password_hint"
+                    app:endIconMode="password_toggle"
+                    app:startIconContentDescription="@string/login_password_hint"
+                    app:startIconDrawable="@android:drawable/ic_lock_lock">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etPassword"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:autofillHints="password"
+                        android:inputType="textPassword"
+                        android:maxLines="1"
+                        android:textColor="@color/ds_text_primary"
+                        android:textColorHint="@color/ds_text_disabled" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="start"
+                    android:layout_marginTop="@dimen/spacing_xs"
+                    android:layout_marginBottom="@dimen/spacing_normal"
+                    android:text="@string/ds_login_password_note"
+                    android:textAppearance="@style/TextAppearance.Kharazmi.DS.Caption" />
+
+                <!-- اکشن اصلی صفحه: کاملاً متمایز از دکمه‌های ثانویه -->
+                <com.example.kharazmiadmin.GoldButton
+                    android:id="@+id/btnLogin"
+                    style="@style/Widget.Kharazmi.DS.Button.Primary"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/login_button"
+                    app:icon="@android:drawable/ic_lock_lock"
+                    app:iconGravity="textStart"
+                    app:iconPadding="@dimen/spacing_small"
+                    app:iconTint="@color/ds_on_accent" />
+
+                <CheckBox
+                    android:id="@+id/cbRememberMe"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="start"
+                    android:layout_marginTop="@dimen/spacing_xs"
+                    android:buttonTint="@color/ds_accent"
+                    android:minHeight="@dimen/min_touch_target"
+                    android:text="@string/ds_login_remember_me"
+                    android:textAppearance="@style/TextAppearance.Kharazmi.DS.Caption"
+                    android:textColor="@color/ds_text_secondary" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- اکشن‌های ثانویه: Outline، از نظر بصری ضعیف‌تر از دکمه اصلی -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnParentPortal"
+            style="@style/Widget.Kharazmi.DS.Button.Secondary"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_normal"
+            android:text="@string/ds_login_parent_portal"
+            app:icon="@drawable/ic_group"
+            app:iconGravity="textStart"
+            app:iconTint="@color/ds_accent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/loginFormCard"
+            app:layout_constraintWidth_percent="0.8" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnStudentPortal"
+            style="@style/Widget.Kharazmi.DS.Button.Secondary"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_snug"
+            android:text="@string/ds_login_student_portal"
+            app:icon="@drawable/ic_group"
+            app:iconGravity="textStart"
+            app:iconTint="@color/ds_accent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/btnParentPortal"
+            app:layout_constraintWidth_percent="0.8" />
+
+        <!-- ثبت‌نام معلم: لیسنر روی tvRegisterLink است (بدون تغییر) -->
+        <LinearLayout
+            android:id="@+id/dsRegisterRow"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_small"
+            android:background="?attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:minHeight="@dimen/min_touch_target"
+            android:orientation="horizontal"
+            android:paddingStart="@dimen/spacing_snug"
+            android:paddingEnd="@dimen/spacing_snug"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/btnStudentPortal">
+
+            <ImageView
+                android:layout_width="@dimen/icon_small"
+                android:layout_height="@dimen/icon_small"
+                android:layout_marginEnd="@dimen/spacing_small"
+                android:importantForAccessibility="no"
+                android:src="@drawable/ic_add_24"
+                app:tint="@color/ds_accent" />
+
+            <TextView
+                android:id="@+id/tvRegisterLink"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/login_teacher_register"
+                android:textAppearance="@style/TextAppearance.Kharazmi.DS.Body"
+                android:textColor="@color/ds_accent"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- نسخه برنامه: پایین صفحه، کم‌اهمیت -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_large"
+            android:layout_marginBottom="@dimen/spacing_small"
+            android:gravity="center"
+            android:text="@string/ds_login_version"
+            android:textAppearance="@style/TextAppearance.Kharazmi.DS.Overline"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/dsRegisterRow"
+            app:layout_constraintVertical_bias="1" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.core.widget.NestedScrollView>

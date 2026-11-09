@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- FIX: Use the declared Widget.Kharazmi.Card.Gold style; remove repeated suffixes. -->
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    style="@style/Widget.Kharazmi.Card.Gold"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/spacing_small"
+    app:cardCornerRadius="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/spacing_normal"
+        android:layoutDirection="rtl">
+
+        <!-- Top Header with Date and Status badge -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+            
+            <ImageView
+                android:id="@+id/imgStatusIcon"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@android:drawable/checkbox_on_background"
+                app:tint="@color/status_success"
+                android:layout_marginLeft="@dimen/spacing_small"/>
+
+            <TextView
+                android:fontFeatureSettings="tnum"
+                android:id="@+id/tvDate"
+                android:text="1404/09/07"
+                android:textStyle="bold"
+                android:textAppearance="@style/TextAppearance.Kharazmi.Body"
+                android:textColor="@color/text_primary"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+                
+            <Space android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"/>
+            
+            <TextView
+                android:id="@+id/tvStatus"
+                android:text="تایید شده"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:textColor="@color/status_success"
+                android:background="@drawable/chip_background"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="4dp"
+                android:layout_marginLeft="8dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+            <TextView
+                android:id="@+id/tvAttendees"
+                android:text="حاضرین: 4 نفر"
+                android:textColor="@color/status_success"
+                android:textAppearance="@style/TextAppearance.Kharazmi.Body"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+        </LinearLayout>
+
+        <!-- 🆕 زمان واقعی شروع/پایان جلسه -->
+        <TextView
+            android:id="@+id/tvTime"
+            android:text="⏱ از 15:43 تا 16:10"
+            android:textAppearance="@style/TextAppearance.Kharazmi.Caption"
+            android:textColor="@color/gold_primary"
+            android:fontFeatureSettings="tnum"
+            android:layout_marginTop="4dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+        <View android:layout_width="match_parent" android:layout_height="0.5dp" android:background="@color/gold_border_subtle" android:layout_marginTop="@dimen/spacing_small" android:layout_marginBottom="@dimen/spacing_small"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+            <TextView
+                android:text="کسر شده از هر دانش‌آموز:"
+                android:textAppearance="@style/TextAppearance.Kharazmi.Caption"
+                android:textColor="@color/text_secondary"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+            <Space android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"/>
+            <TextView
+                android:id="@+id/tvCost"
+                android:text="150,000 تومان"
+                android:textStyle="bold"
+                android:fontFeatureSettings="tnum"
+                android:textAppearance="@style/TextAppearance.Kharazmi.Body"
+                android:textColor="@color/gold_primary"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+        </LinearLayout>
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

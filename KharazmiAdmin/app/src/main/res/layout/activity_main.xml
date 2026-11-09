@@ -1,0 +1,1084 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ====================================================================================
+     DESIGN SYSTEM (Phase 1) — Main Dashboard
+     ====================================================================================
+     قواعد رعایت‌شده:
+       • همه‌ی View IDهای قبلی حفظ شده‌اند (click listenerها در MainActivity به آن‌ها وصل است).
+       • nav_view و drawer_layout و appBarLayout دست‌نخورده باقی مانده‌اند.
+       • انیمیشن ورود کارت‌ها در MainActivity است و اینجا هیچ انیمیشن تازه‌ای اضافه نشده.
+       • grid داخل NestedScrollView آمده تا در نمایشگرهای کوچک بریده نشود؛
+         rowWeight حذف و به‌جایش minHeight توکن‌دار آمده (rowWeight داخل scroll معنا ندارد).
+       • رنگ کارت‌ها بر اساس «اولویت/گروه» است، نه همه طلایی:
+             عملیات روزمره → طلایی | ابزار مدیریتی → اسلیت | مالی → سبز
+             آموزشی → آبی | مدیریت ارشد → هشدار/خطر/اطلاع
+       • وضعیت‌ها همیشه رنگ + آیکون + متن دارند (رنگ تنها حامل معنا نیست).
+     ==================================================================================== -->
+<androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/drawer_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layoutDirection="rtl"
+    tools:context=".MainActivity">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/ds_bg_base">
+
+        <!-- ==================== سرصفحه ==================== -->
+        <com.google.android.material.appbar.AppBarLayout
+            android:id="@+id/appBarLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            app:elevation="@dimen/elevation_none"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_ds_header"
+                android:orientation="vertical"
+                android:paddingStart="@dimen/spacing_normal"
+                android:paddingEnd="@dimen/spacing_normal"
+                android:paddingTop="@dimen/spacing_snug"
+                android:paddingBottom="@dimen/spacing_small">
+
+                <TextView
+                    android:id="@+id/tvHeaderMainTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="@string/ds_main_header_default"
+                    android:textAppearance="@style/TextAppearance.Kharazmi.DS.SectionTitle" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_xs"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/tvHeaderShamsiDate"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:fontFeatureSettings="tnum"
+                        android:gravity="start"
+                        android:text="@string/common_today"
+                        android:textAppearance="@style/TextAppearance.Kharazmi.DS.Caption" />
+
+                    <!-- آیکون داشبورد: همچنان clickable و ≥48dp سطح لمس -->
+                    <ImageView
+                        android:id="@+id/imgHeaderDashboardIcon"
+                        android:layout_width="@dimen/min_touch_target"
+                        android:layout_height="@dimen/min_touch_target"
+                        android:background="@drawable/bg_ds_ripple_borderless"
+                        android:contentDescription="@string/ds_main_dashboard_icon_desc"
+                        android:padding="@dimen/spacing_snug"
+                        android:src="@drawable/ic_ds_dashboard_24"
+                        app:tint="@color/ds_accent" />
+
+                    <TextView
+                        android:id="@+id/tvHeaderLiveClock"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:fontFeatureSettings="tnum"
+                        android:gravity="end"
+                        android:text="@string/common_today"
+                        android:textAppearance="@style/TextAppearance.Kharazmi.DS.Caption"
+                        android:textColor="@color/ds_accent"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.appbar.AppBarLayout>
+
+        <!-- ==================== وضعیت امروز (KPIs) ==================== -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardTodaySummary"
+            style="@style/Widget.Kharazmi.DS.Card"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/spacing_snug"
+            android:layout_marginEnd="@dimen/spacing_snug"
+            android:layout_marginTop="@dimen/spacing_snug"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/appBarLayout">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingStart="@dimen/spacing_normal"
+                android:paddingEnd="@dimen/spacing_normal"
+                android:paddingTop="@dimen/spacing_snug"
+                android:paddingBottom="@dimen/spacing_small">
+
+                <!-- عنوان، همچنان clickable (رفرش اجباری) + آیکون رفرش به‌جای نویسه متنی -->
+                <TextView
+                    android:id="@+id/tvTodaySummaryTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:clickable="true"
+                    android:contentDescription="@string/ds_main_today_title_desc"
+                    android:drawableEnd="@drawable/ic_refresh_24"
+                    android:drawablePadding="@dimen/spacing_small"
+                    android:drawableTint="@color/ds_accent"
+                    android:focusable="true"
+                    android:gravity="start|center_vertical"
+                    android:minHeight="@dimen/min_touch_target"
+                    android:text="@string/ds_main_today_title"
+                    android:textAppearance="@style/TextAppearance.Kharazmi.DS.SectionTitle"
+                    android:textColor="@color/ds_accent" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_xs"
+                    android:baselineAligned="false"
+                    android:gravity="center"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/tvTodayClassesValue"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/common_restricted"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.DS.KpiValue" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:text="@string/ds_main_kpi_classes"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.DS.Label" />
+
+                        <TextView
+                            android:id="@+id/tvTodayClassesSub"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:drawableStart="@drawable/bg_ds_dot_success"
+                            android:drawablePadding="@dimen/spacing_xs"
+                            android:text="@string/common_today"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.DS.Caption"
+                            android:textColor="@color/ds_success" />
+                    </LinearLayout>
+
+                    <View
+                        style="@style/Widget.Kharazmi.DS.Divider.Vertical" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1.25"
+                        android:gravity="center"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/tvTodayPaymentsValue"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/common_restricted"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.DS.KpiValue" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:text="@string/ds_main_kpi_payments"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.DS.Label" />
+                    </LinearLayout>
+
+                    <View
+                        style="@style/Widget.Kharazmi.DS.Divider.Vertical" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/tvTodayEnrollmentsValue"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/common_restricted"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.DS.KpiValue" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:text="@string/ds_main_kpi_enrollments"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.DS.Label" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- هشدار کلاس دیرشروع: قابل لمس، هم‌سطح با کارت اصلی ولی با استایل هشدار -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/layoutLateClassAlert"
+                    style="@style/Widget.Kharazmi.DS.Card.Status.Warning"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_snug"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground"
+                    android:minHeight="@dimen/min_touch_target"
+                    android:visibility="gone">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:minHeight="@dimen/min_touch_target"
+                        android:orientation="horizontal"
+                        android:paddingStart="@dimen/spacing_snug"
+                        android:paddingEnd="@dimen/spacing_snug"
+                        android:paddingTop="@dimen/spacing_small"
+                        android:paddingBottom="@dimen/spacing_small">
+
+                        <ImageView
+                            android:layout_width="@dimen/icon_small"
+                            android:layout_height="@dimen/icon_small"
+                            android:importantForAccessibility="no"
+                            android:src="@drawable/ic_ds_warning_24"
+                            app:tint="@color/ds_warning" />
+
+                        <TextView
+                            android:id="@+id/tvLateClassAlert"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/spacing_small"
+                            android:layout_marginEnd="@dimen/spacing_small"
+                            android:layout_weight="1"
+                            android:text="@string/ds_main_late_default"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.DS.Caption"
+                            android:textColor="@color/ds_warning_on_container"
+                            android:textStyle="bold" />
+
+                        <ImageView
+                            android:layout_width="@dimen/icon_small"
+                            android:layout_height="@dimen/icon_small"
+                            android:importantForAccessibility="no"
+                            android:src="@drawable/ic_arrow_forward_24"
+                            app:tint="@color/ds_warning" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- هشدارهای مالی هوشمند (فقط admin — visibility را کد تعیین می‌کند) -->
+                <LinearLayout
+                    android:id="@+id/layoutSmartFinancialAlerts"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_snug"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingBottom="@dimen/spacing_xs"
+                        android:text="@string/ds_main_financial_alerts_section"
+                        android:textAppearance="@style/TextAppearance.Kharazmi.DS.Overline"
+                        android:textColor="@color/ds_warning_on_container" />
+
+                    <!-- اقساط سررسیدشده = بدهی (هشدار) -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/layoutInstallmentAlerts"
+                        style="@style/Widget.Kharazmi.DS.Card.Status.Warning"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_tiny"
+                        android:minHeight="@dimen/min_touch_target">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_vertical"
+                            android:minHeight="@dimen/min_touch_target"
+                            android:orientation="horizontal"
+                            android:paddingStart="@dimen/spacing_snug"
+                            android:paddingEnd="@dimen/spacing_snug"
+                            android:paddingTop="@dimen/spacing_xs"
+                            android:paddingBottom="@dimen/spacing_xs">
+
+                            <ImageView
+                                android:layout_width="@dimen/icon_small"
+                                android:layout_height="@dimen/icon_small"
+                                android:importantForAccessibility="no"
+                                android:src="@drawable/ic_ds_danger_24"
+                                app:tint="@color/ds_danger" />
+
+                            <TextView
+                                android:id="@+id/tvInstallmentAlertSummary"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="@dimen/spacing_small"
+                                android:layout_marginEnd="@dimen/spacing_small"
+                                android:layout_weight="1"
+                                android:text="@string/ds_main_installment_summary_default"
+                                android:textAppearance="@style/TextAppearance.Kharazmi.DS.Caption"
+                                android:textColor="@color/ds_warning_on_container"
+                                android:textStyle="bold" />
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btnInstallmentAlerts"
+                                style="@style/Widget.Kharazmi.DS.Button.Secondary"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/ds_main_details_cta"
+                                android:textColor="@color/ds_warning_on_container"
+                                app:strokeColor="@color/ds_warning" />
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <!-- تسویه معلمان = تعهد پرداخت (اطلاع) -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/layoutTeacherSettlementAlerts"
+                        style="@style/Widget.Kharazmi.DS.Card.Status.Info"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_tiny"
+                        android:minHeight="@dimen/min_touch_target">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_vertical"
+                            android:minHeight="@dimen/min_touch_target"
+                            android:orientation="horizontal"
+                            android:paddingStart="@dimen/spacing_snug"
+                            android:paddingEnd="@dimen/spacing_snug"
+                            android:paddingTop="@dimen/spacing_xs"
+                            android:paddingBottom="@dimen/spacing_xs">
+
+                            <ImageView
+                                android:layout_width="@dimen/icon_small"
+                                android:layout_height="@dimen/icon_small"
+                                android:importantForAccessibility="no"
+                                android:src="@drawable/ic_ds_info_24"
+                                app:tint="@color/ds_info" />
+
+                            <TextView
+                                android:id="@+id/tvTeacherSettlementAlertSummary"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="@dimen/spacing_small"
+                                android:layout_marginEnd="@dimen/spacing_small"
+                                android:layout_weight="1"
+                                android:text="@string/ds_main_teacher_settlement_summary_default"
+                                android:textAppearance="@style/TextAppearance.Kharazmi.DS.Caption"
+                                android:textColor="@color/ds_info_on_container"
+                                android:textStyle="bold" />
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btnTeacherSettlementAlerts"
+                                style="@style/Widget.Kharazmi.DS.Button.Secondary"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/ds_main_details_cta"
+                                android:textColor="@color/ds_info_on_container"
+                                app:strokeColor="@color/ds_info" />
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- ==================== شبکه کارت‌ها (اسکرول‌پذیر) ==================== -->
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/dsDashboardScroll"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:clipToPadding="false"
+            android:paddingBottom="@dimen/spacing_normal"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/cardTodaySummary">
+
+            <androidx.gridlayout.widget.GridLayout
+                android:id="@+id/dashboardGrid"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="@dimen/spacing_xs"
+                app:alignmentMode="alignMargins"
+                app:columnCount="3"
+                app:columnOrderPreserved="false"
+                tools:ignore="MissingClass">
+
+                <!-- ─────────── گروه ۱: عملیات روزمره (اکسنت طلایی) ─────────── -->
+                <TextView
+                    style="@style/Widget.Kharazmi.DS.SectionHeader"
+                    android:layout_width="0dp"
+                    android:text="@string/ds_main_section_ops"
+                    app:layout_columnSpan="3"
+                    app:layout_columnWeight="1" />
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/menu_1_dashboard"
+                    style="@style/Widget.Kharazmi.DS.Card.Interactive"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/dash_grid_gutter"
+                    app:layout_columnWeight="1">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:minHeight="@dimen/dash_card_min_height"
+                        android:orientation="vertical"
+                        android:padding="@dimen/spacing_xs">
+
+                        <ImageView
+                            android:layout_width="@dimen/icon_large"
+                            android:layout_height="@dimen/icon_large"
+                            android:importantForAccessibility="no"
+                            android:src="@drawable/ic_ds_dashboard_24"
+                            app:tint="@color/ds_group_ops" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_xs"
+                            android:gravity="center"
+                            android:text="@string/ds_main_menu_dashboard"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.DS.Caption"
+                            android:textColor="@color/ds_text_primary"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/menu_2_register"
+                    style="@style/Widget.Kharazmi.DS.Card.Interactive"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/dash_grid_gutter"
+                    app:layout_columnWeight="1">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:minHeight="@dimen/dash_card_min_height"
+                        android:orientation="vertical"
+                        android:padding="@dimen/spacing_xs">
+
+                        <ImageView
+                            android:layout_width="@dimen/icon_large"
+                            android:layout_height="@dimen/icon_large"
+                            android:importantForAccessibility="no"
+                            android:src="@drawable/ic_add_24"
+                            app:tint="@color/ds_group_ops" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_xs"
+                            android:gravity="center"
+                            android:text="@string/ds_main_menu_register"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.DS.Caption"
+                            android:textColor="@color/ds_text_primary"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/menu_3_students"
+                    style="@style/Widget.Kharazmi.DS.Card.Interactive"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/dash_grid_gutter"
+                    app:layout_columnWeight="1">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:minHeight="@dimen/dash_card_min_height"
+                        android:orientation="vertical"
+                        android:padding="@dimen/spacing_xs">
+
+                        <ImageView
+                            android:layout_width="@dimen/icon_large"
+                            android:layout_height="@dimen/icon_large"
+                            android:importantForAccessibility="no"
+                            android:src="@drawable/ic_search_24"
+                            app:tint="@color/ds_group_ops" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_xs"
+                            android:gravity="center"
+                            android:text="@string/ds_main_menu_students"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.DS.Caption"
+                            android:textColor="@color/ds_text_primary"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/menu_4_teachers"
+                    style="@style/Widget.Kharazmi.DS.Card.Interactive"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/dash_grid_gutter"
+                    app:layout_columnWeight="1">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:minHeight="@dimen/dash_card_min_height"
+                        android:orientation="vertical"
+                        android:padding="@dimen/spacing_xs">
+
+                        <ImageView
+                            android:layout_width="@dimen/icon_large"
+                            android:layout_height="@dimen/icon_large"
+                            android:importantForAccessibility="no"
+                            android:src="@drawable/ic_group"
+                            app:tint="@color/ds_group_ops" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_xs"
+                            android:gravity="center"
+                            android:text="@string/ds_main_menu_teachers"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.DS.Caption"
+                            android:textColor="@color/ds_text_primary"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- ─────────── گروه ۲: ابزارهای مدیریتی (اسلیت) ─────────── -->
+                <TextView
+                    style="@style/Widget.Kharazmi.DS.SectionHeader"
+                    android:layout_width="0dp"
+                    android:text="@string/ds_main_section_tools"
+                    app:layout_columnSpan="3"
+                    app:layout_columnWeight="1" />
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/menu_5_management"
+                    style="@style/Widget.Kharazmi.DS.Card.Interactive"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/dash_grid_gutter"
+                    app:layout_columnWeight="1">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:minHeight="@dimen/dash_card_min_height"
+                        android:orientation="vertical"
+                        android:padding="@dimen/spacing_xs">
+
+                        <ImageView
+                            android:layout_width="@dimen/icon_large"
+                            android:layout_height="@dimen/icon_large"
+                            android:importantForAccessibility="no"
+                            android:src="@android:drawable/ic_menu_manage"
+                            app:tint="@color/ds_group_tools" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_xs"
+                            android:gravity="center"
+                            android:text="@string/ds_main_menu_management"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.DS.Caption"
+                            android:textColor="@color/ds_text_primary"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/menu_6_reports"
+                    style="@style/Widget.Kharazmi.DS.Card.Interactive"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/dash_grid_gutter"
+                    app:layout_columnWeight="1">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:minHeight="@dimen/dash_card_min_height"
+                        android:orientation="vertical"
+                        android:padding="@dimen/spacing_xs">
+
+                        <ImageView
+                            android:layout_width="@dimen/icon_large"
+                            android:layout_height="@dimen/icon_large"
+                            android:importantForAccessibility="no"
+                            android:src="@drawable/ic_history_24"
+                            app:tint="@color/ds_group_tools" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_xs"
+                            android:gravity="center"
+                            android:text="@string/ds_main_menu_reports"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.DS.Caption"
+                            android:textColor="@color/ds_text_primary"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/menu_7_sms"
+                    style="@style/Widget.Kharazmi.DS.Card.Interactive"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/dash_grid_gutter"
+                    app:layout_columnWeight="1">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:minHeight="@dimen/dash_card_min_height"
+                        android:orientation="vertical"
+                        android:padding="@dimen/spacing_xs">
+
+                        <ImageView
+                            android:layout_width="@dimen/icon_large"
+                            android:layout_height="@dimen/icon_large"
+                            android:importantForAccessibility="no"
+                            android:src="@android:drawable/ic_menu_send"
+                            app:tint="@color/ds_group_tools" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_xs"
+                            android:gravity="center"
+                            android:text="@string/ds_main_menu_sms"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.DS.Caption"
+                            android:textColor="@color/ds_text_primary"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/menu_8_settings"
+                    style="@style/Widget.Kharazmi.DS.Card.Interactive"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/dash_grid_gutter"
+                    app:layout_columnWeight="1">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:minHeight="@dimen/dash_card_min_height"
+                        android:orientation="vertical"
+                        android:padding="@dimen/spacing_xs">
+
+                        <ImageView
+                            android:layout_width="@dimen/icon_large"
+                            android:layout_height="@dimen/icon_large"
+                            android:importantForAccessibility="no"
+                            android:src="@drawable/ic_ds_settings_24"
+                            app:tint="@color/ds_group_tools" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_xs"
+                            android:gravity="center"
+                            android:text="@string/ds_main_menu_settings"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.DS.Caption"
+                            android:textColor="@color/ds_text_primary"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- ─────────── گروه ۳: مالی و شهریه (سبز) ─────────── -->
+                <TextView
+                    style="@style/Widget.Kharazmi.DS.SectionHeader"
+                    android:layout_width="0dp"
+                    android:text="@string/ds_main_section_finance"
+                    app:layout_columnSpan="3"
+                    app:layout_columnWeight="1" />
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/menu_9_quick_invoice"
+                    style="@style/Widget.Kharazmi.DS.Card.Interactive"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/dash_grid_gutter"
+                    app:layout_columnWeight="1"
+                    app:strokeColor="@color/ds_card_stroke_success">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:minHeight="@dimen/dash_card_min_height"
+                        android:orientation="vertical"
+                        android:padding="@dimen/spacing_xs">
+
+                        <ImageView
+                            android:layout_width="@dimen/icon_large"
+                            android:layout_height="@dimen/icon_large"
+                            android:importantForAccessibility="no"
+                            android:src="@drawable/ic_arrow_forward_24"
+                            app:tint="@color/ds_group_finance" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_xs"
+                            android:gravity="center"
+                            android:text="@string/ds_main_menu_quick_invoice"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.DS.Caption"
+                            android:textColor="@color/ds_text_primary"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/menu_10_statement"
+                    style="@style/Widget.Kharazmi.DS.Card.Interactive"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/dash_grid_gutter"
+                    app:layout_columnWeight="1"
+                    app:strokeColor="@color/ds_card_stroke_success">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:minHeight="@dimen/dash_card_min_height"
+                        android:orientation="vertical"
+                        android:padding="@dimen/spacing_xs">
+
+                        <ImageView
+                            android:layout_width="@dimen/icon_large"
+                            android:layout_height="@dimen/icon_large"
+                            android:importantForAccessibility="no"
+                            android:src="@drawable/ic_print"
+                            app:tint="@color/ds_group_finance" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_xs"
+                            android:gravity="center"
+                            android:text="@string/ds_main_menu_statement"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.DS.Caption"
+                            android:textColor="@color/ds_text_primary"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- ─────────── گروه ۴: آموزشی (آبی) ─────────── -->
+                <TextView
+                    style="@style/Widget.Kharazmi.DS.SectionHeader"
+                    android:layout_width="0dp"
+                    android:text="@string/ds_main_section_academic"
+                    app:layout_columnSpan="3"
+                    app:layout_columnWeight="1" />
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/menu_11_grades"
+                    style="@style/Widget.Kharazmi.DS.Card.Interactive"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/dash_grid_gutter"
+                    app:layout_columnWeight="1"
+                    app:strokeColor="@color/ds_card_stroke_info">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:minHeight="@dimen/dash_card_min_height"
+                        android:orientation="vertical"
+                        android:padding="@dimen/spacing_xs">
+
+                        <ImageView
+                            android:layout_width="@dimen/icon_large"
+                            android:layout_height="@dimen/icon_large"
+                            android:importantForAccessibility="no"
+                            android:src="@drawable/ic_calendar_24"
+                            app:tint="@color/ds_group_academic" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_xs"
+                            android:gravity="center"
+                            android:text="@string/ds_main_menu_grades"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.DS.Caption"
+                            android:textColor="@color/ds_text_primary"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/menu_12_sessions"
+                    style="@style/Widget.Kharazmi.DS.Card.Interactive"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/dash_grid_gutter"
+                    app:layout_columnWeight="1"
+                    app:strokeColor="@color/ds_card_stroke_info">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:minHeight="@dimen/dash_card_min_height"
+                        android:orientation="vertical"
+                        android:padding="@dimen/spacing_xs">
+
+                        <ImageView
+                            android:layout_width="@dimen/icon_large"
+                            android:layout_height="@dimen/icon_large"
+                            android:importantForAccessibility="no"
+                            android:src="@drawable/ic_history_24"
+                            app:tint="@color/ds_group_academic" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_xs"
+                            android:gravity="center"
+                            android:text="@string/ds_main_menu_sessions"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.DS.Caption"
+                            android:textColor="@color/ds_text_primary"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- ─────────── گروه ۵: مدیریت ارشد (هشدار/خطر/اطلاع) ─────────── -->
+                <TextView
+                    style="@style/Widget.Kharazmi.DS.SectionHeader"
+                    android:layout_width="0dp"
+                    android:text="@string/ds_main_section_admin"
+                    app:layout_columnSpan="3"
+                    app:layout_columnWeight="1" />
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/menu_13_live"
+                    style="@style/Widget.Kharazmi.DS.Card.Interactive"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/dash_grid_gutter"
+                    app:layout_columnWeight="1">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:minHeight="@dimen/dash_card_min_height"
+                        android:orientation="vertical"
+                        android:padding="@dimen/spacing_xs">
+
+                        <!-- tint این آیکون در MainActivity بر اساس تعداد کلاس زنده ست می‌شود -->
+                        <ImageView
+                            android:id="@+id/imgLivePulse"
+                            android:layout_width="@dimen/icon_large"
+                            android:layout_height="@dimen/icon_large"
+                            android:importantForAccessibility="no"
+                            android:src="@drawable/ic_group"
+                            app:tint="@color/ds_group_critical" />
+
+                        <TextView
+                            android:id="@+id/txtLiveCount"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_xs"
+                            android:gravity="center"
+                            android:text="@string/ds_main_menu_live"
+                            android:textAlignment="center"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.DS.Caption"
+                            android:textColor="@color/ds_text_primary"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/menu_14_audit"
+                    style="@style/Widget.Kharazmi.DS.Card.Interactive"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/dash_grid_gutter"
+                    app:layout_columnWeight="1"
+                    app:strokeColor="@color/ds_card_stroke_warning">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:minHeight="@dimen/dash_card_min_height"
+                        android:orientation="vertical"
+                        android:padding="@dimen/spacing_xs">
+
+                        <ImageView
+                            android:layout_width="@dimen/icon_large"
+                            android:layout_height="@dimen/icon_large"
+                            android:importantForAccessibility="no"
+                            android:src="@android:drawable/ic_menu_search"
+                            app:tint="@color/ds_group_admin" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_xs"
+                            android:gravity="center"
+                            android:text="@string/nav_audit_radar"
+                            android:textAlignment="center"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.DS.Caption"
+                            android:textColor="@color/ds_text_primary"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/menu_15_dunning"
+                    style="@style/Widget.Kharazmi.DS.Card.Interactive"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/dash_grid_gutter"
+                    app:layout_columnWeight="1"
+                    app:strokeColor="@color/ds_card_stroke_danger">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:minHeight="@dimen/dash_card_min_height"
+                        android:orientation="vertical"
+                        android:padding="@dimen/spacing_xs">
+
+                        <ImageView
+                            android:layout_width="@dimen/icon_large"
+                            android:layout_height="@dimen/icon_large"
+                            android:importantForAccessibility="no"
+                            android:src="@drawable/ic_ds_danger_24"
+                            app:tint="@color/ds_group_critical" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_xs"
+                            android:gravity="center"
+                            android:text="@string/dunning_nav"
+                            android:textAlignment="center"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.DS.Caption"
+                            android:textColor="@color/ds_text_primary"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/menu_16_dashboard"
+                    style="@style/Widget.Kharazmi.DS.Card.Interactive"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/dash_grid_gutter"
+                    app:layout_columnWeight="1"
+                    app:strokeColor="@color/ds_card_stroke_info">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:minHeight="@dimen/dash_card_min_height"
+                        android:orientation="vertical"
+                        android:padding="@dimen/spacing_xs">
+
+                        <ImageView
+                            android:layout_width="@dimen/icon_large"
+                            android:layout_height="@dimen/icon_large"
+                            android:importantForAccessibility="no"
+                            android:src="@drawable/ic_ds_dashboard_24"
+                            app:tint="@color/ds_group_academic" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_xs"
+                            android:gravity="center"
+                            android:text="@string/dashboard_nav"
+                            android:textAlignment="center"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.DS.Caption"
+                            android:textColor="@color/ds_text_primary"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+            </androidx.gridlayout.widget.GridLayout>
+        </androidx.core.widget.NestedScrollView>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- منوی کشویی ساید (بدون تغییر در شناسه‌ها) -->
+    <com.google.android.material.navigation.NavigationView
+        android:id="@+id/nav_view"
+        android:layout_width="280dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        android:background="@color/ds_bg_surface"
+        app:headerLayout="@layout/nav_header"
+        app:itemIconTint="@color/text_primary"
+        app:itemTextColor="@color/text_primary"
+        app:menu="@menu/drawer_menu" />
+
+</androidx.drawerlayout.widget.DrawerLayout>

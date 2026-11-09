@@ -1,0 +1,594 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/gold_bg_base"
+    android:layoutDirection="rtl">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBarLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:elevation="0dp"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@color/gold_bg_elevated">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="ثبت نام دانش‌آموز"
+                android:textColor="?attr/colorOnPrimary"
+                android:textAppearance="@style/TextAppearance.Kharazmi.PageTitle" />
+        </androidx.appcompat.widget.Toolbar>
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <com.google.android.material.progressindicator.LinearProgressIndicator
+        android:id="@+id/stepProgress"
+        android:layout_width="match_parent"
+        android:layout_height="4dp"
+        android:progress="50"
+        app:trackColor="@color/gold_border_subtle"
+        app:indicatorColor="@color/gold_primary"
+        app:layout_constraintTop_toBottomOf="@id/appBarLayout" />
+
+    <ViewFlipper
+        android:id="@+id/viewFlipper"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:inAnimation="@anim/slide_in_right"
+        android:outAnimation="@anim/slide_out_left"
+        app:layout_constraintTop_toBottomOf="@id/stepProgress"
+        app:layout_constraintBottom_toTopOf="@id/bottomNavContainer">
+
+        <!-- Step 1: Input forms segmented visually into cards (Warm & Friendly personality) -->
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fillViewport="true">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/spacing_normal">
+
+                <!-- Title -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="ورود اطلاعات فردی و تماس"
+                    android:textAppearance="@style/TextAppearance.Kharazmi.SectionTitle"
+                    android:textColor="@color/gold_primary"
+                    android:layout_marginHorizontal="@dimen/spacing_small"
+                    android:layout_marginBottom="@dimen/spacing_small" />
+
+                <!-- Card A: Personal Details -->
+                <com.google.android.material.card.MaterialCardView
+                    style="@style/Widget.Kharazmi.Card.Gold"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/spacing_normal"
+                    app:cardCornerRadius="20dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="@dimen/spacing_normal">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:baselineAligned="false">
+
+                            <com.google.android.material.textfield.TextInputLayout
+                                style="@style/Widget.Kharazmi.Input.Gold"
+                                android:layout_width="0dp"
+                                android:layout_weight="1"
+                                android:layout_height="wrap_content"
+                                android:layout_marginEnd="6dp"
+                                android:hint="نام">
+                                <com.google.android.material.textfield.TextInputEditText
+                                    android:id="@+id/etFirstName"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:inputType="textPersonName"
+                                    android:textColor="@color/text_primary"
+                                    android:maxLines="1" />
+                            </com.google.android.material.textfield.TextInputLayout>
+
+                            <com.google.android.material.textfield.TextInputLayout
+                                style="@style/Widget.Kharazmi.Input.Gold"
+                                android:layout_width="0dp"
+                                android:layout_weight="1"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="6dp"
+                                android:hint="نام خانوادگی">
+                                <com.google.android.material.textfield.TextInputEditText
+                                    android:id="@+id/etLastName"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:inputType="textPersonName"
+                                    android:textColor="@color/text_primary"
+                                    android:maxLines="1" />
+                            </com.google.android.material.textfield.TextInputLayout>
+                        </LinearLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            style="@style/Widget.Kharazmi.Input.Gold"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_normal"
+                            android:hint="نام پدر">
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/etFatherName"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="textPersonName"
+                                android:textColor="@color/text_primary" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            style="@style/Widget.Kharazmi.Input.Gold"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_normal"
+                            android:hint="کد ملی (10 رقم)"
+                            app:counterEnabled="true"
+                            app:counterMaxLength="10">
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/etNationalCode"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="number"
+                                android:textColor="@color/text_primary"
+                                android:fontFeatureSettings="tnum"
+                                android:maxLength="10" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                            app:boxCornerRadiusTopStart="14dp"
+                            app:boxCornerRadiusTopEnd="14dp"
+                            app:boxCornerRadiusBottomStart="14dp"
+                            app:boxCornerRadiusBottomEnd="14dp"
+                            app:boxStrokeColor="@color/gold_primary"
+                            app:hintTextColor="@color/gold_primary"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_normal"
+                            android:hint="جنسیت">
+                            <AutoCompleteTextView
+                                android:id="@+id/acGender"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="none"
+                                android:text="آقا"
+                                android:textColor="@color/text_primary" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                            app:boxCornerRadiusTopStart="14dp"
+                            app:boxCornerRadiusTopEnd="14dp"
+                            app:boxCornerRadiusBottomStart="14dp"
+                            app:boxCornerRadiusBottomEnd="14dp"
+                            app:boxStrokeColor="@color/gold_primary"
+                            app:hintTextColor="@color/gold_primary"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_normal"
+                            android:hint="وضعیت تحصیلی">
+                            <AutoCompleteTextView
+                                android:id="@+id/acStudyStatus"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="none"
+                                android:text="در حال تحصیل"
+                                android:textColor="@color/text_primary" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            style="@style/Widget.Kharazmi.Input.Gold"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_normal"
+                            android:hint="تاریخ تولد"
+                            app:endIconDrawable="@drawable/ic_calendar_24"
+                            app:endIconMode="custom">
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/etBirthDate"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="none"
+                                android:textColor="@color/text_primary"
+                                android:fontFeatureSettings="tnum"
+                                android:focusable="false"
+                                android:clickable="true" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Card B: Contact Information -->
+                <com.google.android.material.card.MaterialCardView
+                    style="@style/Widget.Kharazmi.Card.Gold"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/spacing_normal"
+                    app:cardCornerRadius="20dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="@dimen/spacing_normal">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="اطلاعات تماس"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.SectionTitle"
+                            android:textColor="@color/gold_primary"
+                            android:layout_marginBottom="@dimen/spacing_normal"/>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            style="@style/Widget.Kharazmi.Input.Gold"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="موبایل دانش‌آموز"
+                            app:prefixText="+98 ">
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/etStudentMobile"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="phone"
+                                android:textColor="@color/text_primary"
+                                android:fontFeatureSettings="tnum"
+                                android:maxLength="11" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            style="@style/Widget.Kharazmi.Input.Gold"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_normal"
+                            android:hint="موبایل ولی (جهت اطلاع‌رسانی)"
+                            app:prefixText="+98 ">
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/etParentMobile"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="phone"
+                                android:textColor="@color/text_primary"
+                                android:fontFeatureSettings="tnum"
+                                android:maxLength="11" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Card C: Direct Course Registration -->
+                <com.google.android.material.card.MaterialCardView
+                    style="@style/Widget.Kharazmi.Card.Gold"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/spacing_normal"
+                    app:cardCornerRadius="20dp"
+                    app:strokeColor="@color/gold_primary"
+                    app:strokeWidth="1dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="@dimen/spacing_normal">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="ثبت‌نام مستقیم در کلاس (اختیاری)"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.SectionTitle"
+                            android:textColor="@color/gold_primary"
+                            android:layout_marginBottom="@dimen/spacing_normal" />
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                            app:boxCornerRadiusTopStart="14dp"
+                            app:boxCornerRadiusTopEnd="14dp"
+                            app:boxCornerRadiusBottomStart="14dp"
+                            app:boxCornerRadiusBottomEnd="14dp"
+                            app:boxStrokeColor="@color/gold_primary"
+                            app:hintTextColor="@color/gold_primary"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="انتخاب کلاس فعال">
+                            <AutoCompleteTextView
+                                android:id="@+id/acChooseClass"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="none"
+                                android:text="عدم ثبت‌نام در کلاس"
+                                android:textColor="@color/text_primary" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <!-- کادر شهریه و تخفیفات پویای ثبت‌نام مستقیم -->
+                        <LinearLayout
+                            android:id="@+id/llDirectEnrollFields"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:visibility="gone">
+
+                            <com.google.android.material.textfield.TextInputLayout
+                                style="@style/Widget.Kharazmi.Input.Gold"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="@dimen/spacing_normal"
+                                android:hint="شهریه پایه این کلاس (تومان)"
+                                app:boxStrokeColor="@color/gold_primary">
+                                <com.google.android.material.textfield.TextInputEditText
+                                    android:id="@+id/etRegBaseTuition"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:inputType="number"
+                                    android:textColor="@color/text_primary"
+                                    android:fontFeatureSettings="tnum"
+                                    android:text="1000000" />
+                            </com.google.android.material.textfield.TextInputLayout>
+
+                            <com.google.android.material.textfield.TextInputLayout
+                                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                                app:boxCornerRadiusTopStart="14dp"
+                                app:boxCornerRadiusTopEnd="14dp"
+                                app:boxCornerRadiusBottomStart="14dp"
+                                app:boxCornerRadiusBottomEnd="14dp"
+                                app:boxStrokeColor="@color/gold_primary"
+                                app:hintTextColor="@color/gold_primary"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="@dimen/spacing_normal"
+                                android:hint="نوع تخفیف">
+                                <AutoCompleteTextView
+                                    android:id="@+id/acRegDiscountType"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:inputType="none"
+                                    android:text="بدون تخفیف"
+                                    android:textColor="@color/text_primary"/>
+                            </com.google.android.material.textfield.TextInputLayout>
+
+                            <com.google.android.material.textfield.TextInputLayout
+                                style="@style/Widget.Kharazmi.Input.Gold"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="@dimen/spacing_normal"
+                                android:hint="مقدار تخفیف"
+                                app:boxStrokeColor="@color/gold_primary">
+                                <com.google.android.material.textfield.TextInputEditText
+                                    android:id="@+id/etRegDiscountValue"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:inputType="number"
+                                    android:textColor="@color/text_primary"
+                                    android:fontFeatureSettings="tnum"
+                                    android:text="0" />
+                            </com.google.android.material.textfield.TextInputLayout>
+
+                            <TextView
+                                android:id="@+id/tvRegFinalTuitionPreview"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="شهریه نهایی: ۱,۰۰۰,۰۰۰ تومان"
+                                android:textColor="@color/gold_primary"
+                                android:textStyle="bold"
+                                android:textSize="15sp"
+                                android:layout_marginTop="@dimen/spacing_normal" />
+
+                            <CheckBox
+                                android:id="@+id/cbRegSplitInstallments"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="10dp"
+                                android:text="تقسیم به ۲ قسط مساوی (۵۰٪ نقدی و ۵۰٪ سررسید یک ماه بعد)"
+                                android:textSize="13sp"
+                                android:textColor="@color/text_primary"
+                                android:checked="false"/>
+                        </LinearLayout>
+
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+            </LinearLayout>
+        </ScrollView>
+
+        <!-- Step 2: Review and Verification of Details (Warm & Friendly review layout) -->
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fillViewport="true">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/spacing_normal">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="تایید نهایی اطلاعات"
+                    android:textAppearance="@style/TextAppearance.Kharazmi.SectionTitle"
+                    android:textColor="@color/gold_primary"
+                    android:gravity="center"
+                    android:layout_marginBottom="@dimen/spacing_normal" />
+
+                <com.google.android.material.card.MaterialCardView
+                    style="@style/Widget.Kharazmi.Card.Gold"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:cardCornerRadius="20dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="@dimen/spacing_normal">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="لطفاً اطلاعات زیر را بررسی کنید:"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.Caption"
+                            android:layout_marginBottom="@dimen/spacing_normal" />
+
+                        <TextView
+                            android:id="@+id/tvReviewName"
+                            android:text="نام: -"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.Body"
+                            android:textColor="@color/text_primary"
+                            android:layout_marginBottom="@dimen/spacing_small"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content" />
+                        <TextView
+                            android:id="@+id/tvReviewFather"
+                            android:text="نام پدر: -"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.Body"
+                            android:textColor="@color/text_primary"
+                            android:layout_marginBottom="@dimen/spacing_small"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content" />
+                        <TextView
+                            android:id="@+id/tvReviewCode"
+                            android:text="کد ملی: -"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.Body"
+                            android:textColor="@color/text_primary"
+                            android:fontFeatureSettings="tnum"
+                            android:layout_marginBottom="@dimen/spacing_small"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content" />
+                        <TextView
+                            android:id="@+id/tvReviewGender"
+                            android:text="جنسیت: -"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.Body"
+                            android:textColor="@color/text_primary"
+                            android:layout_marginBottom="@dimen/spacing_small"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content" />
+                        <TextView
+                            android:id="@+id/tvReviewStudyStatus"
+                            android:text="وضعیت تحصیلی: -"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.Body"
+                            android:textColor="@color/text_primary"
+                            android:layout_marginBottom="@dimen/spacing_small"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content" />
+                        <TextView
+                            android:id="@+id/tvReviewBirth"
+                            android:text="تولد: -"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.Body"
+                            android:textColor="@color/text_primary"
+                            android:fontFeatureSettings="tnum"
+                            android:layout_marginBottom="@dimen/spacing_small"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content" />
+                        <TextView
+                            android:id="@+id/tvReviewMobile"
+                            android:text="موبایل: -"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.Body"
+                            android:textColor="@color/text_primary"
+                            android:fontFeatureSettings="tnum"
+                            android:layout_marginBottom="@dimen/spacing_small"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content" />
+                        <TextView
+                            android:id="@+id/tvReviewParent"
+                            android:text="موبایل والدین: -"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.Body"
+                            android:textColor="@color/text_primary"
+                            android:fontFeatureSettings="tnum"
+                            android:layout_marginBottom="@dimen/spacing_small"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content" />
+                        <TextView
+                            android:id="@+id/tvReviewDirectEnrollClass"
+                            android:text="کلاس انتخابی: -"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.Body"
+                            android:textColor="@color/gold_primary"
+                            android:textStyle="bold"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content" />
+
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="* لطفاً قبل از ثبت نهایی، از صحت اطلاعات وارد شده اطمینان حاصل فرمایید."
+                    android:textAppearance="@style/TextAppearance.Kharazmi.Caption"
+                    android:layout_marginTop="20dp"
+                    android:gravity="center" />
+
+            </LinearLayout>
+        </ScrollView>
+
+    </ViewFlipper>
+
+    <!-- Bottom buttons styled with central pill style R.style.Widget.Kharazmi.Button -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/bottomNavContainer"
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:background="@color/gold_bg_elevated"
+        android:elevation="16dp"
+        android:padding="@dimen/spacing_normal"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/gold_border_subtle"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnPrevious"
+            style="@style/Widget.Kharazmi.Button.Gold.Outline"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="ویرایش اطلاعات"
+            android:textColor="@color/text_primary"
+            android:visibility="invisible"
+            app:cornerRadius="24dp"
+            android:paddingVertical="10dp"
+            android:textSize="13sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintWidth_percent="0.45"
+            app:strokeColor="@color/gold_border_subtle"
+            tools:visibility="visible" />
+
+        <com.example.kharazmiadmin.GoldButton
+            android:id="@+id/btnNext"
+            style="@style/Widget.Kharazmi.Button.Gold"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="مرحله بعد"
+            app:backgroundTint="@color/gold_primary"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintWidth_percent="0.45" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

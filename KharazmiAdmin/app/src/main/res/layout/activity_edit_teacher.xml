@@ -1,0 +1,303 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/gold_bg_base"
+    android:layoutDirection="rtl">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:elevation="0dp">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@color/gold_primary">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="ویرایش اطلاعات معلم"
+                android:textColor="?attr/colorOnPrimary"
+                android:textAppearance="@style/TextAppearance.Kharazmi.PageTitle" />
+        </androidx.appcompat.widget.Toolbar>
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/spacing_normal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="مشخصات فردی، شغلی و مالی معلم"
+                android:textAppearance="@style/TextAppearance.Kharazmi.SectionTitle"
+                android:textColor="@color/gold_primary"
+                android:layout_marginHorizontal="@dimen/spacing_small"
+                android:layout_marginBottom="@dimen/spacing_small" />
+
+            <!-- Card 1: Personal Details -->
+            <!-- FIX: Use the declared Widget.Kharazmi.Card.Gold style; remove repeated suffixes. -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/Widget.Kharazmi.Card.Gold"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_normal"
+                app:cardCornerRadius="20dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/spacing_normal">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:baselineAligned="false"
+                        android:layout_marginBottom="@dimen/spacing_normal">
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            style="@style/Widget.Kharazmi.Input.Gold"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="6dp"
+                            android:hint="نام">
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/etEditTFirstName"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="textPersonName"
+                                android:textColor="@color/text_primary" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            style="@style/Widget.Kharazmi.Input.Gold"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="6dp"
+                            android:hint="نام خانوادگی">
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/etEditTLastName"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="textPersonName"
+                                android:textColor="@color/text_primary" />
+                        </com.google.android.material.textfield.TextInputLayout>
+                    </LinearLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.Kharazmi.Input.Gold"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/spacing_normal"
+                        android:hint="نام پدر">
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etEditTFatherName"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="textPersonName"
+                            android:textColor="@color/text_primary" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <!-- Locked Field: National Code clearly distinguished with lock icon -->
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.Kharazmi.Input.Gold"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/spacing_normal"
+                        android:hint="کد ملی"
+                        app:endIconDrawable="@android:drawable/ic_lock_lock"
+                        app:endIconTint="@color/text_secondary"
+                        app:helperText="تغییر کد ملی منوط به دسترسی ادمین ارشد است."
+                        app:helperTextTextColor="@color/gold_primary">
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etEditTNationalCode"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="number"
+                            android:fontFeatureSettings="tnum"
+                            android:maxLength="10"
+                            android:textColor="@color/text_primary" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.Kharazmi.Input.Gold"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="تاریخ تولد (مثال: 1365/05/15)">
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etEditTBirthDate"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="text"
+                            android:fontFeatureSettings="tnum"
+                            android:textColor="@color/text_primary" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Card 2: Contact & Personal Status -->
+            <!-- FIX: Use the declared Widget.Kharazmi.Card.Gold style; remove repeated suffixes. -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/Widget.Kharazmi.Card.Gold"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_normal"
+                app:cardCornerRadius="20dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/spacing_normal">
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.Kharazmi.Input.Gold"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/spacing_normal"
+                        android:hint="شماره همراه"
+                        app:startIconDrawable="@android:drawable/ic_menu_call"
+                        app:startIconTint="@color/gold_primary">
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etEditTMobile"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="phone"
+                            android:fontFeatureSettings="tnum"
+                            android:maxLength="11"
+                            android:textColor="@color/text_primary" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.Kharazmi.Input.Gold"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/spacing_normal"
+                        android:hint="تلفن ثابت">
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etEditTHomePhone"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="phone"
+                            android:fontFeatureSettings="tnum"
+                            android:textColor="@color/text_primary" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.Kharazmi.Input.Gold"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/spacing_normal"
+                        android:hint="وضعیت تاهل (مجرد / متاهل)">
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etEditTMaritalStatus"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="text"
+                            android:textColor="@color/text_primary" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.Kharazmi.Input.Gold"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="جنسیت (مرد / زن)">
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etEditTGender"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="text"
+                            android:textColor="@color/text_primary" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Card 3: Contract & Bank Details -->
+            <!-- FIX: Use the declared Widget.Kharazmi.Card.Gold style; remove repeated suffixes. -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/Widget.Kharazmi.Card.Gold"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_large"
+                app:cardCornerRadius="20dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/spacing_normal">
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.Kharazmi.Input.Gold"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/spacing_normal"
+                        android:hint="نوع استخدام (رسمی / پیمانی / ساعتی)">
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etEditTEmploymentType"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="text"
+                            android:textColor="@color/text_primary" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.Kharazmi.Input.Gold"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="شماره کارت بانکی (۱۶ رقمی)"
+                        app:startIconDrawable="@drawable/ic_save_24"
+                        app:startIconTint="@color/gold_primary"
+                        app:counterEnabled="true"
+                        app:counterMaxLength="16">
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etEditTCardNumber"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="number"
+                            android:fontFeatureSettings="tnum"
+                            android:maxLength="16"
+                            android:textColor="@color/text_primary" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Save button styled using central pill shape Widget.Kharazmi.Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSaveParams"
+                style="@style/Widget.Kharazmi.Button.Gold"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/text_on_gold"
+                android:text="ذخیره تغییرات"
+                android:textSize="15sp"
+                app:backgroundTint="@color/gold_primary"
+                app:elevation="@dimen/elevation_button"
+                app:icon="@drawable/ic_save_24"
+                app:iconTint="@color/text_on_gold"
+                app:iconGravity="textStart"
+                android:layout_marginHorizontal="@dimen/spacing_small"
+                android:layout_marginBottom="@dimen/spacing_normal"/>
+
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

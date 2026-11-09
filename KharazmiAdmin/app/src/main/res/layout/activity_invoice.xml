@@ -1,0 +1,532 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ====================================================================================
+     PHASE 2 — activity_invoice (صدور فیش و ثبت حواله)
+     شناسه‌های حفظ‌شده (InvoiceActivity.kt): etSearch / rvSearchResults / cardStudentInfo /
+       cardPaymentForm / tvStName / tvStClass / tvUnpaidSessions / tvSelectedClass / tvDebtTeacher /
+       tvDebtInstitute / tvSessionInfo / layoutSessions / etSessionsCount / tvSessionsHint / etAmount / etAmountInstitute / tilAmount1 / tilAmount2 / etDesc /
+       rgPaymentMethod / rbCard / rbCash / rbCheque / layoutWalletSelector / rgTargetWallet /
+       rbWalletTeacher / rbWalletInstitute / rbWalletBoth / btnSubmit / tvDate
+     قیدهای حفظ‌شده: inputType همه فیلدها، نام و قرارداد endpointها، اعتبارسنجی Kotlin،
+     وابستگی دکمه ثبت به GoldButton.setLoading (کلاس GoldButton دست‌نخورده) و visibility
+     پیش‌فرض (cardStudentInfo/cardPaymentForm/tilAmount2/rvSearchResults = gone).
+     ==================================================================================== -->
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/ds_bg_base"
+    android:layoutDirection="rtl">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_ds_header"
+        app:elevation="@dimen/elevation_none">
+
+        <androidx.appcompat.widget.Toolbar
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/ds_toolbar_height"
+            android:background="@android:color/transparent">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <ImageView
+                    android:layout_width="@dimen/icon_medium"
+                    android:layout_height="@dimen/icon_medium"
+                    android:src="@drawable/ic_ds_receipt_24"
+                    android:importantForAccessibility="no"
+                    app:tint="@color/ds_accent"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/spacing_snug"
+                    android:text="@string/ds_inv_page_title"
+                    android:textAppearance="@style/TextAppearance.Kharazmi.DS.SectionTitle"/>
+            </LinearLayout>
+        </androidx.appcompat.widget.Toolbar>
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+        android:scrollbars="vertical"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/spacing_normal">
+
+            <!-- ==================== مرحله ۱: انتخاب دانش‌آموز ==================== -->
+            <TextView
+                style="@style/Widget.Kharazmi.DS.SectionHeader"
+                android:text="@string/ds_inv_step_student"/>
+
+            <com.google.android.material.card.MaterialCardView
+                style="@style/Widget.Kharazmi.DS.Card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_normal">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/spacing_normal">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/spacing_snug"
+                        android:text="@string/ds_inv_search_title"
+                        android:textAppearance="@style/TextAppearance.Kharazmi.DS.Body"
+                        android:textStyle="bold"/>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.Kharazmi.DS.Input"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/ds_inv_search_hint"
+                        app:startIconDrawable="@drawable/ic_search_24"
+                        app:startIconContentDescription="@string/ds_inv_search_hint">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etSearch"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="text"
+                            android:textColor="@color/ds_text_primary"/>
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rvSearchResults"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_xs"
+                        android:maxHeight="250dp"
+                        android:visibility="gone"
+                        android:background="@color/ds_bg_surface_2"
+                        android:clipToPadding="false"
+                        android:scrollbars="vertical"
+                        android:elevation="@dimen/elevation_card"
+                        android:layoutAnimation="@anim/layout_animation_fall_down"/>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- ==================== مرحله ۲: خلاصه حساب ==================== -->
+            <TextView
+                style="@style/Widget.Kharazmi.DS.SectionHeader"
+                android:text="@string/ds_inv_step_summary"/>
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardStudentInfo"
+                style="@style/Widget.Kharazmi.DS.Card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_normal"
+                android:visibility="gone">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/spacing_normal">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <ImageView
+                            android:layout_width="@dimen/icon_large"
+                            android:layout_height="@dimen/icon_large"
+                            android:src="@drawable/ic_ds_person_24"
+                            android:importantForAccessibility="no"
+                            app:tint="@color/ds_accent"/>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginStart="@dimen/spacing_snug"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/tvStName"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/ds_value_placeholder"
+                                android:textAppearance="@style/TextAppearance.Kharazmi.DS.SectionTitle"/>
+
+                            <TextView
+                                android:id="@+id/tvStClass"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="@dimen/spacing_2xs"
+                                android:text="@string/ds_value_placeholder"
+                                android:textAppearance="@style/TextAppearance.Kharazmi.DS.Caption"/>
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/stroke_hairline"
+                        android:layout_marginTop="@dimen/spacing_snug"
+                        android:layout_marginBottom="@dimen/spacing_snug"
+                        android:background="@color/ds_border"/>
+
+                    <!-- جلسات و مبلغ (متن هر ردیف از سمت کد و strings می‌آید) -->
+                    <TextView
+                        android:id="@+id/tvUnpaidSessions"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:minHeight="@dimen/min_touch_target"
+                        android:gravity="center_vertical"
+                        android:text="@string/ds_value_placeholder"
+                        android:textAppearance="@style/TextAppearance.Kharazmi.DS.Body"
+                        android:fontFeatureSettings="tnum"/>
+
+                    <!-- کلاس انتخاب‌شده؛ بدهی فقط در دو ردیف سهم معلم و آموزشگاه پایین نمایش داده می‌شود -->
+                    <TextView
+                        android:id="@+id/tvSelectedClass"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:minHeight="@dimen/min_touch_target"
+                        android:gravity="center_vertical"
+                        android:text="@string/ds_value_placeholder"
+                        android:textAppearance="@style/TextAppearance.Kharazmi.DS.Money"
+                        android:textColor="@color/ds_danger"
+                        android:fontFeatureSettings="tnum"/>
+
+                    <!-- «این مبلغ برای چند جلسه‌ی این کلاس است؟» — بالای دو ردیف بدهی؛ متن از سمت کد می‌آید -->
+                    <TextView
+                        android:id="@+id/tvSessionInfo"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_xs"
+                        android:layout_marginBottom="@dimen/spacing_xs"
+                        android:gravity="center_vertical"
+                        android:text="@string/ds_value_placeholder"
+                        android:textAppearance="@style/TextAppearance.Kharazmi.DS.Body"
+                        android:visibility="gone"/>
+
+                    <!-- سهم معلم -->
+                    <LinearLayout
+                        android:id="@+id/layoutDebtTeacher"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:minHeight="@dimen/min_touch_target"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <ImageView
+                            android:layout_width="@dimen/icon_small"
+                            android:layout_height="@dimen/icon_small"
+                            android:src="@drawable/ic_ds_wallet_24"
+                            android:importantForAccessibility="no"
+                            app:tint="@color/ds_warning"/>
+
+                        <TextView
+                            android:id="@+id/tvDebtTeacher"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginStart="@dimen/spacing_xs"
+                            android:text="@string/ds_value_placeholder"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.DS.Status"
+                            android:fontFeatureSettings="tnum"/>
+                    </LinearLayout>
+
+                    <!-- سهم آموزشگاه -->
+                    <LinearLayout
+                        android:id="@+id/layoutDebtInstitute"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:minHeight="@dimen/min_touch_target"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <ImageView
+                            android:layout_width="@dimen/icon_small"
+                            android:layout_height="@dimen/icon_small"
+                            android:src="@drawable/ic_ds_wallet_24"
+                            android:importantForAccessibility="no"
+                            app:tint="@color/ds_info"/>
+
+                        <TextView
+                            android:id="@+id/tvDebtInstitute"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginStart="@dimen/spacing_xs"
+                            android:text="@string/ds_value_placeholder"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.DS.Status"
+                            android:fontFeatureSettings="tnum"/>
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_xs"
+                        android:text="@string/ds_inv_sign_note"
+                        android:textAppearance="@style/TextAppearance.Kharazmi.DS.Caption"/>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- ==================== مرحله ۳: اطلاعات پرداخت ==================== -->
+            <TextView
+                style="@style/Widget.Kharazmi.DS.SectionHeader"
+                android:text="@string/ds_inv_step_payment"/>
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardPaymentForm"
+                style="@style/Widget.Kharazmi.DS.Card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="gone">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/spacing_normal">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/spacing_snug"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <TextView
+                            android:id="@+id/tvDate"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/ds_value_placeholder"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.DS.Caption"
+                            android:fontFeatureSettings="tnum"/>
+
+                        <TextView
+                            style="@style/Widget.Kharazmi.DS.Pill.Neutral"
+                            android:text="@string/ds_inv_receipt_no"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.DS.Caption"/>
+                    </LinearLayout>
+
+                    <!-- کیف پول مقصد پرداخت (فقط برای مدیر؛ کد آن را کنترل می‌کند) -->
+                    <LinearLayout
+                        android:id="@+id/layoutWalletSelector"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/spacing_normal"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="@dimen/spacing_xs"
+                            android:text="@string/ds_inv_wallet_label"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.DS.Overline"/>
+
+                        <RadioGroup
+                            android:id="@+id/rgTargetWallet"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+
+                            <RadioButton
+                                android:id="@+id/rbWalletTeacher"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:minHeight="@dimen/min_touch_target"
+                                android:text="@string/invoice_wallet_teacher"
+                                android:textAppearance="@style/TextAppearance.Kharazmi.DS.Body"/>
+
+                            <RadioButton
+                                android:id="@+id/rbWalletInstitute"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:minHeight="@dimen/min_touch_target"
+                                android:text="@string/invoice_wallet_institute"
+                                android:textAppearance="@style/TextAppearance.Kharazmi.DS.Body"/>
+
+                            <RadioButton
+                                android:id="@+id/rbWalletBoth"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:minHeight="@dimen/min_touch_target"
+                                android:text="@string/ds_inv_wallet_both"
+                                android:textAppearance="@style/TextAppearance.Kharazmi.DS.Body"/>
+                        </RadioGroup>
+                    </LinearLayout>
+
+                    <!-- ثبت حواله برای «N جلسه» (فقط ادمین؛ visibility با کد کنترل می‌شود) -->
+                    <LinearLayout
+                        android:id="@+id/layoutSessions"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/spacing_normal"
+                        android:orientation="vertical"
+                        android:visibility="gone">
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            style="@style/Widget.Kharazmi.DS.Input"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="@string/invoice_sessions_hint">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/etSessionsCount"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="number"
+                                android:maxLength="4"
+                                android:textColor="@color/ds_text_primary"
+                                android:fontFeatureSettings="tnum"/>
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <TextView
+                            android:id="@+id/tvSessionsHint"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_xs"
+                            android:text="@string/invoice_sessions_help_default"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.DS.Caption"/>
+                    </LinearLayout>
+
+                    <!-- مبلغ اصلی -->
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/tilAmount1"
+                        style="@style/Widget.Kharazmi.DS.Input"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/invoice_hint_amount">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etAmount"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="number"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.DS.KpiValue"
+                            android:textSize="@dimen/font_size_kpi_value"
+                            android:textStyle="bold"
+                            android:textColor="@color/ds_accent"
+                            android:fontFeatureSettings="tnum"/>
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <!-- سهم آموزشگاه (فقط در حالت «هر دو» نمایان می‌شود) -->
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/tilAmount2"
+                        style="@style/Widget.Kharazmi.DS.Input"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_normal"
+                        android:hint="@string/invoice_hint_institute"
+                        android:visibility="gone">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etAmountInstitute"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="number"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.DS.KpiValue"
+                            android:textSize="@dimen/font_size_kpi_value"
+                            android:textStyle="bold"
+                            android:textColor="@color/ds_accent"
+                            android:fontFeatureSettings="tnum"/>
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <!-- روش پرداخت -->
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_normal"
+                        android:layout_marginBottom="@dimen/spacing_xs"
+                        android:text="@string/ds_inv_method_label"
+                        android:textAppearance="@style/TextAppearance.Kharazmi.DS.Overline"/>
+
+                    <RadioGroup
+                        android:id="@+id/rgPaymentMethod"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/spacing_normal"
+                        android:orientation="horizontal">
+
+                        <RadioButton
+                            android:id="@+id/rbCard"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:minHeight="@dimen/min_touch_target"
+                            android:checked="true"
+                            android:text="@string/ds_inv_pay_card"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.DS.Body"/>
+
+                        <RadioButton
+                            android:id="@+id/rbCash"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:minHeight="@dimen/min_touch_target"
+                            android:text="@string/ds_inv_pay_cash"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.DS.Body"/>
+
+                        <RadioButton
+                            android:id="@+id/rbCheque"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:minHeight="@dimen/min_touch_target"
+                            android:text="@string/ds_inv_pay_transfer"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.DS.Body"/>
+                    </RadioGroup>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.Kharazmi.DS.Input"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/ds_inv_desc_hint">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etDesc"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="text"
+                            android:textColor="@color/ds_text_primary"/>
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <!-- شفاف‌سازی مسیر: خلاصه و تأیید نهایی پیش از صدور رسید -->
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_snug"
+                        android:text="@string/ds_inv_confirm_note"
+                        android:textAppearance="@style/TextAppearance.Kharazmi.DS.Caption"/>
+
+                    <com.example.kharazmiadmin.GoldButton
+                        android:id="@+id/btnSubmit"
+                        style="@style/Widget.Kharazmi.DS.Button.Primary"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_small"
+                        android:minHeight="@dimen/spacing_xxlarge"
+                        android:text="@string/ds_inv_submit"
+                        android:textSize="@dimen/font_size_money"/>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

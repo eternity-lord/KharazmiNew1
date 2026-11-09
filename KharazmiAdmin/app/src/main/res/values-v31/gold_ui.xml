@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- FIX: Android 12+ uses the system splash icon instead of the legacy window background. -->
+    <style name="Theme.Kharazmi.Gold.Launch" parent="Theme.Kharazmi.Gold.Launch.Base">
+        <item name="android:windowSplashScreenBackground">@color/gold_bg_base</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/ic_gold_splash_logo</item>
+        <item name="android:windowSplashScreenIconBackgroundColor">@color/gold_bg_base</item>
+    </style>
+</resources>
+

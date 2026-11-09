@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- FIX: Use the declared Widget.Kharazmi.Card.Gold style; remove repeated suffixes. -->
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    style="@style/Widget.Kharazmi.Card.Gold"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/spacing_small"
+    app:cardCornerRadius="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/spacing_normal"
+        android:layoutDirection="rtl">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/tvExamCourseTitle"
+                android:text="کلاس ریاضی دهم"
+                android:textStyle="bold"
+                android:textAppearance="@style/TextAppearance.Kharazmi.SectionTitle"
+                android:textColor="@color/gold_primary"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"/>
+
+            <TextView
+                android:id="@+id/tvExamStatus"
+                android:text="شروع آزمون"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:textColor="@color/status_success"
+                android:background="@drawable/chip_background"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="4dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tvExamTitle"
+            android:text="عنوان آزمون تشریحی یا کلاسی"
+            android:textAppearance="@style/TextAppearance.Kharazmi.Body"
+            android:textColor="@color/text_primary"
+            android:textStyle="bold"
+            android:layout_marginTop="6dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+        <View android:layout_width="match_parent" android:layout_height="0.5dp" android:background="@color/gold_border_subtle" android:layout_marginTop="@dimen/spacing_small" android:layout_marginBottom="@dimen/spacing_small"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+            <TextView
+                android:id="@+id/tvExamDate"
+                android:text="📅 تاریخ آزمون: ۱۴۰۵/۰۶/۰۵"
+                android:textAppearance="@style/TextAppearance.Kharazmi.Caption"
+                android:fontFeatureSettings="tnum"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"/>
+
+            <TextView
+                android:id="@+id/tvExamScore"
+                android:text="نمره من: ---"
+                android:textAppearance="@style/TextAppearance.Kharazmi.Caption"
+                android:textColor="@color/text_primary"
+                android:fontFeatureSettings="tnum"
+                android:textStyle="bold"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+        </LinearLayout>
+
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

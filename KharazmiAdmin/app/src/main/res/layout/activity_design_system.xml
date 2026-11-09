@@ -1,0 +1,1156 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ====================================================================================
+     DESIGN SYSTEM (Phase 1) — Catalog
+     کاتالوگ زندهٔ توکن‌ها و کامپوننت‌ها برای بازبینی طراح/توسعه‌دهنده.
+     این چیدمان فقط نمایشی است؛ هیچ منطق یا اتصال داده‌ای در آن وجود ندارد.
+     سه شناسهٔ imgAvatarSample1..3 برای DesignSystemActivity حفظ شده‌اند.
+     ==================================================================================== -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/ds_bg_base"
+    android:layoutDirection="rtl"
+    android:orientation="vertical">
+
+    <!-- سرصفحه کاتالوگ -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_ds_header"
+        android:orientation="vertical"
+        android:paddingStart="@dimen/spacing_normal"
+        android:paddingEnd="@dimen/spacing_normal"
+        android:paddingTop="@dimen/spacing_normal"
+        android:paddingBottom="@dimen/spacing_normal">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/ds_cat_title"
+            android:textAppearance="@style/TextAppearance.Kharazmi.DS.PageTitle" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_2xs"
+            android:text="@string/ds_cat_subtitle"
+            android:textAppearance="@style/TextAppearance.Kharazmi.DS.Caption" />
+    </LinearLayout>
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:padding="@dimen/spacing_normal">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- ==================== ۱. رنگ‌ها ==================== -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/ds_cat_colors"
+                android:textAppearance="@style/TextAppearance.Kharazmi.DS.SectionTitle" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_2xs"
+                android:text="@string/ds_color_usage_hint"
+                android:textAppearance="@style/TextAppearance.Kharazmi.DS.Caption" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_snug"
+                android:baselineAligned="false"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <View
+                        android:layout_width="@dimen/icon_large"
+                        android:layout_height="@dimen/icon_large"
+                        android:background="@color/ds_bg_base" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/spacing_small"
+                        android:text="@string/ds_color_bg_base"
+                        android:textAppearance="@style/TextAppearance.Kharazmi.DS.Label" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <View
+                        android:layout_width="@dimen/icon_large"
+                        android:layout_height="@dimen/icon_large"
+                        android:background="@color/ds_bg_surface" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/spacing_small"
+                        android:text="@string/ds_color_surface"
+                        android:textAppearance="@style/TextAppearance.Kharazmi.DS.Label" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_small"
+                android:baselineAligned="false"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <View
+                        android:layout_width="@dimen/icon_large"
+                        android:layout_height="@dimen/icon_large"
+                        android:background="@color/ds_bg_surface_2" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/spacing_small"
+                        android:text="@string/ds_color_surface2"
+                        android:textAppearance="@style/TextAppearance.Kharazmi.DS.Label" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <View
+                        android:layout_width="@dimen/icon_large"
+                        android:layout_height="@dimen/icon_large"
+                        android:background="@color/ds_border_strong" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/spacing_small"
+                        android:text="@string/ds_color_border"
+                        android:textAppearance="@style/TextAppearance.Kharazmi.DS.Label" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_small"
+                android:baselineAligned="false"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <View
+                        android:layout_width="@dimen/icon_large"
+                        android:layout_height="@dimen/icon_large"
+                        android:background="@color/ds_accent" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/spacing_small"
+                        android:text="@string/ds_color_accent"
+                        android:textAppearance="@style/TextAppearance.Kharazmi.DS.Label" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <View
+                        android:layout_width="@dimen/icon_large"
+                        android:layout_height="@dimen/icon_large"
+                        android:background="@color/ds_success" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/spacing_small"
+                        android:text="@string/ds_color_success"
+                        android:textAppearance="@style/TextAppearance.Kharazmi.DS.Label" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_small"
+                android:baselineAligned="false"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <View
+                        android:layout_width="@dimen/icon_large"
+                        android:layout_height="@dimen/icon_large"
+                        android:background="@color/ds_warning" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/spacing_small"
+                        android:text="@string/ds_color_warning"
+                        android:textAppearance="@style/TextAppearance.Kharazmi.DS.Label" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <View
+                        android:layout_width="@dimen/icon_large"
+                        android:layout_height="@dimen/icon_large"
+                        android:background="@color/ds_danger" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/spacing_small"
+                        android:text="@string/ds_color_danger"
+                        android:textAppearance="@style/TextAppearance.Kharazmi.DS.Label" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_small"
+                android:baselineAligned="false"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <View
+                        android:layout_width="@dimen/icon_large"
+                        android:layout_height="@dimen/icon_large"
+                        android:background="@color/ds_info" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/spacing_small"
+                        android:text="@string/ds_color_info"
+                        android:textAppearance="@style/TextAppearance.Kharazmi.DS.Label" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <View
+                        android:layout_width="@dimen/icon_large"
+                        android:layout_height="@dimen/icon_large"
+                        android:background="@color/ds_debt_container" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/spacing_small"
+                        android:text="@string/ds_color_debt"
+                        android:textAppearance="@style/TextAppearance.Kharazmi.DS.Label" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_small"
+                android:baselineAligned="false"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <View
+                        android:layout_width="@dimen/icon_large"
+                        android:layout_height="@dimen/icon_large"
+                        android:background="@color/ds_credit_container" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/spacing_small"
+                        android:text="@string/ds_color_credit"
+                        android:textAppearance="@style/TextAppearance.Kharazmi.DS.Label" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <View
+                        android:layout_width="@dimen/icon_large"
+                        android:layout_height="@dimen/icon_large"
+                        android:background="@color/ds_text_disabled" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/spacing_small"
+                        android:text="@string/ds_color_text_disabled"
+                        android:textAppearance="@style/TextAppearance.Kharazmi.DS.Label" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- ==================== ۲. تایپوگرافی ==================== -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_large"
+                android:text="@string/ds_cat_typography"
+                android:textAppearance="@style/TextAppearance.Kharazmi.DS.SectionTitle" />
+
+            <com.google.android.material.card.MaterialCardView
+                style="@style/Widget.Kharazmi.DS.Card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_snug">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/spacing_normal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/ds_sample_pagetitle"
+                        android:textAppearance="@style/TextAppearance.Kharazmi.DS.PageTitle" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_snug"
+                        android:text="@string/ds_sample_sectiontitle"
+                        android:textAppearance="@style/TextAppearance.Kharazmi.DS.SectionTitle" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_snug"
+                        android:text="@string/ds_sample_body"
+                        android:textAppearance="@style/TextAppearance.Kharazmi.DS.Body" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_snug"
+                        android:text="@string/ds_sample_caption"
+                        android:textAppearance="@style/TextAppearance.Kharazmi.DS.Caption" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_snug"
+                        android:text="@string/ds_sample_money"
+                        android:textAppearance="@style/TextAppearance.Kharazmi.DS.Money" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_snug"
+                        android:text="@string/ds_sample_error"
+                        android:textAppearance="@style/TextAppearance.Kharazmi.DS.Error" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_snug"
+                        android:text="@string/ds_sample_status"
+                        android:textAppearance="@style/TextAppearance.Kharazmi.DS.Status" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_snug"
+                        android:text="@string/ds_sample_label"
+                        android:textAppearance="@style/TextAppearance.Kharazmi.DS.Label" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_snug"
+                        android:text="@string/ds_sample_overline"
+                        android:textAppearance="@style/TextAppearance.Kharazmi.DS.Overline" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- ==================== ۳. دکمه‌ها ==================== -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_large"
+                android:text="@string/ds_cat_buttons"
+                android:textAppearance="@style/TextAppearance.Kharazmi.DS.SectionTitle" />
+
+            <com.google.android.material.card.MaterialCardView
+                style="@style/Widget.Kharazmi.DS.Card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_snug">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/spacing_normal">
+
+                    <com.google.android.material.button.MaterialButton
+                        style="@style/Widget.Kharazmi.DS.Button.Primary"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/ds_btn_primary" />
+
+                    <com.google.android.material.button.MaterialButton
+                        style="@style/Widget.Kharazmi.DS.Button.Primary"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_snug"
+                        android:text="@string/ds_btn_disabled"
+                        android:enabled="false" />
+
+                    <com.google.android.material.button.MaterialButton
+                        style="@style/Widget.Kharazmi.DS.Button.Secondary"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_snug"
+                        android:text="@string/ds_btn_secondary" />
+
+                    <com.google.android.material.button.MaterialButton
+                        style="@style/Widget.Kharazmi.DS.Button.Ghost"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_snug"
+                        android:text="@string/ds_btn_ghost" />
+
+                    <com.google.android.material.button.MaterialButton
+                        style="@style/Widget.Kharazmi.DS.Button.Danger"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_snug"
+                        android:text="@string/ds_btn_danger"
+                        app:icon="@drawable/ic_ds_danger_24"
+                        app:iconGravity="textStart"
+                        app:iconTint="@color/white" />
+
+                    <com.google.android.material.button.MaterialButton
+                        style="@style/Widget.Kharazmi.DS.Button.Secondary"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_snug"
+                        android:text="@string/ds_btn_with_icon"
+                        app:icon="@drawable/ic_refresh_24"
+                        app:iconGravity="textStart"
+                        app:iconTint="@color/ds_accent" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- ==================== ۴. فیلدهای ورودی ==================== -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_large"
+                android:text="@string/ds_cat_inputs"
+                android:textAppearance="@style/TextAppearance.Kharazmi.DS.SectionTitle" />
+
+            <com.google.android.material.card.MaterialCardView
+                style="@style/Widget.Kharazmi.DS.Card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_snug">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/spacing_normal">
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.Kharazmi.DS.Input"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/ds_input_name"
+                        app:startIconContentDescription="@string/ds_input_name"
+                        app:startIconDrawable="@drawable/ic_group">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="text"
+                            android:maxLines="1"
+                            android:textColor="@color/ds_text_primary" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.Kharazmi.DS.Input"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_normal"
+                        android:hint="@string/ds_input_phone"
+                        app:endIconMode="password_toggle"
+                        app:endIconContentDescription="@string/ds_input_phone"
+                        app:startIconDrawable="@drawable/ic_call_24">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="phone"
+                            android:maxLines="1"
+                            android:textColor="@color/ds_text_primary" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.Kharazmi.DS.Input"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_normal"
+                        android:hint="@string/ds_input_focused"
+                        app:boxStrokeColor="@color/ds_accent">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="text"
+                            android:maxLines="1"
+                            android:text="۱۲۳۴۵"
+                            android:textColor="@color/ds_text_primary" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.Kharazmi.DS.Input"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_normal"
+                        android:hint="@string/ds_input_phone"
+                        app:errorEnabled="true"
+                        app:boxStrokeColor="@color/ds_danger"
+                        app:helperText="@string/ds_input_error_text"
+                        app:helperTextTextColor="@color/ds_danger">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="phone"
+                            android:maxLines="1"
+                            android:text="۰۹۱۲"
+                            android:textColor="@color/ds_text_primary" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.Kharazmi.DS.Input.Disabled"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_normal"
+                        android:enabled="false"
+                        android:hint="@string/ds_input_disabled">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:enabled="false"
+                            android:inputType="text"
+                            android:maxLines="1"
+                            android:text="—"
+                            android:textColor="@color/ds_text_secondary" />
+                    </com.google.android.material.textfield.TextInputLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- ==================== ۵. کارت‌ها ==================== -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_large"
+                android:text="@string/ds_cat_cards"
+                android:textAppearance="@style/TextAppearance.Kharazmi.DS.SectionTitle" />
+
+            <com.google.android.material.card.MaterialCardView
+                style="@style/Widget.Kharazmi.DS.Card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_snug">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/spacing_normal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/ds_card_default_title"
+                        android:textAppearance="@style/TextAppearance.Kharazmi.DS.SectionTitle" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_xs"
+                        android:text="@string/ds_card_default_body"
+                        android:textAppearance="@style/TextAppearance.Kharazmi.DS.Caption" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                style="@style/Widget.Kharazmi.DS.Card.Surface2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_snug">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/spacing_normal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/ds_card_nested_title"
+                        android:textAppearance="@style/TextAppearance.Kharazmi.DS.SectionTitle" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_xs"
+                        android:text="@string/ds_card_nested_body"
+                        android:textAppearance="@style/TextAppearance.Kharazmi.DS.Caption" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                style="@style/Widget.Kharazmi.DS.Card.Interactive"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_snug">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="@dimen/spacing_normal"
+                    android:text="@string/ds_card_interactive"
+                    android:textAppearance="@style/TextAppearance.Kharazmi.DS.Body" />
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                style="@style/Widget.Kharazmi.DS.Card.Status.Success"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_snug">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/spacing_normal">
+
+                    <ImageView
+                        android:layout_width="@dimen/icon_medium"
+                        android:layout_height="@dimen/icon_medium"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/ic_ds_success_24"
+                        app:tint="@color/ds_success" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/spacing_small"
+                        android:text="@string/ds_card_status_success"
+                        android:textAppearance="@style/TextAppearance.Kharazmi.DS.Status"
+                        android:textColor="@color/ds_success_on_container" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                style="@style/Widget.Kharazmi.DS.Card.Status.Warning"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_small">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/spacing_normal">
+
+                    <ImageView
+                        android:layout_width="@dimen/icon_medium"
+                        android:layout_height="@dimen/icon_medium"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/ic_ds_warning_24"
+                        app:tint="@color/ds_warning" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/spacing_small"
+                        android:text="@string/ds_card_status_warning"
+                        android:textAppearance="@style/TextAppearance.Kharazmi.DS.Status"
+                        android:textColor="@color/ds_warning_on_container" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                style="@style/Widget.Kharazmi.DS.Card.Status.Danger"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_small">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/spacing_normal">
+
+                    <ImageView
+                        android:layout_width="@dimen/icon_medium"
+                        android:layout_height="@dimen/icon_medium"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/ic_ds_danger_24"
+                        app:tint="@color/ds_danger" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/spacing_small"
+                        android:text="@string/ds_card_status_danger"
+                        android:textAppearance="@style/TextAppearance.Kharazmi.DS.Status"
+                        android:textColor="@color/ds_danger_on_container" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                style="@style/Widget.Kharazmi.DS.Card.Status.Info"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_small">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/spacing_normal">
+
+                    <ImageView
+                        android:layout_width="@dimen/icon_medium"
+                        android:layout_height="@dimen/icon_medium"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/ic_ds_info_24"
+                        app:tint="@color/ds_info" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/spacing_small"
+                        android:text="@string/ds_card_status_info"
+                        android:textAppearance="@style/TextAppearance.Kharazmi.DS.Status"
+                        android:textColor="@color/ds_info_on_container" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- ==================== ۶. چیپ‌ها ==================== -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_large"
+                android:text="@string/ds_cat_chips"
+                android:textAppearance="@style/TextAppearance.Kharazmi.DS.SectionTitle" />
+
+            <com.google.android.material.chip.ChipGroup
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_snug">
+
+                <com.google.android.material.chip.Chip
+                    style="@style/Widget.Kharazmi.DS.Chip"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checkable="true"
+                    android:checked="true"
+                    android:text="@string/ds_chip_cash" />
+
+                <com.google.android.material.chip.Chip
+                    style="@style/Widget.Kharazmi.DS.Chip"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checkable="true"
+                    android:text="@string/ds_chip_pos" />
+
+                <com.google.android.material.chip.Chip
+                    style="@style/Widget.Kharazmi.DS.Chip"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checkable="true"
+                    android:enabled="false"
+                    android:text="@string/ds_chip_inperson" />
+
+                <com.google.android.material.chip.Chip
+                    style="@style/Widget.Kharazmi.DS.Chip.Tag"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/ds_chip_tag" />
+            </com.google.android.material.chip.ChipGroup>
+
+            <!-- ==================== ۷. وضعیت‌ها ==================== -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_large"
+                android:text="@string/ds_cat_status"
+                android:textAppearance="@style/TextAppearance.Kharazmi.DS.SectionTitle" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_snug"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:layout_width="@dimen/icon_dot"
+                        android:layout_height="@dimen/icon_dot"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/bg_ds_dot_success" />
+
+                    <TextView
+                        style="@style/Widget.Kharazmi.DS.Pill.Success"
+                        android:layout_marginStart="@dimen/spacing_snug"
+                        android:text="@string/ds_status_success" />
+
+                    <ImageView
+                        android:layout_width="@dimen/icon_medium"
+                        android:layout_height="@dimen/icon_medium"
+                        android:layout_marginStart="@dimen/spacing_snug"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/ic_ds_success_24"
+                        app:tint="@color/ds_success" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_small"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:layout_width="@dimen/icon_dot"
+                        android:layout_height="@dimen/icon_dot"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/bg_ds_dot_warning" />
+
+                    <TextView
+                        style="@style/Widget.Kharazmi.DS.Pill.Warning"
+                        android:layout_marginStart="@dimen/spacing_snug"
+                        android:text="@string/ds_status_warning" />
+
+                    <ImageView
+                        android:layout_width="@dimen/icon_medium"
+                        android:layout_height="@dimen/icon_medium"
+                        android:layout_marginStart="@dimen/spacing_snug"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/ic_ds_warning_24"
+                        app:tint="@color/ds_warning" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_small"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:layout_width="@dimen/icon_dot"
+                        android:layout_height="@dimen/icon_dot"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/bg_ds_dot_danger" />
+
+                    <TextView
+                        style="@style/Widget.Kharazmi.DS.Pill.Danger"
+                        android:layout_marginStart="@dimen/spacing_snug"
+                        android:text="@string/ds_status_danger" />
+
+                    <ImageView
+                        android:layout_width="@dimen/icon_medium"
+                        android:layout_height="@dimen/icon_medium"
+                        android:layout_marginStart="@dimen/spacing_snug"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/ic_ds_danger_24"
+                        app:tint="@color/ds_danger" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_small"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:layout_width="@dimen/icon_dot"
+                        android:layout_height="@dimen/icon_dot"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/bg_ds_dot_info" />
+
+                    <TextView
+                        style="@style/Widget.Kharazmi.DS.Pill.Info"
+                        android:layout_marginStart="@dimen/spacing_snug"
+                        android:text="@string/ds_status_info" />
+
+                    <ImageView
+                        android:layout_width="@dimen/icon_medium"
+                        android:layout_height="@dimen/icon_medium"
+                        android:layout_marginStart="@dimen/spacing_snug"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/ic_ds_info_24"
+                        app:tint="@color/ds_info" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_small"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        style="@style/Widget.Kharazmi.DS.Pill.Danger"
+                        android:text="@string/ds_status_debt" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/spacing_normal"
+                        android:text="@string/ds_sample_money"
+                        android:textAppearance="@style/TextAppearance.Kharazmi.DS.Money" />
+
+                    <TextView
+                        style="@style/Widget.Kharazmi.DS.Pill.Success"
+                        android:layout_marginStart="@dimen/spacing_normal"
+                        android:text="@string/ds_status_credit" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- ==================== ۸. حالت خالی / بارگذاری / خطا ==================== -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_large"
+                android:text="@string/ds_cat_states"
+                android:textAppearance="@style/TextAppearance.Kharazmi.DS.SectionTitle" />
+
+            <!-- بارگذاری -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/Widget.Kharazmi.DS.Card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_snug">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/spacing_normal">
+
+                    <ProgressBar
+                        android:layout_width="@dimen/icon_medium"
+                        android:layout_height="@dimen/icon_medium"
+                        android:indeterminate="true"
+                        android:indeterminateTint="@color/ds_accent" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/spacing_snug"
+                        android:text="@string/ds_state_loading"
+                        android:textAppearance="@style/TextAppearance.Kharazmi.DS.Caption" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/skeleton_block_height"
+                android:layout_marginTop="@dimen/spacing_small"
+                android:background="@drawable/bg_ds_skeleton" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/skeleton_line_height"
+                android:layout_marginTop="@dimen/spacing_small"
+                android:background="@drawable/bg_ds_skeleton" />
+
+            <!-- خطا -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/Widget.Kharazmi.DS.Card.Status.Danger"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_snug">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/spacing_normal">
+
+                    <ImageView
+                        android:layout_width="@dimen/icon_medium"
+                        android:layout_height="@dimen/icon_medium"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/ic_ds_danger_24"
+                        app:tint="@color/ds_danger" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/spacing_small"
+                        android:layout_marginEnd="@dimen/spacing_small"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/ds_state_error_title"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.DS.Status"
+                            android:textColor="@color/ds_danger_on_container" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_2xs"
+                            android:text="@string/ds_state_error_body"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.DS.Caption" />
+                    </LinearLayout>
+
+                    <com.google.android.material.button.MaterialButton
+                        style="@style/Widget.Kharazmi.DS.Button.Secondary"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/ds_state_retry"
+                        android:textColor="@color/ds_danger_on_container"
+                        app:strokeColor="@color/ds_danger" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- خالی -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/Widget.Kharazmi.DS.Card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_snug">
+
+                <include layout="@layout/layout_empty" />
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- ==================== ۹. آواتارها ==================== -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_large"
+                android:text="@string/ds_cat_avatars"
+                android:textAppearance="@style/TextAppearance.Kharazmi.DS.SectionTitle" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_snug"
+                android:layout_marginBottom="@dimen/spacing_large"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:id="@+id/imgAvatarSample1"
+                    android:layout_width="@dimen/avatar_size"
+                    android:layout_height="@dimen/avatar_size"
+                    android:layout_margin="@dimen/spacing_small"
+                    android:contentDescription="@string/ds_sample_label" />
+
+                <ImageView
+                    android:id="@+id/imgAvatarSample2"
+                    android:layout_width="@dimen/avatar_size"
+                    android:layout_height="@dimen/avatar_size"
+                    android:layout_margin="@dimen/spacing_small"
+                    android:contentDescription="@string/ds_sample_label" />
+
+                <ImageView
+                    android:id="@+id/imgAvatarSample3"
+                    android:layout_width="@dimen/avatar_size"
+                    android:layout_height="@dimen/avatar_size"
+                    android:layout_margin="@dimen/spacing_small"
+                    android:contentDescription="@string/ds_sample_label" />
+            </LinearLayout>
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+</LinearLayout>

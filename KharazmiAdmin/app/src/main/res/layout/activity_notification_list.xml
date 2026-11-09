@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/gold_bg_base"
+    android:layoutDirection="rtl">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/gold_primary"
+        app:elevation="@dimen/elevation_appbar"
+    >
+        <androidx.appcompat.widget.Toolbar
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="مرکز اعلان‌ها"
+                android:textColor="?attr/colorOnPrimary"
+                android:textAppearance="@style/TextAppearance.Kharazmi.PageTitle"/>
+        </androidx.appcompat.widget.Toolbar>
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingHorizontal="@dimen/spacing_normal"
+        android:layout_marginTop="@dimen/spacing_normal"
+        android:layout_marginBottom="@dimen/spacing_small">
+
+        <!-- Mark all as read button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnMarkAllRead"
+            style="@style/Widget.Kharazmi.Button.Gold.Outline"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="خوانده شدن همه"
+            app:icon="@android:drawable/checkbox_on_background"
+            app:iconTint="@color/gold_primary"
+            app:iconGravity="textStart"
+            android:layout_marginEnd="6dp" />
+
+        <!-- Filtering spinner or dropdown button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnFilterNotifs"
+            style="@style/Widget.Kharazmi.Button.Gold.Outline"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="فیلتر اعلان‌ها"
+            app:icon="@android:drawable/ic_menu_search"
+            app:iconTint="@color/gold_primary"
+            app:iconGravity="textStart"
+            android:layout_marginStart="6dp" />
+    </LinearLayout>
+
+    <!-- FIX(admin-notifications): شمارش اعلان‌های خوانده‌نشده (روی پاسخ /notifications/unread_count) -->
+    <TextView
+        android:id="@+id/tvUnreadCount"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="@dimen/spacing_normal"
+        android:layout_marginBottom="@dimen/spacing_small"
+        android:textAppearance="@style/TextAppearance.Kharazmi.Caption"
+        android:textColor="?attr/colorPrimary"
+        android:visibility="gone" />
+
+    <!-- FIX: Use the declared Widget.Kharazmi.Card.Gold style; remove repeated suffixes. -->
+    <com.google.android.material.card.MaterialCardView
+        style="@style/Widget.Kharazmi.Card.Gold"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:cardCornerRadius="20dp"
+        android:layout_margin="@dimen/spacing_normal">
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvNotifications"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:padding="@dimen/spacing_small"
+                android:layoutAnimation="@anim/layout_animation_fall_down"/>
+
+            <!-- FIX(admin-notifications): حالت خالی روشن — قبلاً لیست خالی/خطا هیچ پیامی نداشت -->
+            <TextView
+                android:id="@+id/tvNotifEmpty"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:padding="@dimen/spacing_normal"
+                android:text="@string/notif_empty"
+                android:textAppearance="@style/TextAppearance.Kharazmi.Body"
+                android:textColor="@color/text_secondary"
+                android:visibility="gone" />
+        </FrameLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+</LinearLayout>

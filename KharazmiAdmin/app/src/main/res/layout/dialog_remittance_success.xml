@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="@dimen/spacing_large"
+    android:layoutDirection="rtl"
+>
+
+    <!-- Success Icon -->
+    <ImageView
+        android:id="@+id/imgSuccessIcon"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="@dimen/spacing_normal"
+        android:src="@android:drawable/ic_dialog_info"
+        app:tint="@color/status_success"
+        android:background="@drawable/circle_background_success"
+        android:padding="@dimen/spacing_normal"
+    />
+
+    <!-- Success Title -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:text="ثبت حواله با موفقیت انجام شد!"
+        android:textAppearance="@style/TextAppearance.GajAdmin.Headline6"
+        android:textColor="@color/text_primary"
+        android:textStyle="bold"
+        android:layout_marginBottom="@dimen/spacing_small"
+    />
+
+    <!-- Success Message -->
+    <TextView
+        android:id="@+id/tvSuccessMessage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:text="حواله با شماره #123456 ثبت شد."
+        android:textAppearance="@style/TextAppearance.GajAdmin.Body1"
+        android:textColor="@color/text_secondary"
+        android:textAlignment="center"
+        android:layout_marginBottom="@dimen/spacing_large"
+    />
+
+    <!-- Divider -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/gold_border_subtle"
+        android:layout_marginBottom="@dimen/spacing_large"
+    />
+
+    <!-- Options Title -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="انتخاب گزینه:"
+        android:textAppearance="@style/TextAppearance.GajAdmin.Subtitle2"
+        android:textColor="@color/text_primary"
+        android:textStyle="bold"
+        android:layout_marginBottom="@dimen/spacing_normal"
+    />
+
+    <!-- Print Remittance Button -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnPrintRemittance"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="@dimen/min_touch_target"
+        android:maxLines="2"
+        android:layout_marginBottom="@dimen/spacing_normal"
+        android:textColor="@color/text_on_gold"
+        android:text="چاپ حواله"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:icon="@drawable/ic_print"
+        app:iconGravity="textStart"
+        app:iconTint="@color/text_on_gold"
+        app:backgroundTint="@color/gold_primary"
+        app:cornerRadius="@dimen/spacing_normal"
+    />
+
+    <!-- Save as PDF Button -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnSaveAsPdf"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="@dimen/min_touch_target"
+        android:maxLines="2"
+        android:layout_marginBottom="@dimen/spacing_large"
+        android:textColor="@color/text_on_gold"
+        android:text="ذخیره به عنوان PDF"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:icon="@drawable/ic_save_24"
+        app:iconGravity="textStart"
+        app:iconTint="@color/text_on_gold"
+        app:backgroundTint="@color/gold_primary"
+        app:cornerRadius="@dimen/spacing_normal"
+    />
+
+    <!-- Register Again Button -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnRegisterAgain"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="@dimen/min_touch_target"
+        android:maxLines="2"
+        android:layout_marginBottom="@dimen/spacing_normal"
+        android:textColor="@color/text_on_gold"
+        android:text="ثبت مجدد برای دانش‌آموز دیگر"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:icon="@android:drawable/ic_menu_rotate"
+        app:iconGravity="textStart"
+        app:iconTint="@color/text_on_gold"
+        app:backgroundTint="@color/gold_primary"
+        app:cornerRadius="@dimen/spacing_normal"
+    />
+
+    <!-- Close Button -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnClose"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="@dimen/min_touch_target"
+        android:maxLines="2"
+        android:text="بستن"
+        android:textSize="14sp"
+        app:backgroundTint="@android:color/transparent"
+        app:strokeColor="@color/gold_primary"
+        app:strokeWidth="1dp"
+        app:cornerRadius="@dimen/spacing_small"
+        android:textColor="@color/gold_primary"
+    />
+
+</LinearLayout>

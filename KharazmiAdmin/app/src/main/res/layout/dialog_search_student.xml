@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="20dp"
+    android:layoutDirection="rtl">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="افزودن دانش‌آموز به کلاس"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="@color/gold_primary"
+        android:layout_marginBottom="@dimen/spacing_normal"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="نام یا کدملی دانش‌آموز را جستجو کنید:"
+        android:textColor="@color/text_secondary"
+        android:textSize="14sp"
+        android:layout_marginBottom="@dimen/spacing_small"/>
+
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="جستجوی دانش‌آموز"
+        app:startIconDrawable="@android:drawable/ic_menu_search"
+        app:boxStrokeColor="@color/gold_primary">
+
+        <AutoCompleteTextView
+            android:id="@+id/acStudentSearch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="text"
+            android:textColor="@color/text_primary"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <TextView
+        android:id="@+id/tvSelectedInfo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textColor="@color/status_success"
+        android:textStyle="bold"
+        android:layout_marginTop="10dp"/>
+
+    <TextView
+        android:id="@+id/tvBulkSelectionSummary"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="برای افزودن چند نفر، چک‌باکس دانش‌آموزان نتیجه را تیک بزنید"
+        android:textColor="@color/gold_primary"
+        android:textStyle="bold"
+        android:layout_marginTop="8dp"/>
+
+    <LinearLayout
+        android:id="@+id/llStudentMultiSelect"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone"
+        android:layout_marginTop="4dp" />
+
+    <!-- شهریه پایه کلاسی -->
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="شهریه پایه کلاس (تومان)"
+        android:layout_marginTop="@dimen/spacing_normal"
+        app:boxStrokeColor="@color/gold_primary">
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etBaseTuition"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:text="1000000"
+            android:textColor="@color/text_primary"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- نوع تخفیف انتخابی -->
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="نوع تخفیف/بورسیه"
+        android:layout_marginTop="@dimen/spacing_normal"
+        app:boxStrokeColor="@color/gold_primary">
+        <AutoCompleteTextView
+            android:id="@+id/acDiscountType"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="none"
+            android:text="بدون تخفیف"
+            android:textColor="@color/text_primary"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- مقدار تخفیف -->
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="مقدار تخفیف"
+        android:layout_marginTop="@dimen/spacing_normal"
+        app:boxStrokeColor="@color/gold_primary">
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etDiscountValue"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:text="0"
+            android:textColor="@color/text_primary"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- نمایش پیش‌نمایش شهریه نهایی بعد از اعمال تخفیف -->
+    <TextView
+        android:id="@+id/tvFinalTuitionPreview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="شهریه نهایی: ۱,۰۰۰,۰۰۰ تومان"
+        android:textColor="@color/gold_primary"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        android:layout_marginTop="14dp"/>
+
+    <!-- چک‌باکس جدید قسط‌بندی -->
+    <CheckBox
+        android:id="@+id/cbSplitInstallments"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:text="تقسیم به ۲ قسط مساوی (۵۰٪ نقدی و ۵۰٪ سررسید یک ماه بعد)"
+        android:textSize="13sp"
+        android:textColor="@color/text_secondary"
+        android:checked="false"/>
+
+</LinearLayout>

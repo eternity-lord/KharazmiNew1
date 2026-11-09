@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- FIX: A small, font-independent K monogram; safe inset also fits the Android 12 splash icon mask. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="96dp"
+    android:height="96dp"
+    android:viewportWidth="96"
+    android:viewportHeight="96">
+    <path
+        android:fillColor="@color/gold_primary"
+        android:pathData="M30,27H39V44L55,27H66L47,47L67,69H56L39,51V69H30Z" />
+</vector>
+

@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/gold_bg_base"
+    android:layoutDirection="rtl">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/gold_primary"
+        app:elevation="@dimen/elevation_appbar"
+    >
+        <androidx.appcompat.widget.Toolbar
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize">
+            <TextView
+                android:id="@+id/tvHeaderTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="راه‌اندازی کلاس"
+                android:textColor="?attr/colorOnPrimary"
+                android:textAppearance="@style/TextAppearance.Kharazmi.PageTitle"/>
+        </androidx.appcompat.widget.Toolbar>
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/spacing_normal">
+
+            <TextView
+                android:text="لیست دانش‌آموزان این کلاس"
+                android:textAppearance="@style/TextAppearance.Kharazmi.SectionTitle"
+                android:textColor="@color/gold_primary"
+                android:layout_marginHorizontal="@dimen/spacing_small"
+                android:layout_marginBottom="@dimen/spacing_small"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+            <!-- List wrapped inside a warm rounded Card -->
+            <!-- FIX: Use the declared Widget.Kharazmi.Card.Gold style; remove repeated suffixes. -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/Widget.Kharazmi.Card.Gold"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_normal"
+                app:cardCornerRadius="20dp">
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvAddedStudents"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:minHeight="120dp"
+                    android:padding="@dimen/spacing_small"
+                    android:nestedScrollingEnabled="false"
+                    android:layoutAnimation="@anim/layout_animation_fall_down"/>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Styled buttons using central design system Widget.Kharazmi.Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnAddStudent"
+                style="@style/Widget.Kharazmi.Button.Gold"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/text_on_gold"
+                android:text="افزودن دانش‌آموز جدید"
+                app:backgroundTint="@color/gold_primary"
+                app:icon="@android:drawable/ic_input_add"
+                app:iconTint="@color/text_on_gold"
+                app:iconGravity="textStart"
+                app:elevation="@dimen/elevation_button"
+                android:layout_marginHorizontal="@dimen/spacing_small"
+                android:layout_marginBottom="@dimen/spacing_normal"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnFinalizeClass"
+                style="@style/Widget.Kharazmi.Button.Gold"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="ثبت نهایی و اتمام کلاس"
+                app:backgroundTint="@color/gold_primary"
+                android:textColor="@color/text_on_gold"
+                app:iconTint="@color/text_on_gold"
+                app:icon="@android:drawable/ic_menu_save"
+                app:iconGravity="textStart"
+                app:elevation="@dimen/elevation_button"
+                android:layout_marginHorizontal="@dimen/spacing_small"
+                android:layout_marginBottom="@dimen/spacing_normal"/>
+
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

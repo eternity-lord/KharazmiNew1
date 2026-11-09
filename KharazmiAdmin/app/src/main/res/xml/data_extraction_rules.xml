@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+   Sample data extraction rules file; uncomment and customize as necessary.
+   See https://developer.android.com/about/versions/12/backup-restore#xml-changes
+   for details.
+-->
+<data-extraction-rules>
+    <cloud-backup>
+        <!-- FIX: Do not transfer encrypted or legacy credentials to another device. -->
+        <exclude domain="sharedpref" path="SecureLoginCreds.xml"/>
+        <exclude domain="sharedpref" path="UserCreds.xml"/>
+        <!-- TODO: Use <include> and <exclude> to control what is backed up.
+        <include .../>
+        <exclude .../>
+        -->
+    </cloud-backup>
+    <!--
+    <device-transfer>
+        <include .../>
+        <exclude .../>
+    </device-transfer>
+    -->
+    <!-- FIX: Device transfer must follow the same Keystore-bound credential exclusion. -->
+    <device-transfer>
+        <exclude domain="sharedpref" path="SecureLoginCreds.xml"/>
+        <exclude domain="sharedpref" path="UserCreds.xml"/>
+    </device-transfer>
+</data-extraction-rules>

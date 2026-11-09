@@ -1,0 +1,16 @@
+mode: DRY-RUN (report only)
+candidates (would update): 0; applyable: 0; blocked by conflict: 0
+invalid (manual review, never touched): 0
+conflicts (manual review, no auto-merge): 0
+
+== INVALID (scope, id, raw) ==
+
+== CONFLICTS (scope, canonical, ids) ==
+
+== DIVERGENT PAIRS (teacher_id, shadow_id, raw_mobile) ==
+
+teachers with mobile but no teacher-role shadow: 1 (login recreates; first ids: [1])
+
+== CROSS-SCOPE same canonical (informational) ==
+
+== CANDIDATES (scope, id, raw -> canonical) ==

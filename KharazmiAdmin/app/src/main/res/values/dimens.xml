@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Standard spacing -->
+    <dimen name="spacing_tiny">4dp</dimen>
+    <dimen name="spacing_small">8dp</dimen>
+    <dimen name="spacing_normal">16dp</dimen>
+    <dimen name="spacing_large">24dp</dimen>
+    <dimen name="spacing_huge">32dp</dimen>
+
+    <!-- Standard elevations -->
+    <dimen name="elevation_none">0dp</dimen>
+    <dimen name="elevation_card">4dp</dimen>
+    <dimen name="elevation_button">2dp</dimen>
+    <dimen name="elevation_appbar">8dp</dimen>
+
+    <!-- Standard corner radiuses -->
+    <dimen name="corner_radius_small">8dp</dimen>
+    <dimen name="corner_radius_card">12dp</dimen>
+    <dimen name="corner_radius_button">12dp</dimen>
+    <dimen name="corner_radius_large">16dp</dimen>
+    <dimen name="corner_radius_huge">24dp</dimen>
+
+    <!-- Standard Typography Font Sizes -->
+    <dimen name="font_size_page_title">20sp</dimen>
+    <dimen name="font_size_section_title">16sp</dimen>
+    <dimen name="font_size_body">14sp</dimen>
+    <dimen name="font_size_caption">12sp</dimen>
+
+    <!-- ==================== DESIGN SYSTEM (Phase 1) — TOKENS ====================
+         اندازه‌های جدید فقط از همین فایل خوانده می‌شوند؛ هیچ magic number تازه‌ای در layoutها ساخته نشد. -->
+
+    <!-- فاصله‌ها (مکمل مقیاس فعلی: 4/8/16/24/32) -->
+    <dimen name="spacing_2xs">2dp</dimen>
+    <dimen name="spacing_xs">6dp</dimen>
+    <dimen name="spacing_snug">12dp</dimen>
+    <dimen name="spacing_xlarge">40dp</dimen>
+    <dimen name="spacing_xxlarge">56dp</dimen>
+
+    <!-- حداقل سطح لمس (الزام accessibility) -->
+    <dimen name="min_touch_target">48dp</dimen>
+
+    <!-- اندازه آیکون‌ها -->
+    <dimen name="icon_dot">8dp</dimen>
+    <dimen name="icon_small">20dp</dimen>
+    <dimen name="icon_medium">24dp</dimen>
+    <dimen name="icon_large">28dp</dimen>
+    <dimen name="icon_xlarge">32dp</dimen>
+    <dimen name="logo_box_size">96dp</dimen>
+    <dimen name="logo_glyph_size">44dp</dimen>
+    <dimen name="avatar_size">56dp</dimen>
+
+    <!-- شعاع گوشه‌ها (مکمل مقادیر فعلی) -->
+    <dimen name="corner_radius_xs">6dp</dimen>
+    <dimen name="corner_radius_pill">999dp</dimen>
+
+    <!-- ضخامت خطوط -->
+    <dimen name="stroke_hairline">1dp</dimen>
+    <dimen name="stroke_emphasis">1.5dp</dimen>
+
+    <!-- تایپوگرافی (مکمل font_size_* فعلی) -->
+    <dimen name="font_size_display">24sp</dimen>
+    <dimen name="font_size_kpi_value">22sp</dimen>
+    <dimen name="font_size_money">16sp</dimen>
+    <dimen name="font_size_status">13sp</dimen>
+    <dimen name="font_size_label">12sp</dimen>
+    <dimen name="font_size_overline">11sp</dimen>
+
+    <!-- اندازه‌های خاص چیدمان‌ها -->
+    <dimen name="dash_card_min_height">104dp</dimen>
+    <dimen name="dash_grid_gutter">@dimen/spacing_2xs</dimen>
+    <dimen name="kpi_divider_height">40dp</dimen>
+    <dimen name="pill_height">26dp</dimen>
+    <dimen name="max_text_width">320dp</dimen>
+    <dimen name="skeleton_line_height">12dp</dimen>
+    <dimen name="skeleton_block_height">64dp</dimen>
+    <!-- DESIGN SYSTEM (Phase 2): ارتفاع نوار عنوان صفحات = جایگزین ?attr/actionBarSize در چیدمان‌های مالی -->
+    <dimen name="ds_toolbar_height">56dp</dimen>
+</resources>

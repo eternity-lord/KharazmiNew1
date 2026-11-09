@@ -1,0 +1,747 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ====================================================================================
+     PHASE 2 — activity_report (گزارش‌گیری و صورت‌حساب)
+     شناسه‌های حفظ‌شده (ReportActivity.kt): rgReportScope / rbScopeInstitute / rbScopeTeacher /
+       tilTeacherFilter / acTeacherFilter / acYearFilter / acMonthFilter /
+       btnFetchFinancialSummary / tvMonthlyTitle / tvMonthlyTotal / tvMonthlyCollected /
+       tvMonthlyUncollected / cardYearlySummary / tvYearlyTitle / tvYearlyTotal /
+       tvYearlyCollected / tvYearlyUncollected / etStudentSearchName /
+       btnSearchStudentStatement / llStatementResult / tvStatementStudentName /
+       tvStatementStudentCode / tvStatementPaid / tvStatementDebt / btnPrintStatement /
+       cardReportTypeSelector / cardFilters / cardMonthlySummary / cardStudentStatement / tvHeaderTitle
+     وضعیت دریافت/خطای گزارش در tvReportStatus نمایش داده می‌شود تا کارت‌های عددی در
+     حالت خطا به‌صورت خاموش و خالی باقی نمانند.
+     ==================================================================================== -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/ds_bg_base"
+    android:layoutDirection="rtl">
+
+    <!-- AppBar -->
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_ds_header"
+        app:elevation="@dimen/elevation_none">
+
+        <androidx.appcompat.widget.Toolbar
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/ds_toolbar_height"
+            android:background="@android:color/transparent">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <ImageView
+                    android:layout_width="@dimen/icon_medium"
+                    android:layout_height="@dimen/icon_medium"
+                    android:src="@drawable/ic_ds_receipt_24"
+                    android:importantForAccessibility="no"
+                    app:tint="@color/ds_accent"/>
+
+                <TextView
+                    android:id="@+id/tvHeaderTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/spacing_snug"
+                    android:text="@string/ds_rpt_page_title"
+                    android:textAppearance="@style/TextAppearance.Kharazmi.DS.SectionTitle"/>
+            </LinearLayout>
+        </androidx.appcompat.widget.Toolbar>
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+        android:scrollbars="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/spacing_normal">
+
+            <!-- ============ ۱) محدوده گزارش (آموزشگاه / معلم) ============ -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardReportTypeSelector"
+                style="@style/Widget.Kharazmi.DS.Card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_normal">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/spacing_normal">
+
+                    <TextView
+                        style="@style/Widget.Kharazmi.DS.SectionHeader"
+                        android:text="@string/ds_rpt_scope_title"/>
+
+                    <RadioGroup
+                        android:id="@+id/rgReportScope"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <RadioButton
+                            android:id="@+id/rbScopeInstitute"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:minHeight="@dimen/min_touch_target"
+                            android:text="@string/ds_rpt_scope_institute"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.DS.Body"
+                            android:checked="true"/>
+
+                        <RadioButton
+                            android:id="@+id/rbScopeTeacher"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:minHeight="@dimen/min_touch_target"
+                            android:text="@string/ds_rpt_scope_teacher"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.DS.Body"/>
+                    </RadioGroup>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- ============ ۲) فیلتر بازه زمانی + دکمه تولید گزارش ============ -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardFilters"
+                style="@style/Widget.Kharazmi.DS.Card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_normal">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/spacing_normal">
+
+                    <TextView
+                        style="@style/Widget.Kharazmi.DS.SectionHeader"
+                        android:text="@string/ds_rpt_period_title"/>
+
+                    <!-- انتخاب معلم (فقط برای مدیر/منشی و در حالت گزارش معلم) -->
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/tilTeacherFilter"
+                        style="@style/Widget.Kharazmi.DS.Input"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/ds_rpt_teacher_hint"
+                        android:visibility="gone"
+                        app:startIconDrawable="@drawable/ic_search_24"
+                        app:startIconContentDescription="@string/ds_rpt_teacher_hint">
+
+                        <AutoCompleteTextView
+                            android:id="@+id/acTeacherFilter"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="none"
+                            android:textColor="@color/ds_text_primary"/>
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <!-- سال و ماه شمسی -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_snug"
+                        android:orientation="horizontal">
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            style="@style/Widget.Kharazmi.DS.Input"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginEnd="@dimen/spacing_xs"
+                            android:hint="@string/ds_rpt_month_hint"
+                            app:endIconMode="dropdown_menu">
+
+                            <AutoCompleteTextView
+                                android:id="@+id/acMonthFilter"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="none"
+                                android:textColor="@color/ds_text_primary"/>
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            style="@style/Widget.Kharazmi.DS.Input"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:hint="@string/ds_rpt_year_hint"
+                            app:endIconMode="dropdown_menu">
+
+                            <AutoCompleteTextView
+                                android:id="@+id/acYearFilter"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="none"
+                                android:textColor="@color/ds_text_primary"/>
+                        </com.google.android.material.textfield.TextInputLayout>
+                    </LinearLayout>
+
+                    <!-- CTA اصلی صفحه -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnFetchFinancialSummary"
+                        style="@style/Widget.Kharazmi.DS.Button.Primary"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_normal"
+                        android:minHeight="@dimen/min_touch_target"
+                        android:text="@string/ds_rpt_get"
+                        app:icon="@drawable/ic_ds_wallet_24"
+                        app:iconSize="@dimen/icon_medium"
+                        app:iconGravity="textStart"/>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnExportFinancial"
+                        style="@style/Widget.Kharazmi.DS.Button.Secondary"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_small"
+                        android:text="خروجی Excel همین بازه" />
+
+                    <TextView
+                        android:id="@+id/tvReportStatus"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_small"
+                        android:paddingHorizontal="@dimen/spacing_small"
+                        android:paddingVertical="@dimen/spacing_xs"
+                        android:textColor="@color/ds_text_secondary"
+                        android:textAppearance="@style/TextAppearance.Kharazmi.DS.Caption"
+                        android:visibility="gone" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- ============ ۳) آمار مالی ماهانه ============ -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardMonthlySummary"
+                style="@style/Widget.Kharazmi.DS.Card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_normal">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/spacing_normal">
+
+                    <TextView
+                        android:id="@+id/tvMonthlyTitle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/ds_rpt_monthly_default"
+                        android:textAppearance="@style/TextAppearance.Kharazmi.DS.SectionTitle"
+                        android:layout_marginBottom="@dimen/spacing_snug"/>
+
+                    <!-- درآمد کل دوره -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:minHeight="@dimen/min_touch_target"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <ImageView
+                            android:layout_width="@dimen/icon_medium"
+                            android:layout_height="@dimen/icon_medium"
+                            android:src="@drawable/ic_ds_payments_24"
+                            android:importantForAccessibility="no"
+                            app:tint="@color/ds_accent"/>
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginStart="@dimen/spacing_snug"
+                            android:layout_marginEnd="@dimen/spacing_small"
+                            android:text="@string/ds_rpt_row_total"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.DS.Body"/>
+
+                        <TextView
+                            android:id="@+id/tvMonthlyTotal"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/ds_value_placeholder"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.DS.Money"
+                            android:fontFeatureSettings="tnum"/>
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/stroke_hairline"
+                        android:layout_marginTop="@dimen/spacing_xs"
+                        android:layout_marginBottom="@dimen/spacing_xs"
+                        android:background="@color/ds_border"/>
+
+                    <!-- درآمد وصول‌شده -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:minHeight="@dimen/min_touch_target"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <ImageView
+                            android:layout_width="@dimen/icon_medium"
+                            android:layout_height="@dimen/icon_medium"
+                            android:src="@drawable/ic_ds_success_24"
+                            android:importantForAccessibility="no"
+                            app:tint="@color/ds_success"/>
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginStart="@dimen/spacing_snug"
+                            android:layout_marginEnd="@dimen/spacing_small"
+                            android:text="@string/ds_rpt_row_collected"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.DS.Body"
+                            android:textColor="@color/ds_success"/>
+
+                        <TextView
+                            android:id="@+id/tvMonthlyCollected"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/ds_value_placeholder"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.DS.Money"
+                            android:textColor="@color/ds_success"
+                            android:fontFeatureSettings="tnum"/>
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/stroke_hairline"
+                        android:layout_marginTop="@dimen/spacing_xs"
+                        android:layout_marginBottom="@dimen/spacing_xs"
+                        android:background="@color/ds_border"/>
+
+                    <!-- درآمد وصول‌نشده (بدهی جاری دوره) -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:minHeight="@dimen/min_touch_target"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <ImageView
+                            android:layout_width="@dimen/icon_medium"
+                            android:layout_height="@dimen/icon_medium"
+                            android:src="@drawable/ic_ds_danger_24"
+                            android:importantForAccessibility="no"
+                            app:tint="@color/ds_danger"/>
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginStart="@dimen/spacing_snug"
+                            android:layout_marginEnd="@dimen/spacing_small"
+                            android:text="@string/ds_rpt_row_uncollected"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.DS.Body"
+                            android:textColor="@color/ds_danger"/>
+
+                        <TextView
+                            android:id="@+id/tvMonthlyUncollected"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/ds_value_placeholder"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.DS.Money"
+                            android:textColor="@color/ds_danger"
+                            android:fontFeatureSettings="tnum"/>
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- توضیح «چرا صفر است؟» (دادهٔ diagnostics سرور) — فقط وقتی چیزی برای گفتن هست -->
+            <TextView
+                android:id="@+id/tvReportHint"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_normal"
+                android:textAppearance="@style/TextAppearance.Kharazmi.DS.Body"
+                android:textColor="@color/ds_text_secondary"
+                android:visibility="gone"/>
+
+            <!-- O-10: خط هشدار پرداخت‌های بی‌تاریخ (فقط وقتی وجود دارد نمایان می‌شود) -->
+            <TextView
+                android:id="@+id/tvUndatedWarning"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_normal"
+                android:textAppearance="@style/TextAppearance.Kharazmi.DS.Body"
+                android:textColor="@color/ds_danger"
+                android:visibility="gone"/>
+
+            <!-- ============ ۴) آمار مالی سالانه (فقط حالت معلم) ============ -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardYearlySummary"
+                style="@style/Widget.Kharazmi.DS.Card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_normal"
+                android:visibility="gone">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/spacing_normal">
+
+                    <TextView
+                        android:id="@+id/tvYearlyTitle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/ds_rpt_yearly_default"
+                        android:textAppearance="@style/TextAppearance.Kharazmi.DS.SectionTitle"
+                        android:layout_marginBottom="@dimen/spacing_snug"/>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:minHeight="@dimen/min_touch_target"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <ImageView
+                            android:layout_width="@dimen/icon_medium"
+                            android:layout_height="@dimen/icon_medium"
+                            android:src="@drawable/ic_ds_payments_24"
+                            android:importantForAccessibility="no"
+                            app:tint="@color/ds_accent"/>
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginStart="@dimen/spacing_snug"
+                            android:layout_marginEnd="@dimen/spacing_small"
+                            android:text="@string/ds_rpt_yearly_row_total"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.DS.Body"/>
+
+                        <TextView
+                            android:id="@+id/tvYearlyTotal"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/ds_value_placeholder"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.DS.Money"
+                            android:fontFeatureSettings="tnum"/>
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/stroke_hairline"
+                        android:layout_marginTop="@dimen/spacing_xs"
+                        android:layout_marginBottom="@dimen/spacing_xs"
+                        android:background="@color/ds_border"/>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:minHeight="@dimen/min_touch_target"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <ImageView
+                            android:layout_width="@dimen/icon_medium"
+                            android:layout_height="@dimen/icon_medium"
+                            android:src="@drawable/ic_ds_success_24"
+                            android:importantForAccessibility="no"
+                            app:tint="@color/ds_success"/>
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginStart="@dimen/spacing_snug"
+                            android:layout_marginEnd="@dimen/spacing_small"
+                            android:text="@string/ds_rpt_yearly_row_collected"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.DS.Body"
+                            android:textColor="@color/ds_success"/>
+
+                        <TextView
+                            android:id="@+id/tvYearlyCollected"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/ds_value_placeholder"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.DS.Money"
+                            android:textColor="@color/ds_success"
+                            android:fontFeatureSettings="tnum"/>
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/stroke_hairline"
+                        android:layout_marginTop="@dimen/spacing_xs"
+                        android:layout_marginBottom="@dimen/spacing_xs"
+                        android:background="@color/ds_border"/>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:minHeight="@dimen/min_touch_target"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <ImageView
+                            android:layout_width="@dimen/icon_medium"
+                            android:layout_height="@dimen/icon_medium"
+                            android:src="@drawable/ic_ds_danger_24"
+                            android:importantForAccessibility="no"
+                            app:tint="@color/ds_danger"/>
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginStart="@dimen/spacing_snug"
+                            android:layout_marginEnd="@dimen/spacing_small"
+                            android:text="@string/ds_rpt_yearly_row_uncollected"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.DS.Body"
+                            android:textColor="@color/ds_danger"/>
+
+                        <TextView
+                            android:id="@+id/tvYearlyUncollected"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/ds_value_placeholder"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.DS.Money"
+                            android:textColor="@color/ds_danger"
+                            android:fontFeatureSettings="tnum"/>
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- ============ ۵) صورت‌حساب دانش‌آموز ============ -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardStudentStatement"
+                style="@style/Widget.Kharazmi.DS.Card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_large">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/spacing_normal">
+
+                    <TextView
+                        style="@style/Widget.Kharazmi.DS.SectionHeader"
+                        android:text="@string/ds_rpt_statement_title"/>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/spacing_snug"
+                        android:text="@string/ds_rpt_statement_desc"
+                        android:textAppearance="@style/TextAppearance.Kharazmi.DS.Caption"/>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            style="@style/Widget.Kharazmi.DS.Input"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:hint="@string/ds_rpt_statement_search_hint"
+                            app:startIconDrawable="@drawable/ic_search_24"
+                            app:startIconContentDescription="@string/ds_rpt_statement_search_hint">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/etStudentSearchName"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="text"
+                                android:textColor="@color/ds_text_primary"/>
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnSearchStudentStatement"
+                            style="@style/Widget.Kharazmi.DS.Button.Primary"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/spacing_small"
+                            android:minHeight="@dimen/min_touch_target"
+                            android:text="@string/ds_rpt_search_btn"/>
+                    </LinearLayout>
+
+                    <!-- نتیجه صورت‌حساب (پیش‌فرض پنهان؛ با کد نمایان می‌شود) -->
+                    <LinearLayout
+                        android:id="@+id/llStatementResult"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_marginTop="@dimen/spacing_normal"
+                        android:visibility="gone">
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="@dimen/stroke_hairline"
+                            android:layout_marginBottom="@dimen/spacing_normal"
+                            android:background="@color/ds_border"/>
+
+                        <TextView
+                            android:id="@+id/tvStatementStudentName"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/ds_value_placeholder"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.DS.SectionTitle"/>
+
+                        <TextView
+                            android:id="@+id/tvStatementStudentCode"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_2xs"
+                            android:layout_marginBottom="@dimen/spacing_snug"
+                            android:text="@string/ds_value_placeholder"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.DS.Caption"
+                            android:fontFeatureSettings="tnum"/>
+
+                        <!-- کل واریزی‌ها به آموزشگاه (درآمد) -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:minHeight="@dimen/min_touch_target"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical">
+
+                            <ImageView
+                                android:layout_width="@dimen/icon_medium"
+                                android:layout_height="@dimen/icon_medium"
+                                android:src="@drawable/ic_ds_success_24"
+                                android:importantForAccessibility="no"
+                                app:tint="@color/ds_success"/>
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:layout_marginStart="@dimen/spacing_snug"
+                                android:layout_marginEnd="@dimen/spacing_small"
+                                android:text="@string/ds_rpt_stmt_paid"
+                                android:textAppearance="@style/TextAppearance.Kharazmi.DS.Body"/>
+
+                            <TextView
+                                android:id="@+id/tvStatementPaid"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/ds_value_placeholder"
+                                android:textAppearance="@style/TextAppearance.Kharazmi.DS.Money"
+                                android:textColor="@color/ds_success"
+                                android:fontFeatureSettings="tnum"/>
+                        </LinearLayout>
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="@dimen/stroke_hairline"
+                            android:layout_marginTop="@dimen/spacing_xs"
+                            android:layout_marginBottom="@dimen/spacing_xs"
+                            android:background="@color/ds_border"/>
+
+                        <!-- مانده بدهی به آموزشگاه -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:minHeight="@dimen/min_touch_target"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical">
+
+                            <ImageView
+                                android:layout_width="@dimen/icon_medium"
+                                android:layout_height="@dimen/icon_medium"
+                                android:src="@drawable/ic_ds_danger_24"
+                                android:importantForAccessibility="no"
+                                app:tint="@color/ds_danger"/>
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:layout_marginStart="@dimen/spacing_snug"
+                                android:layout_marginEnd="@dimen/spacing_small"
+                                android:text="@string/ds_rpt_stmt_debt"
+                                android:textAppearance="@style/TextAppearance.Kharazmi.DS.Body"/>
+
+                            <TextView
+                                android:id="@+id/tvStatementDebt"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/ds_value_placeholder"
+                                android:textAppearance="@style/TextAppearance.Kharazmi.DS.Money"
+                                android:textColor="@color/ds_danger"
+                                android:fontFeatureSettings="tnum"/>
+                        </LinearLayout>
+
+                        <TextView
+                            android:id="@+id/tvStatementTeacher"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_small"
+                            android:text="معلم بدهکار: —"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.DS.Body" />
+
+                        <TextView
+                            android:id="@+id/tvStatementNextDue"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_xs"
+                            android:text="قسط بعدی: —"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.DS.Body" />
+
+                        <TextView
+                            android:id="@+id/rvPaymentTimeline"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_small"
+                            android:text="تاریخچه پرداخت"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.DS.Caption" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnStatementPay"
+                            style="@style/Widget.Kharazmi.DS.Button.Primary"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_small"
+                            android:text="پرداخت قسط بعدی" />
+
+                        <!-- اکشن ثانویه: چاپ رسمی -->
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnPrintStatement"
+                            style="@style/Widget.Kharazmi.DS.Button.Secondary"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_normal"
+                            android:minHeight="@dimen/min_touch_target"
+                            android:text="@string/ds_rpt_print_statement"
+                            android:contentDescription="@string/ds_rpt_print_statement"
+                            app:icon="@drawable/ic_print"
+                            app:iconSize="@dimen/icon_medium"
+                            app:iconGravity="textStart"
+                            app:iconTint="@color/ds_accent"/>
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+</LinearLayout>

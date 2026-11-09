@@ -1,0 +1,6 @@
+# Issue #14 — single-transaction edit_past_session (2026-09-12, no compile/run)
+- Old 3 commits: reverse-internal (:850), #2 session-fields (:864), #3 rebuild (:951). New: reverse commit=False (:851), #2→flush (:867, same H19-F1b 409), #3 sole commit (:955). Stale comments updated (H19-F1b, H7); C2 note added.
+- Step3 ordering audit: no reliance on committed state — bulk UPDATE/DELETE execute in-txn immediately; loop reads same-identity ORM (post-reverse values) or fresh in-txn SELECTs; no send_notification/get_next_sequence in edit path; get_next/shadow use flush/savepoint only (no commit). NOTE: user's "autoflush" premise is wrong here — SessionLocal has autoflush=False; analysis done under the real setting.
+- Step4: any failure between reverse and final commit (membership 422, branch 400, clash 409, C2 409, crash) → full rollback incl. reverse; session byte-identical to pre-edit.
+- Step5 tests: file ALREADY stale (submit/edit sigs changed in caller-guards; `_="admin"` → TypeError at call time, pre-existing). No NEW breakage: reverse-direct tests use default commit; all edit/delete assertions are end-state (hold under single-txn); no test asserts between-commit states. If repaired, :653/:402/:666/:385/:417 pass unchanged.
+- Verified: ast.parse green; exactly one db.commit() in edit span.

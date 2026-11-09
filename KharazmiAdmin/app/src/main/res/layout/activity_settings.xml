@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/gold_bg_base"
+    android:layoutDirection="rtl">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/gold_primary"
+        app:elevation="@dimen/elevation_appbar"
+    >
+        <androidx.appcompat.widget.Toolbar
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="تنظیمات"
+                android:textColor="?attr/colorOnPrimary"
+                android:textAppearance="@style/TextAppearance.Kharazmi.PageTitle"/>
+        </androidx.appcompat.widget.Toolbar>
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/spacing_normal">
+
+            <!-- Profile Info Card -->
+            <!-- FIX: Use the declared Widget.Kharazmi.Card.Gold style; remove repeated suffixes. -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/Widget.Kharazmi.Card.Gold"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="20dp"
+                android:layout_marginBottom="@dimen/spacing_normal">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/spacing_normal"
+                    android:gravity="center_vertical">
+
+                    <!-- Profile Image Wrapper -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="70dp"
+                        android:layout_height="70dp"
+                        app:cardCornerRadius="35dp"
+                        app:cardElevation="2dp"
+                        app:strokeWidth="1.5dp"
+                        app:strokeColor="@color/gold_primary">
+
+                        <ImageView
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:src="@android:drawable/sym_def_app_icon"
+                            android:scaleType="centerInside"
+                            android:padding="8dp"
+                            app:tint="@color/gold_primary"/>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <Space android:layout_width="16dp" android:layout_height="wrap_content"/>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="مدیر سیستم"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.SectionTitle"
+                            android:textColor="@color/text_primary"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="09120000000"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.Caption"
+                            android:fontFeatureSettings="tnum"
+                            android:layout_marginTop="2dp"/>
+                    </LinearLayout>
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@android:drawable/ic_menu_edit"
+                        app:tint="@color/gold_primary"/>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Actions list card wrapper -->
+            <!-- FIX: Use the declared Widget.Kharazmi.Card.Gold style; remove repeated suffixes. -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/Widget.Kharazmi.Card.Gold"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="20dp"
+                android:layout_marginBottom="@dimen/spacing_large">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/btnTeacherCredentials"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="مدیریت هویت و دسترسی معلمان"
+                        android:padding="@dimen/spacing_normal"
+                        android:textColor="@color/text_primary"
+                        android:textAppearance="@style/TextAppearance.Kharazmi.Body"
+                        android:drawableRight="@android:drawable/ic_menu_agenda"
+                        android:drawableTint="@color/gold_primary"
+                        android:drawablePadding="16dp"
+                        android:background="?attr/selectableItemBackground"
+                        android:visibility="gone"/>
+
+                    <View android:layout_width="match_parent" android:layout_height="0.5dp" android:background="@color/gold_border_subtle"/>
+
+                    <TextView
+                        android:id="@+id/btnChangePass"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="تغییر رمز عبور"
+                        android:padding="@dimen/spacing_normal"
+                        android:textColor="@color/text_primary"
+                        android:textAppearance="@style/TextAppearance.Kharazmi.Body"
+                        android:drawableRight="@android:drawable/ic_lock_lock"
+                        android:drawableTint="@color/gold_primary"
+                        android:drawablePadding="16dp"
+                        android:background="?attr/selectableItemBackground"/>
+
+                    <View android:layout_width="match_parent" android:layout_height="0.5dp" android:background="@color/gold_border_subtle"/>
+
+                    <TextView
+                        android:id="@+id/btnChangeMobile"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="تغییر شماره همراه ورود"
+                        android:padding="@dimen/spacing_normal"
+                        android:textColor="@color/text_primary"
+                        android:textAppearance="@style/TextAppearance.Kharazmi.Body"
+                        android:drawableRight="@android:drawable/ic_menu_call"
+                        android:drawableTint="@color/gold_primary"
+                        android:drawablePadding="16dp"
+                        android:background="?attr/selectableItemBackground"/>
+
+                    <View android:layout_width="match_parent" android:layout_height="0.5dp" android:background="@color/gold_border_subtle"/>
+
+                    <TextView
+                        android:id="@+id/btnAbout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="درباره نرم‌افزار"
+                        android:padding="@dimen/spacing_normal"
+                        android:textColor="@color/text_primary"
+                        android:textAppearance="@style/TextAppearance.Kharazmi.Body"
+                        android:drawableRight="@android:drawable/ic_menu_info_details"
+                        android:drawableTint="@color/gold_primary"
+                        android:drawablePadding="16dp"
+                        android:background="?attr/selectableItemBackground"/>
+
+                    <View android:layout_width="match_parent" android:layout_height="0.5dp" android:background="@color/gold_border_subtle"/>
+
+                    <TextView
+                        android:id="@+id/btnLogout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="خروج از حساب کاربری"
+                        android:padding="@dimen/spacing_normal"
+                        android:textColor="?attr/colorError"
+                        android:textStyle="bold"
+                        android:textAppearance="@style/TextAppearance.Kharazmi.Body"
+                        android:drawableRight="@android:drawable/ic_lock_power_off"
+                        android:drawableTint="?attr/colorError"
+                        android:drawablePadding="16dp"
+                        android:background="?attr/selectableItemBackground"/>
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Dev click trigger app version -->
+            <TextView
+                android:id="@+id/tvAppVersion"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="نسخه ۱.۰.۰"
+                android:gravity="center"
+                android:fontFeatureSettings="tnum"
+                android:textAppearance="@style/TextAppearance.Kharazmi.Caption"
+                android:padding="@dimen/spacing_normal"/>
+
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

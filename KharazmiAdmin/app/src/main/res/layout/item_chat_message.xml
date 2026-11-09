@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="4dp"
+    android:layoutDirection="rtl">
+
+    <!-- Sender name (only visible for group chats) -->
+    <TextView
+        android:id="@+id/tvSenderName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="مربی"
+        android:textAppearance="@style/TextAppearance.Kharazmi.Caption"
+        android:textColor="@color/gold_primary"
+        android:layout_marginHorizontal="12dp"
+        android:layout_marginBottom="2dp"
+        android:visibility="gone" />
+
+    <!-- Chat bubble container card -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardMessageBubble"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="1dp"
+        app:strokeWidth="0dp"
+        android:layout_marginHorizontal="8dp"
+        android:layout_marginBottom="4dp">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="14dp"
+            android:paddingVertical="8dp">
+
+            <TextView
+                android:id="@+id/tvMessageText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="متن پیام کلاسی یا خصوصی"
+                android:textAppearance="@style/TextAppearance.Kharazmi.Body"
+                android:textColor="@color/text_primary" />
+
+            <!-- FIX: Keep timestamps readable on both dark Gold bubble surfaces. -->
+            <TextView
+                android:id="@+id/tvMessageTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:layout_marginTop="4dp"
+                android:text="۱۶:۳۰"
+                android:fontFeatureSettings="tnum"
+                android:textSize="9sp"
+                android:textColor="@color/text_secondary" />
+
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+</LinearLayout>

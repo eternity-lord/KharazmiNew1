@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- FIX: Use the declared Widget.Kharazmi.Card.Gold style; remove repeated suffixes. -->
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    style="@style/Widget.Kharazmi.Card.Gold"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/spacing_small"
+    app:cardCornerRadius="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/spacing_normal"
+        android:layoutDirection="rtl">
+
+        <TextView
+            android:id="@+id/tvLiveStName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="👤 نام دانش‌آموز"
+            android:textStyle="bold"
+            android:textAppearance="@style/TextAppearance.Kharazmi.SectionTitle"
+            android:textColor="@color/text_primary"/>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0.5dp"
+            android:background="@color/gold_border_subtle"
+            android:layout_marginTop="@dimen/spacing_small"
+            android:layout_marginBottom="@dimen/spacing_small"/>
+
+        <!-- وضعیت: حاضر / غایب / تاخیر (همراه مشخصه‌ی موجه) -->
+        <RadioGroup
+            android:id="@+id/rgLiveStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:weightSum="3">
+
+            <RadioButton
+                android:id="@+id/rbLivePresent"
+                android:layout_width="0dp" android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="🟢 حاضر"
+                android:textStyle="bold"
+                android:textSize="14sp"
+                android:textColor="@color/status_success"
+                android:buttonTint="@color/status_success"
+                android:padding="8dp"/>
+
+            <RadioButton
+                android:id="@+id/rbLiveAbsent"
+                android:layout_width="0dp" android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="🔴 غایب"
+                android:textStyle="bold"
+                android:textSize="14sp"
+                android:textColor="@color/status_danger"
+                android:buttonTint="@color/status_danger"
+                android:padding="8dp"/>
+
+            <RadioButton
+                android:id="@+id/rbLiveLate"
+                android:layout_width="0dp" android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="🟡 تاخیر"
+                android:textStyle="bold"
+                android:textSize="14sp"
+                android:textColor="@color/status_warning"
+                android:buttonTint="@color/status_warning"
+                android:padding="8dp"/>
+        </RadioGroup>
+
+        <RadioGroup
+            android:id="@+id/rgLiveExcused"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="@dimen/spacing_small"
+            android:visibility="gone"
+            android:weightSum="2">
+
+            <RadioButton
+                android:id="@+id/rbLiveUnexcused"
+                android:layout_width="0dp" android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="❌ غیرموجه"
+                android:textSize="13sp"
+                android:checked="true"
+                android:textColor="@color/status_danger"
+                android:buttonTint="@color/status_danger"
+                android:padding="6dp"/>
+
+            <RadioButton
+                android:id="@+id/rbLiveExcused"
+                android:layout_width="0dp" android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="💙 غیبت موجه"
+                android:textSize="13sp"
+                android:textColor="@color/status_info"
+                android:buttonTint="@color/status_info"
+                android:padding="6dp"/>
+        </RadioGroup>
+
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

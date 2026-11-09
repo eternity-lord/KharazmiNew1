@@ -1,0 +1,5 @@
+# Critical #8 — settled-delete block + atomic reverse (2026-09-12, no compile/run)
+- Step1 attendance.py:~938-951: settled gate mirrored EXACTLY from edit (H6-FOLLOWUP-2 is_billed + H8-gap is_penalty_settled disjunct), before reverse; 409 «...قابل حذف نیست؛ ...هماهنگ کنید».
+- Step2 dependencies.py:315 (commit: bool=True, H4 mirror of send_notification :751) + :360 if commit; delete :954 passes commit=False → single commit with is_deleted (crash window closed: before=fully intact, after=fully deleted). Edit :804 UNCHANGED (default True, byte-identical incl. its documented multi-commit shape + H19 backstops); tests unchanged (default True).
+- Why edit left multi-commit: single-commit edit needs moving H19-F1b backstop + distinguishing IntegrityError sources at final commit (date-clash vs C2-dup) + re-verifying recharge-loop state assumptions — a redesign (F3-deferred was contemplated, not done), not a safe minimal fix. Stated in code comment.
+- Verified: ast.parse OK x2; markers on disk.

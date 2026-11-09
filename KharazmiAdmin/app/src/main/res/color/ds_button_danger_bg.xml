@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- DESIGN SYSTEM: پس‌زمینه دکمه خطر — pressed/disabled -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_enabled="false" android:color="@color/ds_bg_surface_disabled" />
+    <item android:state_pressed="true" android:color="@color/ds_danger_deep_pressed" />
+    <item android:color="@color/ds_danger_deep" />
+</selector>

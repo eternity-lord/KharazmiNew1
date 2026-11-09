@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ====================================================================================
+     DESIGN SYSTEM (Phase 1) — حالت خالی (Empty State)
+     شناسه‌های tvEmptyTitle / tvEmptyMessage / btnRefresh / btnSearch حفظ شده‌اند.
+     دکمه‌ها هم‌اکنون حداقل ۴۸dp سطح لمس دارند (قبلاً ۴۰dp بود).
+     ==================================================================================== -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/ds_bg_base"
+    android:gravity="center"
+    android:layoutDirection="rtl"
+    android:orientation="vertical"
+    android:padding="@dimen/spacing_huge">
+
+    <com.google.android.material.card.MaterialCardView
+        style="@style/Widget.Kharazmi.DS.Card.Surface2"
+        android:layout_width="96dp"
+        android:layout_height="96dp"
+        app:cardCornerRadius="@dimen/corner_radius_huge"
+        app:cardElevation="@dimen/elevation_none">
+
+        <ImageView
+            android:layout_width="@dimen/icon_xlarge"
+            android:layout_height="@dimen/icon_xlarge"
+            android:layout_gravity="center"
+            android:contentDescription="@string/empty_title"
+            android:src="@drawable/ic_search_24"
+            app:tint="@color/ds_text_disabled" />
+    </com.google.android.material.card.MaterialCardView>
+
+    <TextView
+        android:id="@+id/tvEmptyTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_large"
+        android:gravity="center"
+        android:text="@string/empty_title"
+        android:textAppearance="@style/TextAppearance.Kharazmi.DS.SectionTitle" />
+
+    <TextView
+        android:id="@+id/tvEmptyMessage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_small"
+        android:gravity="center"
+        android:maxWidth="@dimen/max_text_width"
+        android:text="@string/ds_state_empty_body"
+        android:textAppearance="@style/TextAppearance.Kharazmi.DS.Caption" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_large"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnRefresh"
+            style="@style/Widget.Kharazmi.DS.Button.Secondary"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/spacing_small"
+            android:text="@string/action_refresh"
+            app:icon="@drawable/ic_refresh_24"
+            app:iconGravity="textStart"
+            app:iconPadding="@dimen/spacing_xs"
+            app:iconSize="@dimen/icon_small"
+            app:iconTint="@color/ds_accent" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnSearch"
+            style="@style/Widget.Kharazmi.DS.Button.Secondary"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/spacing_small"
+            android:text="@string/action_search"
+            app:icon="@drawable/ic_search_24"
+            app:iconGravity="textStart"
+            app:iconPadding="@dimen/spacing_xs"
+            app:iconSize="@dimen/icon_small"
+            app:iconTint="@color/ds_accent" />
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_large"
+        android:gravity="center"
+        android:maxWidth="@dimen/max_text_width"
+        android:text="@string/ds_empty_hint"
+        android:textAppearance="@style/TextAppearance.Kharazmi.DS.Caption"
+        android:textColor="@color/ds_text_disabled" />
+
+</LinearLayout>

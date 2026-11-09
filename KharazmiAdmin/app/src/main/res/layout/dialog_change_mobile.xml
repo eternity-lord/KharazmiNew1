@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="@dimen/spacing_large"
+    android:layoutDirection="rtl">
+
+    <TextView
+        android:text="تغییر شماره همراه ورود"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:textColor="@color/gold_primary"
+        android:layout_marginBottom="@dimen/spacing_normal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+    <!-- Current Mobile -->
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.Kharazmi.Input.Gold"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="شماره همراه فعلی"
+        app:startIconDrawable="@drawable/ic_call_24">
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etMobile"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/text_primary"
+            android:fontFeatureSettings="tnum"
+            android:inputType="phone"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <Space android:layout_width="match_parent" android:layout_height="12dp"/>
+
+    <!-- Password Verification -->
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.Kharazmi.Input.Gold"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="رمز عبور فعلی جهت تایید هویت"
+        app:endIconMode="password_toggle"
+        app:startIconDrawable="@android:drawable/ic_lock_lock">
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etOldPass"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/text_primary"
+            android:inputType="textPassword"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <Space android:layout_width="match_parent" android:layout_height="12dp"/>
+
+    <!-- New Mobile -->
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.Kharazmi.Input.Gold"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="شماره همراه جدید"
+        app:startIconDrawable="@drawable/ic_call_24">
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etNewMobile"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/text_primary"
+            android:fontFeatureSettings="tnum"
+            android:inputType="phone"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+</LinearLayout>

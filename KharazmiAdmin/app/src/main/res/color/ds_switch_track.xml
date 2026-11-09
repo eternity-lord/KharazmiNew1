@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- DESIGN SYSTEM (Phase 2): مسیر سوییچ تعلیق.
+     روشن (فعال): ds_accent_strong (#A9812F، کنتراست 4.26:1 با کارت هشدار)
+     خاموش (فعال): ds_bg_surface_3
+     غیرفعال (هر دو حالت): ds_bg_surface_disabled → کنتراست 5.33:1 با دستگیره -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_checked="true" android:state_enabled="true" android:color="@color/ds_accent_strong"/>
+    <item android:state_enabled="true" android:color="@color/ds_bg_surface_3"/>
+    <item android:color="@color/ds_bg_surface_disabled"/>
+</selector>

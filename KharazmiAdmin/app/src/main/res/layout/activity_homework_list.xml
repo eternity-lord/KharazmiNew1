@@ -1,0 +1,295 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/gold_bg_base"
+    android:layoutDirection="rtl">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/gold_primary"
+        app:elevation="@dimen/elevation_appbar"
+    >
+        <androidx.appcompat.widget.Toolbar
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize">
+            <TextView
+                android:id="@+id/tvHomeworkTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="تکالیف و سامانه‌ی LMS"
+                android:textColor="?attr/colorOnPrimary"
+                android:textAppearance="@style/TextAppearance.Kharazmi.PageTitle"/>
+        </androidx.appcompat.widget.Toolbar>
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <!-- Flipper for state transitioning -->
+    <ViewFlipper
+        android:id="@+id/homeworkFlipper"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <!-- STATE 1: Homework List (Students/Teachers/Parents) -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:padding="@dimen/spacing_normal">
+
+            <!-- Teacher Add Homework card (Visible for teachers only) -->
+            <!-- FIX: Use the declared Widget.Kharazmi.Card.Gold style; remove repeated suffixes. -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardAddHomework"
+                style="@style/Widget.Kharazmi.Card.Gold"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_normal"
+                android:visibility="gone"
+                app:cardCornerRadius="18dp"
+                app:strokeColor="@color/gold_primary"
+                app:strokeWidth="1.5dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/spacing_normal">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="➕ تعریف تکلیف کلاسی جدید"
+                        android:textAppearance="@style/TextAppearance.Kharazmi.SectionTitle"
+                        android:textColor="@color/gold_primary"
+                        android:layout_marginBottom="@dimen/spacing_normal"/>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.Kharazmi.Input.Gold"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="عنوان تکلیف">
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etHwTitle"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/text_primary"/>
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.Kharazmi.Input.Gold"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_normal"
+                        android:hint="توضیحات تکلیف">
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etHwDesc"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/text_primary" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.Kharazmi.Input.Gold"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_normal"
+                        android:hint="تاریخ سررسید (مثال: ۱۴۰۵/۰۶/۰۵)">
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etHwDueDate"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/text_primary"
+                            android:fontFeatureSettings="tnum" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnSubmitHomework"
+                        style="@style/Widget.Kharazmi.Button.Gold"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_normal"
+                        android:textColor="@color/text_on_gold"
+                        android:text="ثبت و ابلاغ تکلیف کلاسی"
+                        app:backgroundTint="@color/gold_primary" />
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Homework List Header -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="تکالیف ثبت شده"
+                android:textAppearance="@style/TextAppearance.Kharazmi.SectionTitle"
+                android:textColor="@color/gold_primary"
+                android:layout_marginHorizontal="@dimen/spacing_small"
+                android:layout_marginBottom="@dimen/spacing_small"/>
+
+            <!-- FIX: Use the declared Widget.Kharazmi.Card.Gold style; remove repeated suffixes. -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/Widget.Kharazmi.Card.Gold"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:cardCornerRadius="20dp"
+                android:layout_marginBottom="@dimen/spacing_normal">
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvHomeworks"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:padding="@dimen/spacing_small"
+                    android:layoutAnimation="@anim/layout_animation_fall_down"/>
+            </com.google.android.material.card.MaterialCardView>
+
+        </LinearLayout>
+
+        <!-- STATE 2: Homework Details & Submissions View (Teacher/Student) -->
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fillViewport="true">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/spacing_normal">
+
+                <!-- Homework overview card -->
+                <!-- FIX: Use the declared Widget.Kharazmi.Card.Gold style; remove repeated suffixes. -->
+                <com.google.android.material.card.MaterialCardView
+                    style="@style/Widget.Kharazmi.Card.Gold"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:cardCornerRadius="20dp"
+                    android:layout_marginBottom="@dimen/spacing_normal">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="@dimen/spacing_normal">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/tvHwDetailTitle"
+                            android:text="عنوان تکلیف"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.SectionTitle"
+                            android:textColor="@color/text_primary"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/tvHwDetailDesc"
+                            android:text="توضیحات تکمیلی..."
+                            android:textAppearance="@style/TextAppearance.Kharazmi.Body"
+                            android:layout_marginTop="8dp"/>
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/tvHwDetailDueDate"
+                            android:text="📅 سررسید: ۱۴۰۵/۰۶/۰۵"
+                            android:textAppearance="@style/TextAppearance.Kharazmi.Caption"
+                            android:fontFeatureSettings="tnum"
+                            android:textColor="@color/gold_primary"
+                            android:layout_marginTop="8dp"/>
+
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Submissions listing or upload attachment card (Conditional) -->
+                <!-- FIX: Use the declared Widget.Kharazmi.Card.Gold style; remove repeated suffixes. -->
+                <com.google.android.material.card.MaterialCardView
+                    style="@style/Widget.Kharazmi.Card.Gold"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:cardCornerRadius="20dp"
+                    android:layout_marginBottom="@dimen/spacing_normal">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="@dimen/spacing_normal">
+
+                        <!-- Student Submission Upload Fields -->
+                        <LinearLayout
+                            android:id="@+id/llStudentSubmitSection"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:visibility="gone">
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="📤 ارسال پاسخ تکلیف"
+                                android:textAppearance="@style/TextAppearance.Kharazmi.SectionTitle"
+                                android:textColor="@color/gold_primary"
+                                android:layout_marginBottom="@dimen/spacing_normal"/>
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="برای ارسال پاسخ، فایلی با حجم کمتر از ۱۰ مگابایت (PDF، تصویر یا Word) بارگذاری کنید."
+                                android:textAppearance="@style/TextAppearance.Kharazmi.Caption"
+                                android:layout_marginBottom="@dimen/spacing_normal"/>
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btnUploadFile"
+                                style="@style/Widget.Kharazmi.Button.Gold.Outline"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="انتخاب و ارسال فایل"
+                                app:icon="@android:drawable/ic_menu_upload"
+                                app:iconTint="@color/gold_primary"
+                                app:iconGravity="textStart" />
+                        </LinearLayout>
+
+                        <!-- Teacher Submissions List View -->
+                        <LinearLayout
+                            android:id="@+id/llTeacherSubmissionsSection"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:visibility="gone">
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="👥 پاسخ‌های ارسال شده شاگردان"
+                                android:textAppearance="@style/TextAppearance.Kharazmi.SectionTitle"
+                                android:textColor="@color/gold_primary"
+                                android:layout_marginBottom="@dimen/spacing_normal"/>
+
+                            <androidx.recyclerview.widget.RecyclerView
+                                android:id="@+id/rvSubmissions"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:minHeight="150dp"/>
+                        </LinearLayout>
+
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnBackToList"
+                    style="@style/Widget.Kharazmi.Button.Gold"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/text_on_gold"
+                    android:text="بازگشت به لیست تکالیف"
+                    app:backgroundTint="@color/gold_primary" />
+
+            </LinearLayout>
+        </ScrollView>
+
+    </ViewFlipper>
+
+</LinearLayout>

@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- FIX: Use the declared Widget.Kharazmi.Card.Gold style; remove repeated suffixes. -->
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    style="@style/Widget.Kharazmi.Card.Gold"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="6dp"
+    app:cardCornerRadius="18dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="@dimen/spacing_normal"
+        android:gravity="center_vertical"
+        android:layoutDirection="rtl">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:id="@+id/tvRosterName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="نام دانش‌آموز"
+                    android:textAppearance="@style/TextAppearance.Kharazmi.SectionTitle"
+                    android:textColor="@color/text_primary"
+                    android:textStyle="bold" />
+
+                <Space android:layout_width="8dp" android:layout_height="wrap_content" />
+
+                <TextView
+                    android:id="@+id/tvRosterStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🟢 حاضر"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:background="@drawable/chip_background"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="3dp" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tvRosterStudentPhone"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="📱 دانش‌آموز: 09121111111"
+                android:textAppearance="@style/TextAppearance.Kharazmi.Caption"
+                android:fontFeatureSettings="tnum"
+                android:layout_marginTop="4dp" />
+
+            <TextView
+                android:id="@+id/tvRosterParentPhone"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="📱 ولی: 09122222222"
+                android:textAppearance="@style/TextAppearance.Kharazmi.Body"
+                android:textColor="@color/gold_primary"
+                android:fontFeatureSettings="tnum"
+                android:textStyle="bold"
+                android:layout_marginTop="2dp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                app:cardCornerRadius="24dp"
+                app:cardElevation="2dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="@color/gold_primary"
+                app:cardBackgroundColor="@color/gold_bg_elevated">
+                <ImageButton
+                    android:id="@+id/btnCallStudent"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_call_24"
+                    app:tint="@color/gold_primary"
+                    android:contentDescription="تماس با دانش‌آموز"
+                    android:padding="12dp" />
+            </com.google.android.material.card.MaterialCardView>
+
+            <android.widget.Space
+                android:layout_width="8dp"
+                android:layout_height="wrap_content" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                app:cardCornerRadius="24dp"
+                app:cardElevation="2dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="@color/gold_primary"
+                app:cardBackgroundColor="@color/gold_bg_elevated">
+                <ImageButton
+                    android:id="@+id/btnCallParent"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_call_24"
+                    app:tint="@color/gold_primary"
+                    android:contentDescription="تماس با ولی"
+                    android:padding="12dp" />
+            </com.google.android.material.card.MaterialCardView>
+        </LinearLayout>
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

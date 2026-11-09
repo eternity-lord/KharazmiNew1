@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Selected/Checked state - GOLD -->
+    <item android:state_checked="true" android:color="@color/gold_primary" />
+    <item android:state_selected="true" android:color="@color/gold_primary" />
+
+    <!-- Pressed state -->
+    <item android:state_pressed="true" android:color="@color/gold_primary_dark" />
+
+    <!-- Focused state -->
+    <item android:state_focused="true" android:color="@color/gold_primary" />
+
+    <!-- Enabled state (default) - secondary text -->
+    <item android:state_enabled="true" android:color="@color/text_secondary" />
+
+    <!-- Disabled state -->
+    <item android:color="@color/text_disabled" />
+</selector>

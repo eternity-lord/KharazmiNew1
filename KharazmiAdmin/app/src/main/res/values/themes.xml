@@ -1,0 +1,352 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Custom theme attributes to prevent resource linking failures -->
+    <attr name="colorBackground" format="color" />
+
+    <!-- Theme base definition -->
+    <style name="Theme.GajAdmin" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Brand Colors -->
+        <item name="colorPrimary">@color/gaj_primary</item>
+        <item name="colorPrimaryVariant">@color/gaj_primary_dark</item>
+        <item name="colorOnPrimary">@color/gaj_text_on_primary</item>
+        <item name="colorSecondary">@color/gaj_accent</item>
+        <item name="colorOnSecondary">@color/gaj_text_on_accent</item>
+        
+        <!-- Surface & Background -->
+        <item name="android:windowBackground">@color/gaj_background</item>
+        <item name="android:statusBarColor">@color/gaj_primary_dark</item>
+        <item name="colorSurface">@color/gaj_surface</item>
+        <item name="colorOnSurface">@color/gaj_text_primary</item>
+        <item name="android:textColorPrimary">@color/gaj_text_primary</item>
+        <item name="android:textColorSecondary">@color/gaj_text_secondary</item>
+        <item name="android:textColorTertiary">@color/gaj_text_hint</item>
+        <item name="android:textColorHint">@color/gaj_text_hint</item>
+        <item name="colorBackground">@color/gaj_background</item>
+        <item name="colorOnBackground">@color/gaj_text_primary</item>
+        <item name="colorError">@color/gaj_error</item>
+        <item name="colorOnError">@color/white</item>
+        <item name="colorOutline">@color/gaj_border</item>
+        
+        <!-- Typography -->
+        <item name="fontFamily">@font/app_font</item>
+        <item name="android:fontFamily">@font/app_font</item>
+        
+        <!-- Default Component Styles -->
+        <item name="materialButtonStyle">@style/Widget.Kharazmi.Button</item>
+        <item name="materialCardViewStyle">@style/Widget.Kharazmi.Card</item>
+        <item name="textInputStyle">@style/GajOutlineBoxStyle</item>
+        <item name="android:windowAnimationStyle">@style/GajWindowAnimations</item>
+    </style>
+
+    <!-- Telegram-style Pill Button (Corner Radius 28dp for Pill shape) -->
+    <style name="Widget.Kharazmi.Button" parent="Widget.MaterialComponents.Button">
+        <item name="cornerRadius">28dp</item>
+        <item name="android:paddingVertical">12dp</item>
+        <item name="android:paddingHorizontal">12dp</item>
+        <item name="android:minHeight">@dimen/min_touch_target</item>
+        <item name="android:textSize">13sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:maxLines">2</item>
+        <item name="android:gravity">center</item>
+        <item name="android:lineSpacingMultiplier">1.0</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="backgroundTint">?attr/colorPrimary</item>
+        <item name="android:textColor">?attr/colorOnPrimary</item>
+        <item name="rippleColor">@color/gaj_ripple_primary</item>
+        <item name="elevation">0dp</item>
+    </style>
+
+    <!-- Outlined Pill Button for clean outlines -->
+    <style name="Widget.Kharazmi.Button.Outline" parent="Widget.MaterialComponents.Button.OutlinedButton">
+        <item name="cornerRadius">28dp</item>
+        <item name="android:paddingVertical">12dp</item>
+        <item name="android:paddingHorizontal">12dp</item>
+        <item name="android:minHeight">@dimen/min_touch_target</item>
+        <item name="android:textSize">13sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:maxLines">2</item>
+        <item name="android:gravity">center</item>
+        <item name="android:lineSpacingMultiplier">1.0</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="strokeColor">?attr/colorPrimary</item>
+        <item name="strokeWidth">1.5dp</item>
+        <item name="android:textColor">?attr/colorPrimary</item>
+        <item name="rippleColor">@color/gaj_ripple_primary</item>
+    </style>
+
+    <!-- Telegram-style Clean Flat Card -->
+    <style name="Widget.Kharazmi.Card" parent="Widget.MaterialComponents.CardView">
+        <item name="cardCornerRadius">16dp</item>
+        <item name="cardElevation">1dp</item>
+        <item name="android:layout_margin">8dp</item>
+        <item name="cardBackgroundColor">?attr/colorSurface</item>
+        <item name="strokeColor">?attr/colorOutline</item>
+        <item name="strokeWidth">0.5dp</item>
+    </style>
+
+    <!-- TextInputLayout Style -->
+    <style name="GajOutlineBoxStyle" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+        <item name="boxCornerRadiusTopStart">14dp</item>
+        <item name="boxCornerRadiusTopEnd">14dp</item>
+        <item name="boxCornerRadiusBottomStart">14dp</item>
+        <item name="boxCornerRadiusBottomEnd">14dp</item>
+        <item name="boxStrokeWidth">1dp</item>
+        <item name="boxStrokeColor">?attr/colorPrimary</item>
+        <item name="hintTextColor">?attr/colorPrimary</item>
+    </style>
+
+    <!-- Telegram Bottom Sheet Style Dialog -->
+    <style name="Widget.Kharazmi.Dialog" parent="Theme.Design.Light.BottomSheetDialog">
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowIsFloating">false</item>
+        <item name="android:backgroundDimEnabled">true</item>
+        <item name="bottomSheetStyle">@style/GajBottomSheetStyle</item>
+    </style>
+
+    <style name="GajBottomSheetStyle" parent="Widget.Design.BottomSheet.Modal">
+        <item name="backgroundTint">?attr/colorSurface</item>
+        <item name="shapeAppearance">@style/ShapeAppearance.Kharazmi.BottomSheet</item>
+    </style>
+
+    <style name="ShapeAppearance.Kharazmi.BottomSheet" parent="ShapeAppearance.MaterialComponents.LargeComponent">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSizeTopLeft">24dp</item>
+        <item name="cornerSizeTopRight">24dp</item>
+    </style>
+
+    <!-- Legacy / Compatibility styles -->
+    <style name="GajWindowAnimations">
+        <item name="android:activityOpenEnterAnimation">@anim/slide_in_right</item>
+        <item name="android:activityOpenExitAnimation">@anim/slide_out_left</item>
+        <item name="android:activityCloseEnterAnimation">@anim/slide_in_left</item>
+        <item name="android:activityCloseExitAnimation">@anim/slide_out_right</item>
+    </style>
+
+    <style name="GajButtonStyle" parent="Widget.Kharazmi.Button" />
+    <style name="GajOutlineBoxStyleStyle" parent="GajOutlineBoxStyle" />
+    <style name="GajCardViewStyle" parent="Widget.Kharazmi.Card" />
+
+    <style name="ShareInputStyle">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginBottom">10dp</item>
+        <item name="android:background">@drawable/border_bg</item>
+        <item name="android:padding">12dp</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+    </style>
+
+    <!-- Kharazmi Central Typography TextAppearances -->
+    <style name="TextAppearance.Kharazmi.PageTitle" parent="TextAppearance.MaterialComponents.Headline6">
+        <item name="android:textSize">@dimen/font_size_page_title</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+    </style>
+
+    <style name="TextAppearance.Kharazmi.SectionTitle" parent="TextAppearance.MaterialComponents.Subtitle1">
+        <item name="android:textSize">@dimen/font_size_section_title</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+    </style>
+
+    <style name="TextAppearance.Kharazmi.Body" parent="TextAppearance.MaterialComponents.Body1">
+        <item name="android:textSize">@dimen/font_size_body</item>
+        <item name="android:textStyle">normal</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+    </style>
+
+    <style name="TextAppearance.Kharazmi.Caption" parent="TextAppearance.MaterialComponents.Caption">
+        <item name="android:textSize">@dimen/font_size_caption</item>
+        <item name="android:textStyle">normal</item>
+        <item name="android:textColor">@color/gaj_text_secondary</item>
+    </style>
+
+    <!-- Backward compatibility aliases for GajAdmin TextAppearances -->
+    <style name="TextAppearance.GajAdmin.Headline1" parent="TextAppearance.Kharazmi.PageTitle"/>
+    <style name="TextAppearance.GajAdmin.Headline2" parent="TextAppearance.Kharazmi.PageTitle"/>
+    <style name="TextAppearance.GajAdmin.Headline3" parent="TextAppearance.Kharazmi.PageTitle"/>
+    <style name="TextAppearance.GajAdmin.Headline4" parent="TextAppearance.Kharazmi.PageTitle"/>
+    <style name="TextAppearance.GajAdmin.Headline5" parent="TextAppearance.Kharazmi.SectionTitle"/>
+    <style name="TextAppearance.GajAdmin.Headline6" parent="TextAppearance.Kharazmi.SectionTitle"/>
+    <style name="TextAppearance.GajAdmin.Subtitle1" parent="TextAppearance.Kharazmi.SectionTitle"/>
+    <style name="TextAppearance.GajAdmin.Subtitle2" parent="TextAppearance.Kharazmi.Body"/>
+    <style name="TextAppearance.GajAdmin.Body1" parent="TextAppearance.Kharazmi.Body"/>
+    <style name="TextAppearance.GajAdmin.Body2" parent="TextAppearance.Kharazmi.Body"/>
+    <style name="TextAppearance.GajAdmin.Caption" parent="TextAppearance.Kharazmi.Caption"/>
+    <style name="TextAppearance.GajAdmin.Overline" parent="TextAppearance.Kharazmi.Caption"/>
+    <style name="TextAppearance.GajAdmin.Button" parent="TextAppearance.Kharazmi.Body"/>
+
+    <!-- Chip Style -->
+    <style name="GajChipStyle" parent="Widget.MaterialComponents.Chip.Action">
+        <item name="chipBackgroundColor">@color/gaj_gray_light</item>
+        <item name="chipStrokeColor">?attr/colorPrimary</item>
+        <item name="chipStrokeWidth">1dp</item>
+        <item name="cornerRadius">16dp</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+        <item name="android:textSize">12sp</item>
+        <!-- FIX(chip-multiline): Chip فقط متن تک‌خطی را پشتیبانی می‌کند. با singleLine=false یا
+             maxLines=2 سازندهٔ Chip استثنای «Chip does not support multi-line text» می‌دهد و
+             layout/item_class_row.xml (صفحهٔ مدیریت کلاس‌ها) با InflateException می‌ترکد.
+             پس صریحاً تک‌خطی قفل می‌شود — پیش‌فرض کتابخانه هم همین است. -->
+        <item name="android:singleLine">true</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:minHeight">@dimen/min_touch_target</item>
+        <item name="android:paddingVertical">6dp</item>
+    </style>
+
+    <!-- ==================== GOLD/DARK REDESIGN STYLES (NEW) ==================== -->
+
+    <!-- Gold Theme - Dark base with gold accents -->
+    <style name="Theme.Kharazmi.Gold" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/gold_primary</item>
+        <item name="colorPrimaryVariant">@color/gold_primary_dark</item>
+        <item name="colorOnPrimary">@color/text_on_gold</item>
+        <item name="colorSecondary">@color/gold_primary</item>
+        <item name="colorOnSecondary">@color/text_on_gold</item>
+        <item name="android:windowBackground">@color/gold_bg_base</item>
+        <item name="android:statusBarColor">@color/gold_bg_base</item>
+        <item name="colorSurface">@color/gold_bg_elevated</item>
+        <item name="colorOnSurface">@color/text_primary</item>
+        <item name="android:textColorPrimary">@color/text_primary</item>
+        <!-- FIX: Gold secondary and hint text must use the readable Gold tokens, not inherited light-theme defaults. -->
+        <item name="android:textColorSecondary">@color/text_secondary</item>
+        <item name="android:textColorTertiary">@color/text_disabled</item>
+        <item name="android:textColorHint">@color/text_disabled</item>
+        <item name="colorBackground">@color/gold_bg_base</item>
+        <item name="colorOnBackground">@color/text_primary</item>
+        <item name="colorError">@color/status_danger</item>
+        <item name="colorOnError">@color/white</item>
+        <item name="colorOutline">@color/gold_border_subtle</item>
+        <item name="fontFamily">@font/app_font</item>
+        <item name="android:fontFamily">@font/app_font</item>
+        <item name="materialButtonStyle">@style/Widget.Kharazmi.Button.Gold</item>
+        <item name="materialCardViewStyle">@style/Widget.Kharazmi.Card.Gold</item>
+        <item name="textInputStyle">@style/Widget.Kharazmi.Input.Gold</item>
+        <item name="android:windowAnimationStyle">@style/GajWindowAnimations</item>
+    </style>
+
+    <!-- Gold Button - gradient gold with glow, 14dp radius, black text -->
+    <style name="Widget.Kharazmi.Button.Gold" parent="Widget.MaterialComponents.Button">
+        <item name="cornerRadius">14dp</item>
+        <item name="android:paddingVertical">14dp</item>
+        <item name="android:paddingHorizontal">16dp</item>
+        <item name="android:minHeight">@dimen/min_touch_target</item>
+        <item name="android:textSize">15sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:maxLines">2</item>
+        <item name="android:gravity">center</item>
+        <item name="android:lineSpacingMultiplier">1.0</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <!-- FIX: Plain MaterialButtons using this style need the same readable disabled text as GoldButton. -->
+        <item name="android:textColor">@color/gold_button_text</item>
+        <item name="backgroundTint">@null</item>
+        <item name="android:background">@drawable/bg_button_gold_selector</item>
+        <item name="rippleColor">@color/gold_ripple</item>
+        <item name="elevation">4dp</item>
+        <item name="android:stateListAnimator">@null</item>
+    </style>
+
+    <!-- Gold Button Outline -->
+    <style name="Widget.Kharazmi.Button.Gold.Outline" parent="Widget.MaterialComponents.Button.OutlinedButton">
+        <item name="cornerRadius">14dp</item>
+        <item name="android:paddingVertical">12dp</item>
+        <item name="android:paddingHorizontal">16dp</item>
+        <item name="android:minHeight">@dimen/min_touch_target</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:maxLines">2</item>
+        <item name="android:gravity">center</item>
+        <item name="android:lineSpacingMultiplier">1.0</item>
+        <item name="strokeColor">@color/gold_primary</item>
+        <item name="strokeWidth">1.5dp</item>
+        <item name="android:textColor">@color/gold_primary</item>
+        <item name="rippleColor">@color/gold_ripple</item>
+        <item name="android:backgroundTint">@color/gold_bg_elevated</item>
+    </style>
+
+    <!-- Gold Card - elevated dark with subtle border, 16dp radius -->
+    <style name="Widget.Kharazmi.Card.Gold" parent="Widget.MaterialComponents.CardView">
+        <item name="cardCornerRadius">16dp</item>
+        <item name="cardElevation">2dp</item>
+        <item name="android:layout_margin">8dp</item>
+        <item name="cardBackgroundColor">@color/gold_bg_elevated</item>
+        <item name="strokeColor">@color/gold_border_subtle</item>
+        <item name="strokeWidth">1dp</item>
+    </style>
+
+    <!-- Gold Card Elevated 2 (for dialogs, nested cards) -->
+    <style name="Widget.Kharazmi.Card.Gold.Elevated2" parent="Widget.Kharazmi.Card.Gold">
+        <item name="cardBackgroundColor">@color/gold_bg_elevated_2</item>
+    </style>
+
+    <!-- Gold Input -->
+    <style name="Widget.Kharazmi.Input.Gold" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+        <item name="boxCornerRadiusTopStart">12dp</item>
+        <item name="boxCornerRadiusTopEnd">12dp</item>
+        <item name="boxCornerRadiusBottomStart">12dp</item>
+        <item name="boxCornerRadiusBottomEnd">12dp</item>
+        <item name="boxStrokeWidth">1dp</item>
+        <item name="boxStrokeWidthFocused">1.5dp</item>
+        <!-- FIX: Material 1.12.0 applies a solid boxStrokeColor to focus; no separate focused-color attribute exists. -->
+        <item name="boxStrokeColor">@color/gold_primary</item>
+        <item name="hintTextColor">@color/text_secondary</item>
+        <item name="android:textColorHint">@color/text_secondary</item>
+        <item name="boxBackgroundColor">@color/gold_bg_elevated_2</item>
+    </style>
+
+    <!-- Gold Chip - for attendance, payment methods -->
+    <style name="Widget.Kharazmi.Chip.Gold" parent="Widget.MaterialComponents.Chip.Choice">
+        <item name="chipBackgroundColor">@color/gold_bg_elevated_2</item>
+        <item name="chipStrokeColor">@color/gold_border_subtle</item>
+        <item name="chipStrokeWidth">1dp</item>
+        <item name="cornerRadius">14dp</item>
+        <item name="android:textColor">@color/text_secondary</item>
+        <item name="checkedIconVisible">false</item>
+        <item name="chipIconVisible">false</item>
+    </style>
+
+    <style name="Widget.Kharazmi.Chip.Gold.Selected" parent="Widget.Kharazmi.Chip.Gold">
+        <item name="chipBackgroundColor">@color/gold_primary</item>
+        <item name="chipStrokeColor">@color/gold_primary</item>
+        <item name="android:textColor">@color/text_on_gold</item>
+    </style>
+
+    <!-- Gold Typography - updated weights -->
+    <style name="TextAppearance.Kharazmi.Gold.PageTitle" parent="TextAppearance.MaterialComponents.Headline6">
+        <item name="android:textSize">20sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:fontFamily">@font/app_font</item>
+    </style>
+
+    <style name="TextAppearance.Kharazmi.Gold.SectionTitle" parent="TextAppearance.MaterialComponents.Subtitle1">
+        <item name="android:textSize">16sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:fontFamily">@font/app_font</item>
+    </style>
+
+    <style name="TextAppearance.Kharazmi.Gold.Body" parent="TextAppearance.MaterialComponents.Body1">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textStyle">normal</item>
+        <item name="android:textColor">@color/text_secondary</item>
+        <item name="android:fontFamily">@font/app_font</item>
+    </style>
+
+    <style name="TextAppearance.Kharazmi.Gold.Caption" parent="TextAppearance.MaterialComponents.Caption">
+        <item name="android:textSize">12sp</item>
+        <item name="android:textStyle">normal</item>
+        <item name="android:textColor">@color/text_secondary</item>
+        <item name="android:fontFamily">@font/app_font</item>
+    </style>
+
+    <style name="TextAppearance.Kharazmi.Gold.Money" parent="TextAppearance.Kharazmi.Gold.Body">
+        <item name="android:textColor">@color/gold_primary</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:fontFeatureSettings">tnum</item>
+    </style>
+
+</resources>

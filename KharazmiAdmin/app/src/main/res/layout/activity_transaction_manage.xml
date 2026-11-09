@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ====================================================================================
+     PHASE 2 — activity_transaction_manage (مدیریت و اصلاح حواله‌ها)
+     شناسه‌های حفظ‌شده: tvHeaderTitle / cardReportFilter / btnExportExcel / btnExportPdf /
+                        rvReport / tvTotalSum
+     توجه درباره درخواست‌های UX: سرور در این اندپوینت فقط ردیف‌های فعال را برمی‌گرداند و
+     فیلد type در مدل اندروید bind نشده است؛ پس «جست‌وجو»، «چیپ نوع تراکنش» و
+     «وضعیت حذف‌شده/برگشتی» بدون تغییر کد Kotlin قابل افزودن نیستند (نیازمند منطق جدید).
+     کاهش خطر اشتباه با: تاکید روی مبلغ، تفکیک رنگی/آیکونی سه اکشن و یادداشت ایمنی انجام شده.
+     ==================================================================================== -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/ds_bg_base"
+    android:layoutDirection="rtl">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_ds_header"
+        app:elevation="@dimen/elevation_none">
+
+        <androidx.appcompat.widget.Toolbar
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/ds_toolbar_height"
+            android:background="@android:color/transparent">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <ImageView
+                    android:layout_width="@dimen/icon_medium"
+                    android:layout_height="@dimen/icon_medium"
+                    android:src="@drawable/ic_ds_receipt_24"
+                    android:importantForAccessibility="no"
+                    app:tint="@color/ds_accent"/>
+
+                <TextView
+                    android:id="@+id/tvHeaderTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/spacing_snug"
+                    android:text="@string/txn_title"
+                    android:textAppearance="@style/TextAppearance.Kharazmi.DS.SectionTitle"/>
+            </LinearLayout>
+        </androidx.appcompat.widget.Toolbar>
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <!-- کادر مخفی و بی‌استفاده صرفاً جهت عدم ارور نال پوینتر کد اکتیویتی (بدون تغییر) -->
+    <View
+        android:id="@+id/cardReportFilter"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:visibility="gone"/>
+
+    <!-- خروجی‌ها: اکشن‌های ثانویه -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/spacing_normal"
+        android:paddingEnd="@dimen/spacing_normal"
+        android:paddingTop="@dimen/spacing_snug">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnExportExcel"
+            style="@style/Widget.Kharazmi.DS.Button.Secondary"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginEnd="@dimen/spacing_xs"
+            android:minHeight="@dimen/min_touch_target"
+            android:text="@string/ds_txn_excel"
+            android:textSize="@dimen/font_size_label"
+            android:contentDescription="@string/ds_txn_excel"
+            app:icon="@drawable/ic_save_24"
+            app:iconSize="@dimen/icon_small"
+            app:iconGravity="textStart"
+            app:iconTint="@color/ds_accent"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnExportPdf"
+            style="@style/Widget.Kharazmi.DS.Button.Secondary"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:minHeight="@dimen/min_touch_target"
+            android:text="@string/ds_txn_pdf"
+            android:textSize="@dimen/font_size_label"
+            android:contentDescription="@string/ds_txn_pdf"
+            app:icon="@drawable/ic_print"
+            app:iconSize="@dimen/icon_small"
+            app:iconGravity="textStart"
+            app:iconTint="@color/ds_accent"/>
+    </LinearLayout>
+
+    <!-- یادداشت ایمنی پیش از ویرایش/حذف -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="@dimen/spacing_normal"
+        android:paddingEnd="@dimen/spacing_normal"
+        android:paddingTop="@dimen/spacing_xs"
+        android:text="@string/ds_txn_safety_note"
+        android:textAppearance="@style/TextAppearance.Kharazmi.DS.Caption"
+        android:drawablePadding="@dimen/spacing_xs"/>
+
+    <!-- لیست تراکنش‌ها -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvReport"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:paddingStart="@dimen/spacing_normal"
+        android:paddingEnd="@dimen/spacing_normal"
+        android:paddingTop="@dimen/spacing_small"
+        android:paddingBottom="@dimen/spacing_small"
+        android:clipToPadding="false"
+        android:scrollbars="vertical"
+        android:layoutAnimation="@anim/layout_animation_fall_down"/>
+
+    <!-- جمع کل تراکنش‌های نمایش‌داده‌شده -->
+    <com.google.android.material.card.MaterialCardView
+        style="@style/Widget.Kharazmi.DS.Card.Surface2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/spacing_normal">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="@dimen/spacing_normal"
+            android:gravity="center_vertical">
+
+            <ImageView
+                android:layout_width="@dimen/icon_medium"
+                android:layout_height="@dimen/icon_medium"
+                android:src="@drawable/ic_ds_wallet_24"
+                android:importantForAccessibility="no"
+                app:tint="@color/ds_accent"/>
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="@dimen/spacing_snug"
+                android:layout_marginEnd="@dimen/spacing_small"
+                android:text="@string/ds_txn_sum_label"
+                android:textAppearance="@style/TextAppearance.Kharazmi.DS.Caption"/>
+
+            <TextView
+                android:id="@+id/tvTotalSum"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/ds_value_placeholder"
+                android:textAppearance="@style/TextAppearance.Kharazmi.DS.Money"
+                android:fontFeatureSettings="tnum"/>
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+</LinearLayout>

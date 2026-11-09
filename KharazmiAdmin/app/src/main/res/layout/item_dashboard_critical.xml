@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/cardCritical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginVertical="6dp"
+    android:layout_marginHorizontal="2dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="2dp"
+    app:strokeWidth="1.5dp"
+    app:strokeColor="@color/status_danger"
+    app:cardBackgroundColor="@color/gold_bg_elevated">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="12dp"
+        android:layoutDirection="rtl">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/tvCriticalStudentName"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="علی احمدی"
+                android:textAppearance="@style/TextAppearance.Kharazmi.SectionTitle"
+                android:textColor="@color/text_primary"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvCriticalAmount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="250,000 تومان"
+                android:textAppearance="@style/TextAppearance.Kharazmi.Caption"
+                android:textColor="@color/gold_primary"
+                android:background="@color/gold_bg_elevated_2"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="4dp"
+                android:fontFeatureSettings="tnum" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="6dp"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/tvCriticalCategory"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🔴 بحرانی >۷ روز"
+                android:textAppearance="@style/TextAppearance.Kharazmi.Caption"
+                android:textColor="@android:color/white"
+                android:background="@color/ds_danger_deep"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="4dp" />
+
+            <TextView
+                android:id="@+id/tvCriticalDueDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="سررسید: 1405/06/15"
+                android:textAppearance="@style/TextAppearance.Kharazmi.Caption"
+                android:textColor="@color/text_secondary"
+                android:layout_marginStart="8dp"
+                android:fontFeatureSettings="tnum" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tvCriticalParentMobile"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="📱 09121112222"
+            android:textAppearance="@style/TextAppearance.Kharazmi.Caption"
+            android:textColor="@color/text_secondary"
+            android:layout_marginTop="4dp"
+            android:fontFeatureSettings="tnum" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0.5dp"
+            android:layout_marginTop="8dp"
+            android:background="@color/gold_border_subtle" />
+
+        <TextView
+            android:id="@+id/tvCriticalSmsPreview"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="⚠️ هشدار: قسط شهریه فرزند شما..."
+            android:textAppearance="@style/TextAppearance.Kharazmi.Caption"
+            android:textColor="@color/text_secondary"
+            android:layout_marginTop="6dp"
+            android:background="@color/gold_bg_elevated_2"
+            android:padding="8dp"
+            android:lineSpacingExtra="3dp" />
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

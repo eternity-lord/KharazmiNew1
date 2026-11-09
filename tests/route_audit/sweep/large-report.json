@@ -1,0 +1,72 @@
+{
+  "fixture": {
+    "students": 300,
+    "classes": 30,
+    "extra_transactions": 300,
+    "extra_sessions": 300
+  },
+  "responses": {
+    "students": {
+      "status": 200,
+      "count": 20,
+      "first_ids": [
+        300,
+        299,
+        298
+      ]
+    },
+    "classes": {
+      "status": 200,
+      "count": 29,
+      "first_ids": [
+        30,
+        29,
+        28
+      ]
+    },
+    "classes_filtered": {
+      "status": 200,
+      "count": 1,
+      "first_ids": [
+        1
+      ]
+    },
+    "transactions": {
+      "status": 200,
+      "count": 305,
+      "first_ids": [
+        399,
+        398,
+        397
+      ]
+    },
+    "debtors": {
+      "status": 200,
+      "count": 296,
+      "first_ids": [
+        null,
+        null,
+        null
+      ]
+    },
+    "sessions": {
+      "status": 200,
+      "pending_count": 301,
+      "first_session_ids": [
+        2,
+        399,
+        398
+      ]
+    }
+  },
+  "checks": {
+    "student_limit_20": true,
+    "student_order_desc": true,
+    "class_count_excludes_deleted": true,
+    "class_order_desc": true,
+    "class_filter_exact": true,
+    "transaction_count_and_order": true,
+    "debtor_full_list": true,
+    "session_order_desc": true
+  }
+}

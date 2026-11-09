@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ====================================================================================
+     PHASE 2 — item_installment: کارت قسط (شهریه)
+     شناسه‌های حفظ‌شده (همه توسط StudentProfileActivity.kt با findViewById خوانده می‌شوند):
+       tvInstallmentCourse / tvInstallmentAmount / tvInstallmentDue / tvInstallmentStatus /
+       tvInstallmentPaidAt / layoutInstallmentActions / btnInstallmentPay / btnInstallmentRemind
+     نکته: color متن وضعیت در کد ست می‌شود (پرداخت‌شده=سبز، معوق=قرمز، در انتظار=کهربایی)،
+     پس اینجا فقط «چیپ خنثی» + متن آمده تا معنا هرگز تنها با رنگ منتقل نشود.
+     ==================================================================================== -->
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    style="@style/Widget.Kharazmi.DS.Card"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/spacing_small"
+    android:layoutDirection="rtl">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/spacing_normal">
+
+        <!-- ردیف ۱: عنوان کلاس + مبلغ قسط -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/tvInstallmentCourse"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/ds_value_placeholder"
+                android:textAppearance="@style/TextAppearance.Kharazmi.DS.Body"
+                android:textStyle="bold"/>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/spacing_snug"
+                android:orientation="vertical"
+                android:gravity="end">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/ds_inst_amount_label"
+                    android:textAppearance="@style/TextAppearance.Kharazmi.DS.Overline"/>
+
+                <TextView
+                    android:id="@+id/tvInstallmentAmount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/ds_value_placeholder"
+                    android:textAppearance="@style/TextAppearance.Kharazmi.DS.Money"
+                    android:fontFeatureSettings="tnum"/>
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- ردیف ۲: سررسید + وضعیت پرداخت -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_snug"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <!-- آیکون تقویم تزئینی -->
+            <ImageView
+                android:layout_width="@dimen/icon_small"
+                android:layout_height="@dimen/icon_small"
+                android:src="@drawable/ic_ds_event_24"
+                android:importantForAccessibility="no"
+                app:tint="@color/ds_text_secondary"/>
+
+            <TextView
+                android:id="@+id/tvInstallmentDue"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="@dimen/spacing_xs"
+                android:text="@string/ds_value_placeholder"
+                android:textAppearance="@style/TextAppearance.Kharazmi.DS.Caption"
+                android:fontFeatureSettings="tnum"/>
+
+            <TextView
+                android:id="@+id/tvInstallmentStatus"
+                style="@style/Widget.Kharazmi.DS.Pill.Neutral"
+                android:text="@string/profile_inst_pending"
+                android:textAppearance="@style/TextAppearance.Kharazmi.DS.Status"/>
+        </LinearLayout>
+
+        <!-- تاریخ پرداخت (فقط برای قسط پرداخت‌شده نمایان می‌شود) -->
+        <TextView
+            android:id="@+id/tvInstallmentPaidAt"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_xs"
+            android:text="@string/ds_value_placeholder"
+            android:textAppearance="@style/TextAppearance.Kharazmi.DS.Caption"
+            android:fontFeatureSettings="tnum"
+            android:visibility="gone"/>
+
+        <!-- اکشن‌ها: فقط برای اقساط پرداخت‌نشده نمایش داده می‌شوند (کنترل در کد) -->
+        <LinearLayout
+            android:id="@+id/layoutInstallmentActions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_small"
+            android:orientation="horizontal"
+            android:gravity="end"
+            android:visibility="gone">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnInstallmentRemind"
+                style="@style/Widget.Kharazmi.DS.Button.Secondary"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginEnd="@dimen/spacing_xs"
+                android:minHeight="@dimen/min_touch_target"
+                android:text="@string/installment_remind"
+                android:textSize="@dimen/font_size_caption"
+                app:icon="@drawable/ic_ds_event_24"
+                app:iconSize="@dimen/icon_small"
+                app:iconGravity="textStart"
+                app:iconTint="@color/ds_accent"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnInstallmentPay"
+                style="@style/Widget.Kharazmi.DS.Button.Primary"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:minHeight="@dimen/min_touch_target"
+                android:text="@string/installment_pay"
+                android:textSize="@dimen/font_size_caption"
+                app:icon="@drawable/ic_ds_payments_24"
+                app:iconSize="@dimen/icon_small"
+                app:iconGravity="textStart"/>
+        </LinearLayout>
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

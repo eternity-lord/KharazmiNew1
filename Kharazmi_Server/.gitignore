@@ -1,0 +1,11 @@
+.env
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.db
+backups/
+
+# FIX(storage): ریشهٔ فایل‌های کاربران (تکالیف/کارنامه/پیوست/پروفایل) — دادهٔ زمان اجراست، نه کد.
+# پیش‌فرض جدید: Kharazmi_Server/uploads/ (با KHARAZMI_UPLOAD_ROOT قابل تغییر است).
+uploads/
