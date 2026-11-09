@@ -60,11 +60,24 @@
     class_archive       — گزارش فقط‌خواندنیِ کلاس‌های حذف‌شده + منبعِ بازیابی (provenance)
     class_lifecycle     — اسنپ‌شات/اجرای حذف کلاس و ثبت تصمیم در ActivityLog
     class_reports       — فهرست کلاس‌ها + گزارش کامل یک کلاس (P3b)
+    class_restore       — بازیابی کلاسِ حذف‌شده با opt-inِ مالی (P3b)
     debtor_report       — منبع یگانهٔ «ردیف بدهکار» (لیست، نمای گروهی، پیامک، CSV/Excel)
     enrollment          — ثبت‌نام دانش‌آموز در کلاس و اثرهای مالی‌اش (P3b)
     live_session        — آجرهای جلسهٔ زنده (تسخیر اتمیک، upsert حضور، گاردها، استثنا)
+    payments            — کال‌بک درگاه، ثبت پرداخت، بازگشت رسید + هلپرهای خصوصی‌شان (P3b)
     session_submission  — ثبت جلسهٔ کلاسی + ویرایش جلسهٔ گذشته: سهم‌ها، شارژ، جریمه (P3b)
     student_profile     — پروفایل کامل یک دانش‌آموز برای صفحهٔ ادمین (P3b)
     transaction_admin   — حذف/ویرایش تراکنش از سمت ادمین + هلپرِ تقسیم مبلغ (P3b)
     scheduling          — پارسِ بازهٔ ساعت، تداخل روزهای هفته، یافتن کلاس‌های متعارض
+
+چیزهایی که عمداً در روترها مانده‌اند:
+    * `pay_installment_manually` (routers/finance.py) — به دلیل قیدِ monkeypatchِ بالا.
+    * اسکیمای `ClassRestoreRequest` به `schemas.py` رفت (منبعِ یگانهٔ اسکیم‌ها از P2c) و
+      `routers/admin.py` آن را بازصادرات می‌کند، چون امضای پوسته به آن اشاره دارد و
+      FastAPI از همان امضا OpenAPI را می‌سازد.
+    * `_jalali_now_str` و `PAYMENT_GATEWAY_ENABLED` در `services/payments.py` تعریف شده‌اند
+      و `routers/finance.py` آن‌ها را بازصادرات می‌کند: بقیهٔ handlerهای همان فایل (از جمله
+      `mock_payment_page`) هنوز مصرف‌کننده‌شان هستند. توجه: `routers/dunning.py` نسخهٔ
+      **مستقلِ** خودش از `_jalali_now_str` را دارد (و `routers/audit.py` هم `_now_str` را)؛
+      این تکرار عمداً دست‌نخورده ماند و یک نامزدِ جداگانه برای de-duplication است.
 """

@@ -144,9 +144,9 @@ def get_all_classes(
     _: str = Depends(check_admin_or_secretary_access)  # FIX (L14/Y3): کاتالوگ+بدهی کلاس‌ها — فقط کارکنان (تک‌مصرف: ClassManagement)
 ):
     # REFAC(P3b): بدنهٔ دامنه به `services/class_reports.py` رفت؛ این پوسته فقط لایهٔ HTTP است
-    #     # (همان امضا، همان تزریق‌ها، همان پاسخ JSON). نام تابع عمداً این‌جا می‌ماند:
-    #     # تست‌ها و اسکریپت‌ها این handler را مستقیم — گاهی با آرگومان پوزیشنال —
-    #     # صدا می‌زنند، پس `routers.classes.get_all_classes` باید همان قرارداد قبلی را داشته باشد.
+    # (همان امضا، همان تزریق‌ها، همان پاسخ JSON). نام تابع عمداً این‌جا می‌ماند:
+    # تست‌ها و اسکریپت‌ها این handler را مستقیم — گاهی با آرگومان پوزیشنال —
+    # صدا می‌زنند، پس `routers.classes.get_all_classes` باید همان قرارداد قبلی را داشته باشد.
     return class_reports.get_all_classes(teacher_name, student_name, course_name, grade_level, start_year, db, _)
 
 
@@ -248,9 +248,9 @@ def add_enrollment(
     authorization: str | None = Header(None),
 ):
     # REFAC(P3b): بدنهٔ دامنه به `services/enrollment.py` رفت؛ این پوسته فقط لایهٔ HTTP است
-    #     # (همان امضا، همان تزریق‌ها، همان پاسخ JSON). نام تابع عمداً این‌جا می‌ماند:
-    #     # تست‌ها و اسکریپت‌ها این handler را مستقیم — گاهی با آرگومان پوزیشنال —
-    #     # صدا می‌زنند، پس `routers.classes.add_enrollment` باید همان قرارداد قبلی را داشته باشد.
+    # (همان امضا، همان تزریق‌ها، همان پاسخ JSON). نام تابع عمداً این‌جا می‌ماند:
+    # تست‌ها و اسکریپت‌ها این handler را مستقیم — گاهی با آرگومان پوزیشنال —
+    # صدا می‌زنند، پس `routers.classes.add_enrollment` باید همان قرارداد قبلی را داشته باشد.
     return enrollment.add_enrollment(data, db, sub_role, authorization)
 
 
@@ -320,9 +320,9 @@ def delete_enrollment(enrollment_id: int, db: Session = Depends(get_db), _: str 
 @router.get("/classes/{id}/full_report")
 def get_class_full_report(id: int, db: Session = Depends(get_db), authorization: str | None = Header(None), sub_role: str = Depends(check_user_login)):
     # REFAC(P3b): بدنهٔ دامنه به `services/class_reports.py` رفت؛ این پوسته فقط لایهٔ HTTP است
-    #     # (همان امضا، همان تزریق‌ها، همان پاسخ JSON). نام تابع عمداً این‌جا می‌ماند:
-    #     # تست‌ها و اسکریپت‌ها این handler را مستقیم — گاهی با آرگومان پوزیشنال —
-    #     # صدا می‌زنند، پس `routers.classes.get_class_full_report` باید همان قرارداد قبلی را داشته باشد.
+    # (همان امضا، همان تزریق‌ها، همان پاسخ JSON). نام تابع عمداً این‌جا می‌ماند:
+    # تست‌ها و اسکریپت‌ها این handler را مستقیم — گاهی با آرگومان پوزیشنال —
+    # صدا می‌زنند، پس `routers.classes.get_class_full_report` باید همان قرارداد قبلی را داشته باشد.
     return class_reports.get_class_full_report(id, db, authorization, sub_role)
 
 
