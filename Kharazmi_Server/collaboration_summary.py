@@ -19,7 +19,7 @@ from today_summary import parse_project_date, parse_schedule_start
 _TIME_RE = re.compile(r"([01]?\d|2[0-3])\s*[:٫.]\s*([0-5]\d)")
 
 
-def _parse_hhmm_from_string(value: Optional[str]) -> Optional[Tuple[int, int]]:
+def _parse_hhmm_from_string(value: str | None) -> tuple[int, int] | None:
     if not value:
         return None
     # Normalize Persian/Arabic digits
@@ -38,7 +38,7 @@ def _parse_hhmm_from_string(value: Optional[str]) -> Optional[Tuple[int, int]]:
     return None
 
 
-def _live_datetime(live: LiveSession) -> Optional[datetime.datetime]:
+def _live_datetime(live: LiveSession) -> datetime.datetime | None:
     # Prefer start_time string because it contains the real HH:MM that spec asks for
     if getattr(live, "start_time", None):
         # Try strict Gregorian parse first (most common: "2026-08-10 16:05")
@@ -73,8 +73,8 @@ def build_teacher_collaboration_summary(
     db: Session,
     teacher_id: int,
     period_days: int = 30,
-    now: Optional[datetime.datetime] = None,
-) -> Dict:
+    now: datetime.datetime | None = None,
+) -> dict:
     now = now or datetime.datetime.now()
     threshold_date = now - datetime.timedelta(days=period_days)
     threshold_ts = int(threshold_date.timestamp())
@@ -84,14 +84,14 @@ def build_teacher_collaboration_summary(
         return {}
 
     courses = db.query(Course).filter(Course.teacher_id == teacher_id).all()
-    course_map: Dict[int, Course] = {c.id: c for c in courses}
+    course_map: dict[int, Course] = {c.id: c for c in courses}
 
     # All live sessions for this teacher
-    lives: List[LiveSession] = (
+    lives: list[LiveSession] = (
         db.query(LiveSession).filter(LiveSession.teacher_id == teacher_id).all()
     )
 
-    delays: List[int] = []
+    delays: list[int] = []
     auto_ended_total = 0
     auto_ended_last_30 = 0
     live_last_30_count = 0

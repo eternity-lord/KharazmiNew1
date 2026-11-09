@@ -137,7 +137,7 @@ class TestDashboardPerformance(unittest.TestCase):
         # Total amount: 10000 * 10000 + sum(i%1000) ~ 100M + 4,995,000 = 104,995,000?
         # Each amount is 10000 + (i % 1000), sum = 10000*10000 + sum(0..999)*10 = 100M + 499500*10? Wait sum 0..999 = 499500, *10 = 4,995,000 => 104,995,000
         expected_total = sum(10000 + (i % 1000) for i in range(10000))
-        self.assertEqual(data["total_overdue_amount"], expected_total, f"overdue amount mismatch")
+        self.assertEqual(data["total_overdue_amount"], expected_total, "overdue amount mismatch")
 
         print(f"[Perf] 10k installments dashboard elapsed: {elapsed_ms:.2f}ms, queries: {self.query_count}")
         # Relaxed to 500ms for CI variance, but aim for <100ms

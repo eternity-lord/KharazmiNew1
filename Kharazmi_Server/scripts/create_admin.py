@@ -25,9 +25,9 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-import models  # noqa: E402
-from dependencies import hash_password, normalize_mobile  # noqa: E402
-from models import SessionLocal, User  # noqa: E402
+import models
+from dependencies import hash_password, normalize_mobile
+from models import SessionLocal, User
 
 MIN_PASSWORD_LEN = 8
 

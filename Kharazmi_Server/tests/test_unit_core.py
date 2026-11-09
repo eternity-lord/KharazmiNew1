@@ -13,7 +13,7 @@ class TestKharazmiCoreLogic(unittest.TestCase):
         models.Base.metadata.create_all(bind=self.engine)
         self.Session = sessionmaker(bind=self.engine)
         self.db = self.Session()
-        
+
     def tearDown(self):
         self.db.close()
         models.Base.metadata.drop_all(bind=self.engine)
@@ -22,16 +22,16 @@ class TestKharazmiCoreLogic(unittest.TestCase):
         """1. Test password hashing and rejection of legacy plaintext passwords"""
         raw_pass = "secret123"
         hashed = hash_password(raw_pass)
-        
+
         # Verify it is hashed securely and starts with the pbkdf2 prefix
         self.assertTrue(hashed.startswith("$pbkdf2-sha256$"))
-        
+
         # Verify verification succeeds with the correct password
         self.assertTrue(verify_password(raw_pass, hashed))
-        
+
         # Verify verification fails with an incorrect password
         self.assertFalse(verify_password("wrong_pass", hashed))
-        
+
         # Legacy plaintext passwords must be rejected, even when they match
         self.assertFalse(verify_password("legacy123", "legacy123"))
         self.assertFalse(verify_password("legacy123", "wrong_legacy"))
@@ -97,11 +97,11 @@ class TestKharazmiCoreLogic(unittest.TestCase):
             {"student_id": student2.id, "status": "Present", "excused": False},
             {"student_id": student3.id, "status": "Absent", "excused": True} # Absent and Excused: Not billed
         ]
-        
+
         # We simulate the calculation inside submit_session_and_calculate directly or by verifying output.
         present_count = len([x for x in items if x["status"] == "Present" or (x["status"] == "Absent" and not x["excused"])])
         self.assertEqual(present_count, 2)
-        
+
         # Verify pricing snapshot loads correctly
         pricing_inst = self.db.query(PricingTable).filter(PricingTable.category == "institute").first()
         self.assertIsNotNone(pricing_inst)

@@ -25,7 +25,7 @@ def get_all_routes(router):
 
 def test_enforce_endpoint_security():
     print("🛡️ Running automated FastAPI router security audit...")
-    
+
     # Public routes that are intentionally accessible without session validation
     PUBLIC_WHITELIST = {
         "/auth/login",
@@ -42,20 +42,20 @@ def test_enforce_endpoint_security():
         "/finance/payment/callback",
         "/finance/mock_payment_page"
     }
-    
+
     unprotected = []
     all_routes = get_all_routes(app)
-    
+
     for route in all_routes:
         # Skip static file mounts and internal docs/openapi routes
         if hasattr(route, "path"):
             path = route.path
             if path.startswith("/docs") or path.startswith("/openapi") or path.startswith("/redoc") or path.startswith("/uploads"):
                 continue
-                
+
             if path in PUBLIC_WHITELIST:
                 continue
-                
+
             # Check the route's dependencies
             dependencies = getattr(route, "dependencies", [])
             has_explicit_dependency = False
@@ -63,7 +63,7 @@ def test_enforce_endpoint_security():
                 if dep.dependency in [check_user_login, check_admin_access, check_admin_or_secretary_access,
                                                  check_admin_secretary_or_teacher_access] or (hasattr(dep.dependency, "__name__") and dep.dependency.__name__ == "dependency"):
                     has_explicit_dependency = True
-                    
+
             # Check parameters/signature for inline Depends
             if not has_explicit_dependency and hasattr(route, "endpoint"):
                 import inspect
@@ -75,10 +75,10 @@ def test_enforce_endpoint_security():
                                                  check_admin_secretary_or_teacher_access] or (hasattr(dep_func, "__name__") and dep_func.__name__ == "dependency"):
                             has_explicit_dependency = True
                             break
-            
+
             if not has_explicit_dependency:
                 unprotected.append(f"{route.methods} {path}")
-                
+
     print(f"DEBUG: unprotected list size is {len(unprotected)}: {unprotected}")
     if unprotected:
         print("\n❌ SECURITY AUDIT FAILED! The following endpoints are completely unprotected:")

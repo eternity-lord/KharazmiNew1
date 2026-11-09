@@ -46,14 +46,13 @@ def parse_time_to_minutes(time_str):
         else:
             start_str = time_str
             end_str = None
-            
+
         def to_min(t_s):
             if ":" in t_s:
                 h, m = t_s.split(":")
                 return int(h) * 60 + int(m)
-            else:
-                return int(t_s) * 60
-                
+            return int(t_s) * 60
+
         start_m = to_min(start_str)
         if end_str:
             end_m = to_min(end_str)
@@ -68,21 +67,21 @@ def days_overlap(day1, day2):
     day2 = day2.strip()
     if day1 == day2:
         return True
-        
+
     even_days = {"شنبه", "دوشنبه", "چهارشنبه", "زوج"}
     odd_days = {"یکشنبه", "سه‌شنبه", "پنج‌شنبه", "فرد"}
-    
+
     if day1 in even_days and day2 in even_days:
         if day1 == "زوج" or day2 == "زوج" or day1 == day2:
             return True
     if day1 in odd_days and day2 in odd_days:
         if day1 == "فرد" or day2 == "فرد" or day1 == day2:
             return True
-            
+
     return False
 
 @router.post("/classes/create")
-def create_class(course: CourseCreate, override: bool = False, db: Session = Depends(get_db), authorization: Optional[str] = Header(None), sub_role: str = Depends(check_user_login)):
+def create_class(course: CourseCreate, override: bool = False, db: Session = Depends(get_db), authorization: str | None = Header(None), sub_role: str = Depends(check_user_login)):
     # FIX (audit-v2/blind-approve-2a): ساخت کلاس فقط ادمین/منشی/معلم — شاگرد/ولی 403.
     # معلم فقط برای خودش (teacher_id اجباری، ورودی کلاینت نادیده) و با سقف نرخ؛ ادمین/منشی
     # معاف از سقف‌اند چون آگاهانه ثبت می‌کنند (approve بالای سقف جداگانه هشدار می‌دهد).
@@ -142,7 +141,7 @@ def create_class(course: CourseCreate, override: bool = False, db: Session = Dep
     db.commit()
     return {
         "status": "success",
-        "message": "کلاس تعریف شد", 
+        "message": "کلاس تعریف شد",
         "id": new_course.id,
         "code": next_code
     }
@@ -150,17 +149,17 @@ def create_class(course: CourseCreate, override: bool = False, db: Session = Dep
 
 @router.get("/classes/list")
 def get_all_classes(
-    teacher_name: Optional[str] = None,
-    student_name: Optional[str] = None,
-    course_name: Optional[str] = None,
-    grade_level: Optional[str] = None,
-    start_year: Optional[str] = None,
-    db: Session = Depends(get_db), 
+    teacher_name: str | None = None,
+    student_name: str | None = None,
+    course_name: str | None = None,
+    grade_level: str | None = None,
+    start_year: str | None = None,
+    db: Session = Depends(get_db),
     _: str = Depends(check_admin_or_secretary_access)  # FIX (L14/Y3): کاتالوگ+بدهی کلاس‌ها — فقط کارکنان (تک‌مصرف: ClassManagement)
 ):
     # پایش فیلترهای چندگانه جستجو (Multi-part advanced search)
     q = db.query(Course).filter(Course.is_deleted == False)
-    
+
     if teacher_name:
         search_t = f"%{teacher_name}%"
         q = q.join(Teacher).filter(
@@ -169,7 +168,7 @@ def get_all_classes(
                 Teacher.last_name.ilike(search_t)
             )
         )
-        
+
     if student_name:
         search_s = f"%{student_name}%"
         # FIX: Bug 13 - class search must not treat archived enrollments as current membership.
@@ -180,13 +179,13 @@ def get_all_classes(
                 Student.last_name.ilike(search_s)
             )
         )
-        
+
     if course_name:
         q = q.filter(Course.title.ilike(f"%{course_name}%"))
-        
+
     if grade_level:
         q = q.filter(Course.grade_level.ilike(f"%{grade_level}%"))
-        
+
     if start_year:
         # FIX: Bug 13 - year-based searches use active enrollments too.
         q = q.join(Enrollment).filter(Enrollment.is_deleted == False, Enrollment.register_date.like(f"{start_year}%"))
@@ -307,7 +306,7 @@ def get_all_classes(
 
 
 @router.get("/classes/{course_id}/details")
-def get_class_details(course_id: int, db: Session = Depends(get_db), authorization: Optional[str] = Header(None), sub_role: str = Depends(check_user_login)):
+def get_class_details(course_id: int, db: Session = Depends(get_db), authorization: str | None = Header(None), sub_role: str = Depends(check_user_login)):
     # FIX (E2E-B5): کلاس آرشیوی مثل ناموجود است — 404 به‌جای برگرداندن دیتای آرشیوشده (الگوی add_enrollment).
     course = db.query(Course).filter(Course.id == course_id, Course.is_deleted == False).first()
     if not course:
@@ -401,7 +400,7 @@ def add_enrollment(
     data: EnrollmentCreate,
     db: Session = Depends(get_db),
     sub_role: str = Depends(check_admin_secretary_or_teacher_access),
-    authorization: Optional[str] = Header(None),
+    authorization: str | None = Header(None),
 ):
     # FIX O-22: معلم هم می‌تواند برای **کلاس خودش** دانش‌آموز اضافه کند (قبلاً ۴۰۳ می‌گرفت و کلاس
     # تازه‌ساخته‌اش خالی می‌ماند). دامنهٔ معلم دو خط پایین‌تر روی همان کلاس قفل می‌شود؛ منطق
@@ -535,7 +534,7 @@ def add_enrollments_bulk(
     data: BulkEnrollmentCreate,
     db: Session = Depends(get_db),
     sub_role: str = Depends(check_admin_secretary_or_teacher_access),
-    authorization: Optional[str] = Header(None),
+    authorization: str | None = Header(None),
 ):
     """افزودن چندتایی با reuse کامل مسیر تکی و گزارش موفق/ردشده برای هر شناسه."""
     added_student_ids = []
@@ -594,7 +593,7 @@ def delete_enrollment(enrollment_id: int, db: Session = Depends(get_db), _: str 
 
 
 @router.get("/classes/{id}/full_report")
-def get_class_full_report(id: int, db: Session = Depends(get_db), authorization: Optional[str] = Header(None), sub_role: str = Depends(check_user_login)):
+def get_class_full_report(id: int, db: Session = Depends(get_db), authorization: str | None = Header(None), sub_role: str = Depends(check_user_login)):
     # 1. اطلاعات پایه کلاس و معلم
     # FIX (E2E-B5): دوقلوی هم‌الگو — کلاس آرشیوی 404.
     course = db.query(Course).filter(Course.id == id, Course.is_deleted == False).first()
@@ -778,24 +777,24 @@ def get_class_students_excel(class_id: int, db: Session = Depends(get_db), _: st
     course = db.query(Course).filter(Course.id == class_id).first()
     if not course:
         raise HTTPException(status_code=404, detail="کلاس یافت نشد")
-        
+
     # FIX: Bug 13 - exclude archived Enrollment rows from this active view.
     enrollments = db.query(Enrollment).filter(Enrollment.is_deleted == False).filter(Enrollment.course_id == class_id).all()
-    
+
     wb = Workbook()
     ws = wb.active
     ws.title = "لیست دانش‌آموزان کلاس"
     ws.views.sheetView[0].rightToLeft = True
-    
+
     ws.append([f"کلاس: {course.title}", "", f"کد کلاس: {course.code}"])
     ws.append([])
-    
+
     headers = ["شناسه", "نام و نام خانوادگی", "شهریه پایه (تومان)", "نوع تخفیف", "تخفیف انتخابی", "مبلغ تخفیف (تومان)", "شهریه نهایی (تومان)", "کل پرداختی (تومان)", "بدهی به معلم", "بدهی به آموزشگاه", "بدهی کل", "جلسات حاضر", "جلسات غایب", "درصد حضور"]
     ws.append(headers)
-    
+
     ws.cell(row=1, column=1).font = Font(name="Tahoma", size=12, bold=True, color="004D40")
     ws.cell(row=1, column=3).font = Font(name="Tahoma", size=12, bold=True, color="004D40")
-    
+
     header_fill = PatternFill(start_color="00695C", end_color="00695C", fill_type="solid")
     header_font = Font(name="Tahoma", size=11, bold=True, color="FFFFFF")
     for col_num in range(1, len(headers) + 1):
@@ -803,7 +802,7 @@ def get_class_students_excel(class_id: int, db: Session = Depends(get_db), _: st
         cell.fill = header_fill
         cell.font = header_font
         cell.alignment = Alignment(horizontal="center", vertical="center")
-        
+
     row_num = 4
     for enroll in enrollments:
         st = db.query(Student).filter(Student.id == enroll.student_id, Student.is_deleted == False).first()
@@ -825,14 +824,14 @@ def get_class_students_excel(class_id: int, db: Session = Depends(get_db), _: st
                         present_count += 1
                     elif att.status == "Absent":
                         absent_count += 1
-                        
+
             total_s = present_count + absent_count
             att_rate = (present_count / total_s * 100) if total_s > 0 else 100.0
-            
+
             d_type = getattr(enroll, "discount_type", "none") or "none"
             d_type_farsi = "درصدی" if d_type == "percentage" else "مبلغ ثابت" if d_type == "fixed" else "بدون تخفیف"
             d_val_disp = f"{enroll.discount_value}%" if d_type == "percentage" else enroll.discount_value
-            
+
             row_data = [
                 st.id,
                 display_name(st, "نامشخص"),
@@ -850,7 +849,7 @@ def get_class_students_excel(class_id: int, db: Session = Depends(get_db), _: st
                 f"{att_rate:.1f}%"
             ]
             ws.append(row_data)
-            
+
             ws.cell(row=row_num, column=3).number_format = '#,##0'
             ws.cell(row=row_num, column=6).number_format = '#,##0'
             ws.cell(row=row_num, column=7).number_format = '#,##0'
@@ -858,23 +857,23 @@ def get_class_students_excel(class_id: int, db: Session = Depends(get_db), _: st
             ws.cell(row=row_num, column=9).number_format = '#,##0'
             ws.cell(row=row_num, column=10).number_format = '#,##0'
             ws.cell(row=row_num, column=11).number_format = '#,##0'
-            
+
             for col_num in range(1, len(headers) + 1):
                 cell = ws.cell(row=row_num, column=col_num)
                 cell.alignment = Alignment(horizontal="center", vertical="center")
                 cell.font = Font(name="Tahoma", size=10)
-                
+
             row_num += 1
-            
+
     for col in ws.columns:
         max_len = max(len(str(cell.value or '')) for cell in col)
         col_letter = col[0].column_letter
         ws.column_dimensions[col_letter].width = max(max_len + 3, 12)
-        
+
     stream = io.BytesIO()
     wb.save(stream)
     stream.seek(0)
-    
+
     return StreamingResponse(
         stream,
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -883,7 +882,7 @@ def get_class_students_excel(class_id: int, db: Session = Depends(get_db), _: st
 
 
 @router.get("/classes/{id}/students_full")
-def get_class_students_full(id: int, db: Session = Depends(get_db), authorization: Optional[str] = Header(None), sub_role: str = Depends(check_user_login)):
+def get_class_students_full(id: int, db: Session = Depends(get_db), authorization: str | None = Header(None), sub_role: str = Depends(check_user_login)):
     # FIX (E2E-B5): دوقلوی هم‌الگو — کلاس آرشیوی 404.
     course = db.query(Course).filter(Course.id == id, Course.is_deleted == False).first()
     if not course:
@@ -1004,13 +1003,13 @@ class AdvancedSearchItem(BaseModel):
     title: str
     subtitle: str
     info: str
-    student_id: Optional[int] = None
-    course_id: Optional[int] = None
-    debt_teacher: Optional[int] = 0
-    debt_institute: Optional[int] = 0
-    total_debt: Optional[int] = 0
-    unpaid_sessions: Optional[int] = 0
-    students_in_class: Optional[List[dict]] = None
+    student_id: int | None = None
+    course_id: int | None = None
+    debt_teacher: int | None = 0
+    debt_institute: int | None = 0
+    total_debt: int | None = 0
+    unpaid_sessions: int | None = 0
+    students_in_class: list[dict] | None = None
 
 
 class FinanceSubmitData(BaseModel):
@@ -1020,8 +1019,8 @@ class FinanceSubmitData(BaseModel):
     description: str
     payment_method: str
     date: str
-    amount_institute: Optional[int] = None
-    amount_teacher: Optional[int] = None
+    amount_institute: int | None = None
+    amount_teacher: int | None = None
 
 
 @router.delete("/classes/{course_id}")
@@ -1029,7 +1028,7 @@ def delete_class_endpoint(
     course_id: int,
     forgive_session_charges: bool = True,
     db: Session = Depends(get_db),
-    authorization: Optional[str] = Header(None),
+    authorization: str | None = Header(None),
     _: str = Depends(check_admin_access)
 ):
     # حذف مستقیم و فوری فقط برای ادمین (معلم/منشی از مسیر درخواست + تایید استفاده می‌کنند)
@@ -1066,7 +1065,7 @@ class DeletionRequestCreate(BaseModel):
 
 
 class DeletionDecisionRequest(BaseModel):
-    admin_note: Optional[str] = None
+    admin_note: str | None = None
 
 
 def _build_class_deletion_snapshot(db: Session, course) -> dict:
@@ -1193,7 +1192,7 @@ def _apply_class_deletion(db: Session, course, forgive_session_charges: bool):
 def request_class_deletion(
     course_id: int,
     data: DeletionRequestCreate,
-    authorization: Optional[str] = Header(None),
+    authorization: str | None = Header(None),
     db: Session = Depends(get_db),
     sub_role: str = Depends(check_user_login)
 ):
@@ -1234,7 +1233,7 @@ def request_class_deletion(
 
 @router.get("/classes/deletion_requests")
 def list_class_deletion_requests(
-    status: Optional[str] = None,
+    status: str | None = None,
     db: Session = Depends(get_db),
     _: str = Depends(check_admin_access)
 ):
@@ -1274,7 +1273,7 @@ def list_class_deletion_requests(
 
 
 @router.post("/classes/deletion_requests/{request_id}/approve")
-def approve_class_deletion(request_id: int, db: Session = Depends(get_db), _: str = Depends(check_admin_access), authorization: Optional[str] = Header(None)):
+def approve_class_deletion(request_id: int, db: Session = Depends(get_db), _: str = Depends(check_admin_access), authorization: str | None = Header(None)):
     # FIX H9: شناسه‌ی تصمیم‌گیرنده باید کاربر واقعی همین درخواست باشد (الگوی H8-P2).
     # چون check_admin_access بالا توکن خراب را از قبل رد کرده، None عملاً نباید بماند (فقط safety net).
     from dependencies import resolve_actor_user_id  # FIX(A2): helper مشترک (یکدستی سه مسیر حذف)
@@ -1309,7 +1308,7 @@ def approve_class_deletion(request_id: int, db: Session = Depends(get_db), _: st
 
 
 @router.post("/classes/deletion_requests/{request_id}/reject")
-def reject_class_deletion(request_id: int, data: DeletionDecisionRequest, db: Session = Depends(get_db), _: str = Depends(check_admin_access), authorization: Optional[str] = Header(None)):
+def reject_class_deletion(request_id: int, data: DeletionDecisionRequest, db: Session = Depends(get_db), _: str = Depends(check_admin_access), authorization: str | None = Header(None)):
     # FIX H9: شناسه‌ی تصمیم‌گیرنده باید کاربر واقعی همین درخواست باشد (الگوی H8-P2).
     # چون check_admin_access بالا توکن خراب را از قبل رد کرده، None عملاً نباید بماند (فقط safety net).
     from dependencies import resolve_actor_user_id  # FIX(A2): helper مشترک (یکدستی سه مسیر حذف)
@@ -1328,8 +1327,8 @@ def reject_class_deletion(request_id: int, data: DeletionDecisionRequest, db: Se
 
 
 class ClassUpdateInfoModel(BaseModel):
-    title: Optional[str] = None
-    grade_level: Optional[str] = None
+    title: str | None = None
+    grade_level: str | None = None
 
 # FIX (grade-289/srv): لیست معتبر مقاطع = همان لیست L13 در financial_calculations.py
 # (ابتدایی/راهنمایی/دبیرستان + معادل‌ها) به‌علاوه‌ی مقادیر مشروعِ غیرتعرفه‌ای که مسیر ساخت
@@ -1345,10 +1344,10 @@ _VALID_GRADE_LEVELS = frozenset({
 
 @router.put("/classes/update_info/{course_id}")
 def update_class_info(
-    course_id: int, 
-    data: ClassUpdateInfoModel, 
-    db: Session = Depends(get_db), 
-    authorization: Optional[str] = Header(None),
+    course_id: int,
+    data: ClassUpdateInfoModel,
+    db: Session = Depends(get_db),
+    authorization: str | None = Header(None),
     sub_role: str = Depends(check_user_login)
 ):
     course = db.query(Course).filter(Course.id == course_id, Course.is_deleted == False).first()
@@ -1364,7 +1363,7 @@ def update_class_info(
         logged = get_logged_in_teacher(db, authorization)
         if not logged or logged.id != course.teacher_id:
             raise HTTPException(status_code=403, detail="شما مجاز به ویرایش اطلاعات این کلاس نیستید")
-        
+
     if data.title is not None and data.title.strip():
         course.title = data.title.strip()
     if data.grade_level is not None and data.grade_level.strip():
@@ -1374,7 +1373,7 @@ def update_class_info(
         if _g not in _VALID_GRADE_LEVELS:
             raise HTTPException(status_code=400, detail=f"مقطع تحصیلی «{data.grade_level.strip()}» نامعتبر است")
         course.grade_level = data.grade_level.strip()
-        
+
     db.commit()
     return {"message": "اطلاعات کلاس با موفقیت ویرایش شد."}
 
@@ -1386,22 +1385,22 @@ def update_class_info(
 
 # ===================== گروه ۶: صف تأیید و ویرایش امن کلاس =====================
 class BulkClassDecisionRequest(BaseModel):
-    course_ids: List[int]
-    reason: Optional[str] = None
+    course_ids: list[int]
+    reason: str | None = None
 
 
 class ClassAdminUpdateModel(BaseModel):
-    title: Optional[str] = None
-    grade_level: Optional[str] = None
-    days_of_week: Optional[str] = None
-    class_time: Optional[str] = None
-    capacity: Optional[int] = None
-    teacher_id: Optional[int] = None
-    is_paused: Optional[bool] = None
+    title: str | None = None
+    grade_level: str | None = None
+    days_of_week: str | None = None
+    class_time: str | None = None
+    capacity: int | None = None
+    teacher_id: int | None = None
+    is_paused: bool | None = None
 
 
 def check_scheduling_conflicts(db: Session, teacher_id: int, days_of_week: str,
-                               class_time: str, exclude_course_id: Optional[int] = None):
+                               class_time: str, exclude_course_id: int | None = None):
     """Return active classes which overlap the proposed weekly slot."""
     proposed = parse_time_to_minutes(class_time)
     if not proposed:
@@ -1437,7 +1436,7 @@ def pending_classes_for_admin(
     } for c in rows]
 
 
-def _record_class_decision(db: Session, course: Course, action: str, reason: Optional[str]):
+def _record_class_decision(db: Session, course: Course, action: str, reason: str | None):
     course.is_admin_approved = action == "approve"
     course.rejection_reason = None if action == "approve" else (reason or "بدون توضیح")
     course.pending_since = None

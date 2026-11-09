@@ -20,8 +20,8 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from models import SessionLocal, Student  # noqa: E402
-from dependencies import ensure_student_shadow_users  # noqa: E402
+from models import SessionLocal, Student
+from dependencies import ensure_student_shadow_users
 
 
 def main() -> int:
@@ -50,7 +50,7 @@ def main() -> int:
         for s in students:
             ensure_student_shadow_users(db, s)
         db.commit()
-        print(f"انجام شد: سایه‌های گمشده ساخته و لینک شدند.")
+        print("انجام شد: سایه‌های گمشده ساخته و لینک شدند.")
         return 0
     finally:
         db.close()

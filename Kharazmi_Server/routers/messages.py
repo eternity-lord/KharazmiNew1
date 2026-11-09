@@ -36,23 +36,23 @@ def validate_file(file: UploadFile) -> str:
 
 # Pydantic Schemas
 class ConversationCreateRequest(BaseModel):
-    title: Optional[str] = None
+    title: str | None = None
     type: str  # "private" or "group"
-    participant_ids: List[int]  # List of user_ids (Wait, they are other teachers/students/admins)
-    participant_roles: List[str] # Match with participant_ids
+    participant_ids: list[int]  # List of user_ids (Wait, they are other teachers/students/admins)
+    participant_roles: list[str] # Match with participant_ids
 
 class MessageSendRequest(BaseModel):
     body: str
 
 class BroadcastMessageRequest(BaseModel):
     target_type: str  # "class", "everyone"
-    target_id: Optional[int] = None  # e.g., class_id if target_type == "class"
+    target_id: int | None = None  # e.g., class_id if target_type == "class"
     body: str
 
 # --- 1. View My Conversations List ---
 @router.get("/messages/conversations")
 def get_my_conversations(
-    authorization: Optional[str] = Header(None),
+    authorization: str | None = Header(None),
     db: Session = Depends(get_db),
     role: str = Depends(require_permission("messages.read"))
 ):
@@ -65,20 +65,20 @@ def get_my_conversations(
     # Find all conversations where current user is participant
     parts = db.query(ConversationParticipant).filter(ConversationParticipant.user_id.in_(keys), ConversationParticipant.role == role).all()
     conv_ids = [p.conversation_id for p in parts]
-    
+
     convs = db.query(Conversation).filter(Conversation.id.in_(conv_ids)).all()
-    
+
     result = []
     for c in convs:
         # Get last message
         last_msg = db.query(Message).filter(Message.conversation_id == c.id, Message.is_deleted == False).order_by(desc(Message.id)).first()
         snippet = last_msg.body if last_msg else "هنوز پیامی ارسال نشده است"
         last_time = last_msg.created_at.strftime("%Y/%m/%d %H:%M") if last_msg else c.created_at.strftime("%Y/%m/%d %H:%M")
-        
+
         # Pinned check
         pinned_list = (c.pinned_by or "").split(",")
         is_pinned = f"{user_id}_{role}" in pinned_list
-        
+
         result.append({
             "id": c.id,
             "title": c.title or "گفتگوی خصوصی",
@@ -93,7 +93,7 @@ def get_my_conversations(
 @router.post("/messages/conversations/create")
 def create_conversation(
     req: ConversationCreateRequest,
-    authorization: Optional[str] = Header(None),
+    authorization: str | None = Header(None),
     db: Session = Depends(get_db),
     role: str = Depends(require_permission("messages.send"))
 ):
@@ -126,7 +126,7 @@ def create_conversation(
         role=role
     )
     db.add(self_part)
-    
+
     # 3. Add other participants (IDOR validation: ensure other student/teacher IDs exist)
     for idx, pid in enumerate(req.participant_ids):
         prole = req.participant_roles[idx]
@@ -136,17 +136,17 @@ def create_conversation(
             exists = db.query(Teacher).filter(Teacher.id == pid, Teacher.is_deleted == False).first()
         else:
             exists = db.query(User).filter(User.id == pid).first()
-            
+
         if not exists:
             raise HTTPException(status_code=400, detail=f"کاربر مخاطب با شناسه {pid} و نقش {prole} یافت نشد")
-            
+
         other_part = ConversationParticipant(
             conversation_id=new_conv.id,
             user_id=pid,
             role=prole
         )
         db.add(other_part)
-        
+
     db.commit()
     return {"message": "گفتگو با موفقیت آغاز شد", "conversation_id": new_conv.id}
 
@@ -154,7 +154,7 @@ def create_conversation(
 @router.get("/messages/conversations/{id}/history")
 def get_conversation_history(
     id: int,
-    authorization: Optional[str] = Header(None),
+    authorization: str | None = Header(None),
     db: Session = Depends(get_db),
     role: str = Depends(require_permission("messages.read"))
 ):
@@ -169,7 +169,7 @@ def get_conversation_history(
     is_part = db.query(ConversationParticipant).filter(ConversationParticipant.conversation_id == id, ConversationParticipant.user_id.in_(keys), ConversationParticipant.role == role).first()
     if not is_part:
         raise HTTPException(status_code=403, detail="شما مجاز به مشاهده پیام‌های این گفتگو نیستید (IDOR)")
-        
+
     msgs = db.query(Message).filter(Message.conversation_id == id, Message.is_deleted == False).order_by(Message.id.asc()).all()
     return [
         {
@@ -188,7 +188,7 @@ def get_conversation_history(
 def send_message(
     id: int,
     req: MessageSendRequest,
-    authorization: Optional[str] = Header(None),
+    authorization: str | None = Header(None),
     db: Session = Depends(get_db),
     role: str = Depends(require_permission("messages.send"))
 ):
@@ -214,7 +214,7 @@ def send_message(
     )
     db.add(new_msg)
     db.commit()
-    
+
     # Notification integration: notify other participants
     other_parts = db.query(ConversationParticipant).filter(
         ConversationParticipant.conversation_id == id,
@@ -232,17 +232,17 @@ def send_message(
             recipient_user_id=rid,
             recipient_role=p.role,
             type="message",
-            title=f"📩 پیام جدید",
+            title="📩 پیام جدید",
             body=f"پیام جدیدی برای شما ارسال شد: {req.body[:30]}..."
         )
-        
+
     return {"message": "پیام با موفقیت ارسال شد"}
 
 # --- 5. Soft Delete Message ---
 @router.delete("/messages/{id}")
 def delete_own_message(
     id: int,
-    authorization: Optional[str] = Header(None),
+    authorization: str | None = Header(None),
     db: Session = Depends(get_db),
     role: str = Depends(require_permission("messages.send"))
 ):
@@ -254,7 +254,7 @@ def delete_own_message(
     msg = db.query(Message).filter(Message.id == id, Message.sender_id.in_(keys), Message.sender_role == role).first()
     if not msg:
         raise HTTPException(status_code=404, detail="پیام یافت نشد یا شما فرستنده آن نیستید")
-        
+
     msg.is_deleted = True
     db.commit()
     return {"message": "پیام با موفقیت حذف شد"}
@@ -263,7 +263,7 @@ def delete_own_message(
 @router.post("/messages/broadcast")
 def send_broadcast_message(
     req: BroadcastMessageRequest,
-    authorization: Optional[str] = Header(None),
+    authorization: str | None = Header(None),
     db: Session = Depends(get_db),
     # FIX (L14/Y2-F1): پرمیژن جدا — شاگرد/ولی (و نقش ناشناخته) 403؛ DMهای شاگرد روی messages.send دست‌نخورده
     role: str = Depends(require_permission("messages.broadcast"))
@@ -287,9 +287,9 @@ def send_broadcast_message(
     # Add sender
     self_part = ConversationParticipant(conversation_id=conv.id, user_id=keys[0], role=role)
     db.add(self_part)
-    
+
     recipients = []
-    
+
     if req.target_type == "everyone":
         # All students & teachers
         students = db.query(Student).filter(Student.is_deleted == False).all()
@@ -348,7 +348,7 @@ def send_broadcast_message(
     for pid, prole in recipients:
         part = ConversationParticipant(conversation_id=conv.id, user_id=pid, role=prole)
         db.add(part)
-        
+
     # Write Message
     msg = Message(
         conversation_id=conv.id,
@@ -358,7 +358,7 @@ def send_broadcast_message(
     )
     db.add(msg)
     db.commit()
-    
+
     # Send Notifications
     for pid, prole in recipients:
         rid = resolve_notification_recipient(db, pid, prole)
@@ -372,7 +372,7 @@ def send_broadcast_message(
             title="📣 اطلاعیه کلاسی جدید",
             body=req.body[:50]
         )
-        
+
     return {"message": "پیام گروهی با موفقیت ارسال شد"}
 
 
@@ -384,7 +384,7 @@ class PinToggleRequest(BaseModel):
 def toggle_conversation_pin(
     id: int,
     req: PinToggleRequest,
-    authorization: Optional[str] = Header(None),
+    authorization: str | None = Header(None),
     db: Session = Depends(get_db),
     role: str = Depends(require_permission("messages.read"))
 ):

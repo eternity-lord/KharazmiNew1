@@ -81,9 +81,9 @@ def register_student(request: Request, student: StudentCreate, db: Session = Dep
 
 @router.post("/students/register_and_enroll")
 def register_and_enroll_student(
-    req: StudentRegisterAndEnrollRequest, 
+    req: StudentRegisterAndEnrollRequest,
     db: Session = Depends(get_db),
-    authorization: Optional[str] = Header(None),
+    authorization: str | None = Header(None),
     # FIX O-22: معلم هم می‌تواند دانش‌آموز جدید ثبت کند (و در **کلاس خودش** ثبت‌نام کند)؛
     # قبلاً این مسیر فقط ادمین/منشی بود و معلم ۴۰۳ می‌گرفت. منطق مالی هیچ تغییری ندارد.
     sub_role: str = Depends(check_admin_secretary_or_teacher_access)
@@ -102,7 +102,7 @@ def register_and_enroll_student(
         normalized_installments = normalize_installments(req.installments)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
-        
+
     try:
         from dependencies import get_next_sequence_value, get_current_user, resolve_creation_branch
         next_code = get_next_sequence_value(db, "student", 100001)
@@ -156,7 +156,7 @@ def register_and_enroll_student(
         ensure_student_shadow_users(db, new_student)
 
         enroll_id = None
-        
+
         # 3. ثبت‌نام در کلاس (در صورت ارسال اطلاعات کلاس)
         if req.course_id is not None:
             course = db.query(Course).filter(Course.id == req.course_id).first()
@@ -175,7 +175,7 @@ def register_and_enroll_student(
             # /enrollments/add و EnrollmentCreate یک قرارداد داشته باشد؛ فقط منفی نامعتبر است.
             if req.total_tuition is None or req.total_tuition < 0:
                 raise HTTPException(status_code=400, detail="شهریه ثبت‌نام نمی‌تواند منفی باشد")
-                
+
             # بررسی تکراری نبودن ثبت‌نام
             # FIX: Bug 13 - exclude archived Enrollment rows from this active view.
             exists = db.query(Enrollment).filter(Enrollment.is_deleted == False).filter(
@@ -184,7 +184,7 @@ def register_and_enroll_student(
             ).first()
             if exists:
                 raise HTTPException(status_code=400, detail="این دانش‌آموز قبلاً در این کلاس ثبت شده است")
-                
+
             # اعتبارسنجی تخفیف
             d_type = req.discount_type or "none"
             d_val = req.discount_value or 0
@@ -197,7 +197,7 @@ def register_and_enroll_student(
             else:
                 d_type = "none"
                 d_val = 0
-                    
+
             new_enroll = Enrollment(
                 student_id=new_student.id,
                 course_id=req.course_id,
@@ -215,7 +215,7 @@ def register_and_enroll_student(
             db.add(new_enroll)
             db.flush() # تولید آیدی اینرولمنت
             enroll_id = new_enroll.id
-            
+
             # ذخیره فیزیکی اقساط شهریه در صورت ارسال (مقادیر اعتبارسنجی‌شده‌ی مرکزی)
             if normalized_installments:
                 for amount, due_date in normalized_installments:
@@ -225,7 +225,7 @@ def register_and_enroll_student(
                         due_date=due_date,
                         is_paid=False
                     ))
-            
+
             # ثبت تراکنش مالی پرداخت اولیه (در صورت پرداخت وجه)
             if req.paid_amount > 0:
                 new_trans = Transaction(
@@ -257,7 +257,7 @@ def register_and_enroll_student(
         db.rollback()
         if isinstance(e, HTTPException):
             raise e
-        raise HTTPException(status_code=500, detail=f"خطا در ثبت تراکنشی ثبت‌نام: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"خطا در ثبت تراکنشی ثبت‌نام: {e!s}")
 
 
 @router.get("/students/search")
@@ -276,7 +276,7 @@ def search_students(query: str, db: Session = Depends(get_db), sub_role: str = D
 
 
 @router.get("/students/search_simple")
-def search_students_simple(query: str, authorization: Optional[str] = Header(None), db: Session = Depends(get_db), sub_role: str = Depends(check_user_login)):
+def search_students_simple(query: str, authorization: str | None = Header(None), db: Session = Depends(get_db), sub_role: str = Depends(check_user_login)):
     # FIX (L14/Y1): جستجوی سراسری PII شاگردان — فقط کارکنان (ادمین/منشی/معلم). شاگرد/ولی 403.
     if sub_role not in ("admin", "secretary", "teacher"):
         raise HTTPException(status_code=403, detail="شما دسترسی لازم برای جستجوی دانش‌آموزان را ندارید")
@@ -335,7 +335,7 @@ def search_students_simple(query: str, authorization: Optional[str] = Header(Non
 
 
 @router.post("/grades/submit")
-def submit_grade(data: GradeCreate, db: Session = Depends(get_db), authorization: Optional[str] = Header(None), role: str = Depends(require_permission("grade.write"))):
+def submit_grade(data: GradeCreate, db: Session = Depends(get_db), authorization: str | None = Header(None), role: str = Depends(require_permission("grade.write"))):
     # پیدا کردن معلم کلاس برای ثبت در دیتابیس
     course = db.query(Course).filter(Course.id == data.course_id).first()
     if not course:
@@ -398,7 +398,7 @@ def submit_grade(data: GradeCreate, db: Session = Depends(get_db), authorization
 
 
 @router.get("/students/{student_id}/grades")
-def get_student_grades(student_id: int, db: Session = Depends(get_db), authorization: Optional[str] = Header(None), role: str = Depends(check_user_login)):
+def get_student_grades(student_id: int, db: Session = Depends(get_db), authorization: str | None = Header(None), role: str = Depends(check_user_login)):
     # FIX (L14/Y1): نمرات هر شاگرد — فقط ادمین/منشی، معلمِ درگیر، خودِ شاگرد/ولیِ همان فرزند.
     check_student_access(student_id, authorization, db, role)
     grades = (
@@ -407,19 +407,19 @@ def get_student_grades(student_id: int, db: Session = Depends(get_db), authoriza
         .order_by(desc(Grade.id))
         .all()
     )
-    
+
     # Calculate averages
     course_scores = {}
     result_grades = []
-    
+
     for g in grades:
         course = db.query(Course).filter(Course.id == g.course_id).first()
         c_name = course.title if course else "حذف شده"
-        
+
         if c_name not in course_scores:
             course_scores[c_name] = []
         course_scores[c_name].append(g.score)
-        
+
         result_grades.append({
             "course_name": c_name,
             "exam_title": g.exam_title,
@@ -428,12 +428,12 @@ def get_student_grades(student_id: int, db: Session = Depends(get_db), authoriza
             "date": g.date,
             "description": g.description,
         })
-        
+
     averages = {}
     for c_name, scores in course_scores.items():
         if scores:
             averages[c_name] = round(sum(scores) / len(scores), 2)
-            
+
     return {
         "grades": result_grades,
         "averages": averages
@@ -449,7 +449,7 @@ def get_student_grades(student_id: int, db: Session = Depends(get_db), authoriza
 @router.get("/students/{student_id}/communication_history")
 def get_student_communication_history(
     student_id: int,
-    authorization: Optional[str] = Header(None),
+    authorization: str | None = Header(None),
     db: Session = Depends(get_db),
     role: str = Depends(check_user_login),
 ):
@@ -530,24 +530,24 @@ def _student_portal_notifications(db: Session, student: Student) -> list:
 
 
 @router.get("/students/my_profile")
-def get_student_my_profile(authorization: Optional[str] = Header(None), db: Session = Depends(get_db), _: str = Depends(check_user_login)):
+def get_student_my_profile(authorization: str | None = Header(None), db: Session = Depends(get_db), _: str = Depends(check_user_login)):
     if not authorization:
         raise HTTPException(status_code=401, detail="توکن احراز هویت یافت نشد")
-        
+
     parts = authorization.split()
     if len(parts) != 2 or parts[0].lower() != "bearer":
         raise HTTPException(status_code=401, detail="قالب توکن معتبر نیست")
-        
+
     token = parts[1]
     session = db.query(UserSession).filter(UserSession.token == token, UserSession.sub_role == "student").first()
     if not session:
         raise HTTPException(status_code=401, detail="نشست شما نامعتبر یا منقضی شده است")
-        
+
     student = get_session_student(db, session)
     if not student:
         raise HTTPException(status_code=404, detail="دانش‌آموز یافت نشد")
     student_id = student.id
-        
+
     # ۱. واکشی کلاس‌ها
     classes = []
     # FIX: Bug 13 - exclude archived Enrollment rows from this active view.
@@ -555,7 +555,7 @@ def get_student_my_profile(authorization: Optional[str] = Header(None), db: Sess
     for en in enrollments:
         if en.course:
             classes.append(f"{en.course.title} ({en.course.code}) - {en.course.grade_level}")
-            
+
     # ۲. واکشی کارنامه نمرات
     grades_db = db.query(Grade).filter(Grade.student_id == student_id).order_by(desc(Grade.id)).all()
     grades_list = []
@@ -563,11 +563,11 @@ def get_student_my_profile(authorization: Optional[str] = Header(None), db: Sess
     for g in grades_db:
         course = db.query(Course).filter(Course.id == g.course_id).first()
         c_name = course.title if course else "حذف شده"
-        
+
         if c_name not in course_scores:
             course_scores[c_name] = []
         course_scores[c_name].append(g.score)
-        
+
         grades_list.append({
             "course_name": c_name,
             "exam_title": g.exam_title,
@@ -576,12 +576,12 @@ def get_student_my_profile(authorization: Optional[str] = Header(None), db: Sess
             "date": g.date,
             "description": g.description
         })
-        
+
     averages = {}
     for c_name, scores in course_scores.items():
         if scores:
             averages[c_name] = round(sum(scores) / len(scores), 2)
-            
+
     # ۳. واکشی تاریخچه حضور غیاب‌ها
     # FIX: Bug 14 - exclude archived SessionLog rows from this active view.
     sessions = db.query(SessionLog).filter(SessionLog.is_deleted == False).filter(SessionLog.course_id.in_([en.course_id for en in enrollments if en.course])).all()
@@ -599,7 +599,7 @@ def get_student_my_profile(authorization: Optional[str] = Header(None), db: Sess
                 "course_title": c_title,
                 "status": status_text
             })
-            
+
     # ۴. واکشی وضعیت اقساط شهریه
     # FIX: Bug 13 - exclude archived Installment rows from this active view.
     installments_db = db.query(Installment).filter(Installment.is_deleted == False).filter(Installment.enrollment_id.in_([en.id for en in enrollments])).order_by(Installment.due_date.asc()).all()
@@ -609,12 +609,12 @@ def get_student_my_profile(authorization: Optional[str] = Header(None), db: Sess
         enroll = db.query(Enrollment).filter(Enrollment.is_deleted == False).filter(Enrollment.id == inst.enrollment_id).first()
         course = db.query(Course).filter(Course.id == enroll.course_id).first() if enroll else None
         c_title = course.title if course else "کلاس حذف شده"
-        
+
         from today_summary import parse_project_date  # FIX H3-B3: same B1 pattern — due_date is Jalali (lazy import)
         today_date = datetime.datetime.now().date()
         _due = parse_project_date(inst.due_date)
         status_text = "پرداخت شده" if inst.is_paid else ("معوقه" if (_due is not None and _due < today_date) else "در انتظار")
-        
+
         installments_list.append({
             "course_title": c_title,
             "amount": inst.amount,
@@ -670,7 +670,7 @@ def get_student_my_profile(authorization: Optional[str] = Header(None), db: Sess
 # با خطای 422 (int_parsing روی student_id) برمی‌گردد. این بلوک را پایین‌تر از route داینامیک منتقل نکنید.
 
 @router.get("/students/{student_id}")
-def get_student_profile(student_id: int, authorization: Optional[str] = Header(None), db: Session = Depends(get_db), role: str = Depends(check_user_login)):
+def get_student_profile(student_id: int, authorization: str | None = Header(None), db: Session = Depends(get_db), role: str = Depends(check_user_login)):
     # FIX (L14/Y1): بازنویسی کامل تله‌ی گارد نصفه — قبلاً فقط معلم چک می‌شد و شاگرد/ولیِ غریبه رد می‌شدند.
     check_student_access(student_id, authorization, db, role)
 
@@ -711,7 +711,7 @@ def update_student(student_id: int, data: StudentUpdate, db: Session = Depends(g
         current_ver = student.version if student.version is not None else 1
         if data.version != current_ver:
             raise HTTPException(
-                status_code=409, 
+                status_code=409,
                 detail="این اطلاعات توسط شخص دیگری تغییر یافته است. لطفاً صفحه را مجدداً بارگذاری کنید."
             )
 
@@ -720,7 +720,7 @@ def update_student(student_id: int, data: StudentUpdate, db: Session = Depends(g
         raise HTTPException(status_code=400, detail="نام نمی‌تواند خالی باشد")
     if data.last_name is not None and not data.last_name.strip():
         raise HTTPException(status_code=400, detail="نام خانوادگی نمی‌تواند خالی باشد")
-        
+
     if data.national_code is not None:
         nc = data.national_code.strip()
         # FIX: Bug 22 - edits must pass the checksum too, not just a length check.
@@ -729,7 +729,7 @@ def update_student(student_id: int, data: StudentUpdate, db: Session = Depends(g
         exists = db.query(Student).filter(Student.national_code == nc, Student.id != student_id).first()
         if exists:
             raise HTTPException(status_code=400, detail="کد ملی وارد شده قبلاً ثبت شده است")
-            
+
     norm_student_mobile = None
     norm_parent_mobile = None
     if data.student_mobile is not None:
@@ -742,7 +742,7 @@ def update_student(student_id: int, data: StudentUpdate, db: Session = Depends(g
         if exists:
             raise HTTPException(status_code=400, detail="شماره موبایل وارد شده قبلاً ثبت شده است")
         norm_student_mobile = mob
-            
+
     if data.parent_mobile is not None:
         # FIX H20: نرمال‌سازی؛ خالی مثل قبل مجاز و دست‌نخورده (بدون چک یکتایی — مشترک بین خواهر/برادر).
         _raw_pm = (data.parent_mobile or "").strip()
@@ -785,7 +785,7 @@ def update_student(student_id: int, data: StudentUpdate, db: Session = Depends(g
 
 
 @router.post("/students/{id}/upload_photo")
-async def upload_student_photo(id: int, file: UploadFile = File(...), db: Session = Depends(get_db), authorization: Optional[str] = Header(None), sub_role: str = Depends(check_user_login)):
+async def upload_student_photo(id: int, file: UploadFile = File(...), db: Session = Depends(get_db), authorization: str | None = Header(None), sub_role: str = Depends(check_user_login)):
     student = db.query(Student).filter(Student.id == id, Student.is_deleted == False).first()
     if not student:
         raise HTTPException(status_code=404, detail="دانش‌آموز یافت نشد")
@@ -800,24 +800,24 @@ async def upload_student_photo(id: int, file: UploadFile = File(...), db: Sessio
         _own = get_session_student(db, _sess) if _sess is not None else None
         if _own is None or _own.id != id:
             raise HTTPException(status_code=403, detail="شما مجاز به تغییر عکس این دانش‌آموز نیستید")
-        
+
     # Read file and validate size
     MAX_SIZE = 5 * 1024 * 1024 # 5 MB
     contents = await file.read()
     if len(contents) > MAX_SIZE:
         raise HTTPException(status_code=400, detail="حجم فایل نباید بیشتر از ۵ مگابایت باشد")
-        
+
     # FIX M25: پسوند + magic bytes (فایل غیرعکس با پسوند جعلی رد می‌شود).
     file_ext = validate_image_upload(file.filename, contents)
-        
+
     # Generate unique filename
     unique_filename = f"{uuid.uuid4().hex}{file_ext}"
     filepath = os.path.join(storage_dir("profiles"), unique_filename)
-    
+
     # Write to disk
     with open(filepath, "wb") as f_out:
         f_out.write(contents)
-        
+
     # Delete old file
     if student.profile_image:
         # پاک‌کردن فایل قبلی — حتی اگر در مسیر قدیمی (نسبت به cwd) مانده باشد
@@ -827,10 +827,10 @@ async def upload_student_photo(id: int, file: UploadFile = File(...), db: Sessio
                 os.remove(old_path)
             except Exception:
                 pass
-                
+
     student.profile_image = unique_filename
     db.commit()
-    
+
     return {
         "message": "عکس پروفایل دانش‌آموز با موفقیت آپلود شد",
         "profile_image": unique_filename,
@@ -839,23 +839,23 @@ async def upload_student_photo(id: int, file: UploadFile = File(...), db: Sessio
 
 
 @router.get("/students/{student_id}/installments")
-def get_student_installments(student_id: int, db: Session = Depends(get_db), authorization: Optional[str] = Header(None), role: str = Depends(check_user_login)):
+def get_student_installments(student_id: int, db: Session = Depends(get_db), authorization: str | None = Header(None), role: str = Depends(check_user_login)):
     # FIX (L14/Y1): اقساط هر شاگرد — فقط ادمین/منشی، معلمِ درگیر، خودِ شاگرد/ولیِ همان فرزند.
     check_student_access(student_id, authorization, db, role)
     student = db.query(Student).filter(Student.id == student_id).first()
     if not student:
         raise HTTPException(status_code=404, detail="دانش‌آموز یافت نشد")
-        
+
     # FIX: Bug 13 - exclude archived Enrollment rows from this active view.
     enrollments = db.query(Enrollment).filter(Enrollment.is_deleted == False).filter(Enrollment.student_id == student_id).all()
     enrollment_ids = [e.id for e in enrollments]
-    
+
     if not enrollment_ids:
         return []
-        
+
     # FIX: Bug 13 - exclude archived Installment rows from this active view.
     installments = db.query(Installment).filter(Installment.is_deleted == False).filter(Installment.enrollment_id.in_(enrollment_ids)).order_by(Installment.due_date.asc()).all()
-    
+
     result = []
     for inst in installments:
         # FIX: Bug 13 - exclude archived Enrollment rows from this active view.
@@ -879,20 +879,20 @@ def send_portal_link(id: int, db: Session = Depends(get_db), _: str = Depends(ch
     student = db.query(Student).filter(Student.id == id, Student.is_deleted == False).first()
     if not student:
         raise HTTPException(status_code=404, detail="دانش‌آموز یافت نشد")
-        
+
     if not student.parent_mobile:
         raise HTTPException(status_code=400, detail="شماره همراه ولی برای این دانش‌آموز ثبت نشده است")
-        
+
     # شبیه‌سازی ارسال واقعی پیامک حاوی لینک اختصاصی پورتال
     from models import InstituteSettings
     settings = db.query(InstituteSettings).first()
     inst_name = settings.name if (settings and settings.name) else "خوارزمی"
-    
+
     today = datetime.datetime.now().strftime("%Y/%m/%d %H:%M")
     public_server_url = os.getenv("PUBLIC_SERVER_URL", "http://192.168.1.5:8000")
     public_portal_url = f"{public_server_url}/parent/portal"
     msg = f"ولی محترم دانش‌آموز {student.first_name} {student.last_name}، جهت مشاهده زنده حضور و غیاب، نمرات و وضعیت اقساط شهریه فرزند خود، به پورتال اولیا {inst_name} مراجعه فرمایید: {public_portal_url}"
-    
+
     db.add(SmsLog(
         target_group=f"portal_link_{student.id}",
         message_text=msg,
@@ -900,6 +900,6 @@ def send_portal_link(id: int, db: Session = Depends(get_db), _: str = Depends(ch
         date=today
     ))
     db.commit()
-    
+
     return {"message": "لینک پورتال با موفقیت پیامک شد."}
 

@@ -18,7 +18,7 @@ class HistoryRequest(BaseModel):
 
 class LoginRequest(BaseModel):
     mobile: str
-    password: Optional[str] = None
+    password: str | None = None
 
 class TeacherInfo(BaseModel):
     name: str
@@ -40,7 +40,7 @@ class StudentCreate(NationalCodeRequest):
     study_status: str
     gender: str
     # FIX(branch): اختیاری — اگر ارسال نشود، سیاست resolve_creation_branch تصمیم می‌گیرد.
-    branch_id: Optional[int] = None
+    branch_id: int | None = None
 
 # FIX: Bug 22 - apply the national-code checksum to this write path.
 class TeacherCreate(NationalCodeRequest):
@@ -56,10 +56,10 @@ class TeacherCreate(NationalCodeRequest):
     gender: str
     employment_type: str
     card_number: str
-    profile_image: Optional[str] = None
+    profile_image: str | None = None
     # FIX(teacher-approval): شعبه‌ی معلم هنگام ثبت — اختیاری و سازگار با اپ فعلی (که نمی‌فرستد).
     # اعتبارسنجی و تصمیم‌گیری با سیاست مرکزی resolve_creation_branch است (بدون حدس).
-    branch_id: Optional[int] = None
+    branch_id: int | None = None
 
 class CourseCreate(BaseModel):
     title: str
@@ -72,13 +72,13 @@ class CourseCreate(BaseModel):
     days_of_week: str = "نامشخص"
     class_time: str = "نامشخص"
     teacher_session_price: int = Field(ge=0)  # FIX: Bug 22 - a session price cannot be negative.
-    capacity: Optional[int] = Field(default=None, gt=0)
+    capacity: int | None = Field(default=None, gt=0)
     rule_prepay_institute: bool = False
     rule_prepay_teacher: bool = False
     rule_calc_absent: bool = True
     bg_color: str = "#FFFFFF"
     # FIX(branch): اختیاری — اگر ارسال نشود، سیاست resolve_creation_branch تصمیم می‌گیرد.
-    branch_id: Optional[int] = None
+    branch_id: int | None = None
 
 class InstallmentCreate(BaseModel):
     # FIX (F-T1/F-T2): همان اعتبارسنجی مرکزی مسیر مستقل قسط — مبلغ صحیح مثبت + تاریخ شمسی موجود.
@@ -108,9 +108,9 @@ class EnrollmentCreate(BaseModel):
     paid_amount: int = Field(ge=0)  # FIX: Bug 22 - zero means no initial payment; negatives are invalid.
     payment_method: str
     receiver: str
-    discount_type: Optional[str] = "none"
-    discount_value: Optional[int] = 0
-    installments: Optional[List[InstallmentCreate]] = None
+    discount_type: str | None = "none"
+    discount_value: int | None = 0
+    installments: list[InstallmentCreate] | None = None
 
     @field_validator("total_tuition", mode="before")
     @classmethod
@@ -129,7 +129,7 @@ class EnrollmentCreate(BaseModel):
 
 class BulkEnrollmentCreate(BaseModel):
     """ورودی مشترک شهریه برای افزودن چند دانش‌آموز به یک کلاس."""
-    student_ids: List[int] = Field(min_length=1)
+    student_ids: list[int] = Field(min_length=1)
     course_id: int
     register_date: str
     shift: str
@@ -137,9 +137,9 @@ class BulkEnrollmentCreate(BaseModel):
     paid_amount: int = Field(ge=0)
     payment_method: str
     receiver: str
-    discount_type: Optional[str] = "none"
-    discount_value: Optional[int] = 0
-    installments: Optional[List[InstallmentCreate]] = None
+    discount_type: str | None = "none"
+    discount_value: int | None = 0
+    installments: list[InstallmentCreate] | None = None
 
 
 # مدل‌های مربوط به نمره
@@ -175,7 +175,7 @@ class AttendanceLogRequest(BaseModel):
 class AttendanceItem(BaseModel):
     student_id: int
     status: str
-    excused: Optional[bool] = False
+    excused: bool | None = False
 
     # FIX (F-S4): فقط Present / Late / Absent (قرارداد رسمی کلاینت اندروید + همه‌ی فیلترهای سرور).
     @field_validator("status")
@@ -188,7 +188,7 @@ class AttendanceSubmitData(BaseModel):
     date: str
     # FIX (F-S3): جلسه‌ی بی‌محتوا ممنوع — پیش‌تر items=[] یک SessionLog می‌ساخت و تاریخ کلاس را
     # قفل می‌کرد (ثبت واقعی بعدی ۴۰۹ می‌گرفت). مرز HTTP ⇒ ۴۲۲ (رفتار استاندارد FastAPI).
-    items: List[AttendanceItem] = Field(min_length=1)
+    items: list[AttendanceItem] = Field(min_length=1)
 
 class SmsSendRequest(BaseModel):
     target_group: str
@@ -213,21 +213,21 @@ class StudentActiveEnrollment(BaseModel):
     course_id: int
     title: str = ""
     code: str = ""
-    branch_id: Optional[int] = None
-    course_title: Optional[str] = None
-    teacher_id: Optional[int] = None
-    teacher_name: Optional[str] = None
-    debt: Optional[int] = None
-    debt_teacher: Optional[int] = None
-    debt_institute: Optional[int] = None
-    total_debt: Optional[int] = None
+    branch_id: int | None = None
+    course_title: str | None = None
+    teacher_id: int | None = None
+    teacher_name: str | None = None
+    debt: int | None = None
+    debt_teacher: int | None = None
+    debt_institute: int | None = None
+    total_debt: int | None = None
     is_unassigned: bool = False
 
 class FullStudentProfile(BaseModel):
     info: StudentProfileInfo
-    classes: List[str]
-    enrollments: List[StudentActiveEnrollment] = []
-    transactions: List[str]
+    classes: list[str]
+    enrollments: list[StudentActiveEnrollment] = []
+    transactions: list[str]
     total_debt: int
     wallet_total: int = 0
     wallet_teacher: int = 0
@@ -235,15 +235,15 @@ class FullStudentProfile(BaseModel):
     debt_teacher: int = 0
     debt_institute: int = 0
     unassigned_debt: int = 0
-    teachers_financial: Optional[List[dict]] = None
+    teachers_financial: list[dict] | None = None
 
 class TeacherProfileInfo(BaseModel):
     name: str
     mobile: str
     national_code: str
     status: str  # فعال/غیرفعال
-    profile_image: Optional[str] = None
-    teacher_code: Optional[int] = None
+    profile_image: str | None = None
+    teacher_code: int | None = None
 
 
 class TeacherCollaborationSummary(BaseModel):
@@ -264,8 +264,8 @@ class FullTeacherProfile(BaseModel):
     total_students: int
     total_revenue: int  # درآمدزایی کل
     active_classes_count: int
-    classes: List[str]  # لیست نام کلاس‌ها
-    collaboration_summary: Optional[TeacherCollaborationSummary] = None
+    classes: list[str]  # لیست نام کلاس‌ها
+    collaboration_summary: TeacherCollaborationSummary | None = None
 
 class ClassReportInfo(BaseModel):
     title: str
@@ -286,11 +286,11 @@ class ClassStudentData(BaseModel):
     debt_to_teacher: int = 0
     debt_to_institute: int = 0
     # Per-enrollment identity; optional defaults keep old clients/responses compatible.
-    enrollment_id: Optional[int] = None
-    course_id: Optional[int] = None
-    course_title: Optional[str] = None
-    teacher_id: Optional[int] = None
-    teacher_name: Optional[str] = None
+    enrollment_id: int | None = None
+    course_id: int | None = None
+    course_title: str | None = None
+    teacher_id: int | None = None
+    teacher_name: str | None = None
     is_unassigned: bool = False
 
 class ClassSessionStudent(BaseModel):
@@ -298,7 +298,7 @@ class ClassSessionStudent(BaseModel):
     استفاده‌های بعدی (مثل لینک به پروفایل شاگرد)."""
     student_id: int
     name: str  # نام نمایشی (legacy NULL ⇒ «نامشخص»)
-    student_code: Optional[int] = None
+    student_code: int | None = None
     status: str = "Present"  # Present / Late / Absent
     excused: bool = False
 
@@ -310,11 +310,11 @@ class ClassSessionHistory(BaseModel):
     # FIX (تاریخچهٔ جلسات): فیلدهای نمایشی این تب برای هر کلاس اضافه شد (نام حاضرین/غایبین،
     # روز هفته، هزینه و ساعت جلسه). همه با پیش‌فرض‌اند تا پاسخ برای کلاینت قدیمی سازگار بماند
     # و کش قدیمیِ اپ هم نشکند.
-    session_id: Optional[int] = None
-    session_code: Optional[int] = None
+    session_id: int | None = None
+    session_code: int | None = None
     weekday: str = ""
-    present_students: List[ClassSessionStudent] = []
-    absent_students: List[ClassSessionStudent] = []
+    present_students: list[ClassSessionStudent] = []
+    absent_students: list[ClassSessionStudent] = []
     total_cost: int = 0
     cost_per_student: int = 0
     start_time: str = ""
@@ -322,8 +322,8 @@ class ClassSessionHistory(BaseModel):
 
 class FullClassReport(BaseModel):
     info: ClassReportInfo
-    students: List[ClassStudentData]
-    sessions: List[ClassSessionHistory]
+    students: list[ClassStudentData]
+    sessions: list[ClassSessionHistory]
 
 class ShareConfigModel(BaseModel):
     count_1: int
@@ -344,35 +344,35 @@ class ShareConfigModel(BaseModel):
 
 # FIX: Bug 22 - apply the national-code checksum to this write path.
 class StudentUpdate(NationalCodeRequest):
-    first_name: Optional[str] = None
-    last_name: Optional[str] = None
-    father_name: Optional[str] = None
-    national_code: Optional[str] = None
-    birth_date: Optional[str] = None
-    student_mobile: Optional[str] = None
-    parent_mobile: Optional[str] = None
-    home_phone: Optional[str] = None
-    address: Optional[str] = None
-    study_status: Optional[str] = None
-    gender: Optional[str] = None
-    version: Optional[int] = None
+    first_name: str | None = None
+    last_name: str | None = None
+    father_name: str | None = None
+    national_code: str | None = None
+    birth_date: str | None = None
+    student_mobile: str | None = None
+    parent_mobile: str | None = None
+    home_phone: str | None = None
+    address: str | None = None
+    study_status: str | None = None
+    gender: str | None = None
+    version: int | None = None
 
 # FIX: Bug 22 - apply the national-code checksum to this write path.
 class TeacherUpdate(NationalCodeRequest):
-    first_name: Optional[str] = None
-    last_name: Optional[str] = None
-    father_name: Optional[str] = None
-    national_code: Optional[str] = None
-    birth_date: Optional[str] = None
-    mobile: Optional[str] = None
-    password: Optional[str] = None
-    home_phone: Optional[str] = None
-    marital_status: Optional[str] = None
-    gender: Optional[str] = None
-    employment_type: Optional[str] = None
-    card_number: Optional[str] = None
-    profile_image: Optional[str] = None
-    version: Optional[int] = None
+    first_name: str | None = None
+    last_name: str | None = None
+    father_name: str | None = None
+    national_code: str | None = None
+    birth_date: str | None = None
+    mobile: str | None = None
+    password: str | None = None
+    home_phone: str | None = None
+    marital_status: str | None = None
+    gender: str | None = None
+    employment_type: str | None = None
+    card_number: str | None = None
+    profile_image: str | None = None
+    version: int | None = None
 
 class PersonListItem(BaseModel):
     id: int
@@ -388,9 +388,9 @@ class TeacherListItem(BaseModel):
     id: int
     first_name: str
     last_name: str
-    mobile: Optional[str] = None
-    teacher_code: Optional[int] = None
-    profile_image: Optional[str] = None
+    mobile: str | None = None
+    teacher_code: int | None = None
+    profile_image: str | None = None
     is_approved: bool = False
     is_suspended: bool = False
 
@@ -398,17 +398,17 @@ class TeacherListItem(BaseModel):
 # FIX(teacher-approval): آیتم صف «درخواست‌های تایید معلم» — افزودنی و سازگار با TeacherListItem
 # (کلاینت قدیمی فیلدهای اضافه را نادیده می‌گیرد) تا ادمین شعبه‌ی هر درخواست را ببیند.
 class PendingTeacherItem(TeacherListItem):
-    branch_id: Optional[int] = None
-    branch_name: Optional[str] = None
+    branch_id: int | None = None
+    branch_name: str | None = None
 
 
 # FIX(security): آیتم امن تاریخچه پیامک — message_text باید قبل از ساخت، ماسک شده باشد (کدهای OTP).
 class SmsHistoryItem(BaseModel):
     id: int
-    target_group: Optional[str] = None
-    message_text: Optional[str] = None
-    sent_count: Optional[int] = None
-    date: Optional[str] = None
+    target_group: str | None = None
+    message_text: str | None = None
+    sent_count: int | None = None
+    date: str | None = None
 
 
 # 1. جستجوی دانش‌آموزان (همه یا با فیلتر)
@@ -431,13 +431,13 @@ class AdvancedSearchItem(BaseModel):
     title: str
     subtitle: str
     info: str
-    student_id: Optional[int] = None
-    course_id: Optional[int] = None
-    debt_teacher: Optional[int] = 0
-    debt_institute: Optional[int] = 0
-    total_debt: Optional[int] = 0
-    unpaid_sessions: Optional[int] = 0
-    students_in_class: Optional[List[dict]] = None
+    student_id: int | None = None
+    course_id: int | None = None
+    debt_teacher: int | None = 0
+    debt_institute: int | None = 0
+    total_debt: int | None = 0
+    unpaid_sessions: int | None = 0
+    students_in_class: list[dict] | None = None
 
 class FinanceSubmitData(BaseModel):
     student_id: int
@@ -446,12 +446,12 @@ class FinanceSubmitData(BaseModel):
     description: str
     payment_method: str
     date: str
-    amount_institute: Optional[int] = None
-    amount_teacher: Optional[int] = None
-    enrollment_id: Optional[int] = None  # اتصال پرداخت به یک ثبت‌نام خاص (اختیاری؛ اگر خالی باشد و شاگرد فقط یک ثبت‌نام فعال داشته باشد، خودکار وصل می‌شود)
-    idempotency_key: Optional[str] = None  # FIX (audit-v2/idempotency): اختیاری و backward-compatible — کلاینت قدیمی نفرستد = رفتار فعلی
+    amount_institute: int | None = None
+    amount_teacher: int | None = None
+    enrollment_id: int | None = None  # اتصال پرداخت به یک ثبت‌نام خاص (اختیاری؛ اگر خالی باشد و شاگرد فقط یک ثبت‌نام فعال داشته باشد، خودکار وصل می‌شود)
+    idempotency_key: str | None = None  # FIX (audit-v2/idempotency): اختیاری و backward-compatible — کلاینت قدیمی نفرستد = رفتار فعلی
     # «این حواله برای چند جلسه است؟» — اختیاری و فقط گزارشی (روی مبلغ/کیف‌پول اثر ندارد)؛ نیازمند enrollment مشخص.
-    sessions_covered: Optional[int] = Field(default=None, ge=1, le=1000)
+    sessions_covered: int | None = Field(default=None, ge=1, le=1000)
 
 class PrintReceiptRequest(BaseModel):
     transaction_id: int
@@ -466,7 +466,7 @@ class TransactionTestData(BaseModel):
     date: str
 
 class SettleRequest(BaseModel):
-    session_ids: List[int]
+    session_ids: list[int]
 
 # FIX: Bug 22 - apply the national-code checksum to this write path.
 class StudentRegisterAndEnrollRequest(NationalCodeRequest):
@@ -481,24 +481,24 @@ class StudentRegisterAndEnrollRequest(NationalCodeRequest):
     address: str
     study_status: str
     gender: str
-    course_id: Optional[int] = None
-    total_tuition: Optional[int] = 0
+    course_id: int | None = None
+    total_tuition: int | None = 0
     paid_amount: int = Field(default=0, ge=0)  # FIX: Bug 22 - permit unpaid registration, not null/negative payments.
-    payment_method: Optional[str] = "-"
-    receiver: Optional[str] = "-"
-    discount_type: Optional[str] = "none"
-    discount_value: Optional[int] = 0
-    register_date: Optional[str] = "1404/09/01"
-    shift: Optional[str] = "عصر"
-    installments: Optional[List[InstallmentCreate]] = None
+    payment_method: str | None = "-"
+    receiver: str | None = "-"
+    discount_type: str | None = "none"
+    discount_value: int | None = 0
+    register_date: str | None = "1404/09/01"
+    shift: str | None = "عصر"
+    installments: list[InstallmentCreate] | None = None
     # FIX(branch): اختیاری — اگر ارسال نشود، سیاست resolve_creation_branch تصمیم می‌گیرد.
-    branch_id: Optional[int] = None
+    branch_id: int | None = None
 
 class BulkSmsRequest(BaseModel):
-    student_ids: List[int]
+    student_ids: list[int]
 
 class BulkSuspendRequest(BaseModel):
-    course_ids: List[int]
+    course_ids: list[int]
 
 class ParentOtpRequest(BaseModel):
     mobile: str
@@ -513,21 +513,21 @@ class ChildSelectRequest(BaseModel):
 
 class InstituteSettingsModel(BaseModel):
     name: str
-    logo_path: Optional[str] = None
+    logo_path: str | None = None
     address: str
     phone: str
-    official_email: Optional[str] = None
-    footer_text: Optional[str] = "با تشکر از اعتماد شما - آموزشگاه هوشمند خوارزمی"
-    card_number: Optional[str] = "۶۰۳۷۹۹۷۹۷۹۷۹۷۹۷۹"
-    manager_mobile_1: Optional[str] = "09121112222"
-    manager_mobile_2: Optional[str] = "09123334444"
-    card_number_1: Optional[str] = "۶۰۳۷۹۹۷۹۷۹۷۹۷۹۷۹"
-    card_holder_1: Optional[str] = "خانم لطفی"
-    card_number_2: Optional[str] = "۵۸۹۲۱۰۱۰۱۰۱۰۱۰۱۰"
-    card_holder_2: Optional[str] = "آقای علوی"
-    teachers_active: Optional[bool] = True
-    live_session_max_minutes: Optional[int] = 180
-    teacher_settlement_alert_days: Optional[int] = Field(default=None, ge=1, le=3650)
+    official_email: str | None = None
+    footer_text: str | None = "با تشکر از اعتماد شما - آموزشگاه هوشمند خوارزمی"
+    card_number: str | None = "۶۰۳۷۹۹۷۹۷۹۷۹۷۹۷۹"
+    manager_mobile_1: str | None = "09121112222"
+    manager_mobile_2: str | None = "09123334444"
+    card_number_1: str | None = "۶۰۳۷۹۹۷۹۷۹۷۹۷۹۷۹"
+    card_holder_1: str | None = "خانم لطفی"
+    card_number_2: str | None = "۵۸۹۲۱۰۱۰۱۰۱۰۱۰۱۰"
+    card_holder_2: str | None = "آقای علوی"
+    teachers_active: bool | None = True
+    live_session_max_minutes: int | None = 180
+    teacher_settlement_alert_days: int | None = Field(default=None, ge=1, le=3650)
 
 
 # ==========================================
@@ -542,4 +542,4 @@ class PricingRowModel(BaseModel):
     count_5: int
 
 class PricingTableUpdateModel(BaseModel):
-    rows: List[PricingRowModel]
+    rows: list[PricingRowModel]

@@ -5,7 +5,7 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
-from tests.route_audit.seed import seed_database  # noqa: E402
+from tests.route_audit.seed import seed_database
 
 if __name__ == "__main__":
     import argparse, json

@@ -101,7 +101,7 @@ class TestPytestIniPinsDiscovery(unittest.TestCase):
 class TestSuiteRunsFromServerDirectory(unittest.TestCase):
     """سنجش رفتاری: همان ۵ تست باید از داخل Kharazmi_Server/ هم سبز باشند."""
 
-    def test_previously_failing_tests_pass_with_server_cwd(self):  # noqa: D401
+    def test_previously_failing_tests_pass_with_server_cwd(self):
         env = dict(os.environ)
         env.setdefault("JWT_SECRET_KEY", "b1-cwd-independence-secret")
         env.setdefault("DATABASE_URL", "sqlite:////tmp/b1_cwd_independence.db")

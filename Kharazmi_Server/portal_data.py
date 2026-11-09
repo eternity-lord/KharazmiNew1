@@ -56,7 +56,7 @@ def _ordered_course_ids(db, student) -> list:
 
     enrollments = db.query(Enrollment).filter(
         Enrollment.student_id == student.id,
-        Enrollment.is_deleted == False,  # noqa: E712
+        Enrollment.is_deleted == False,
     ).all()
     course_ids = []
     for en in enrollments:
@@ -150,7 +150,7 @@ def build_portal_upcoming_sessions(db, student) -> list:
     if not course_ids:
         return []
 
-    rows = db.query(Course).filter(Course.id.in_(course_ids), Course.is_suspended == False).all()  # noqa: E712
+    rows = db.query(Course).filter(Course.id.in_(course_ids), Course.is_suspended == False).all()
     rows.sort(key=lambda c: c.id)
 
     result = []

@@ -73,7 +73,7 @@ def _income_chart_buckets(rows, start_day, end_day):
     if span_days <= 31:
         labels = [jalali_date_string(window_start + datetime.timedelta(days=offset))
                   for offset in range(span_days)]
-        key_of = lambda day: jalali_date_string(day)  # noqa: E731
+        key_of = lambda day: jalali_date_string(day)
     else:
         start_key = jalali_date_string(window_start)[:7]
         end_key = jalali_date_string(window_end)[:7]
@@ -85,7 +85,7 @@ def _income_chart_buckets(rows, start_day, end_day):
             month += 1
             if month == 13:
                 year, month = year + 1, 1
-        key_of = lambda day: jalali_date_string(day)[:7]  # noqa: E731
+        key_of = lambda day: jalali_date_string(day)[:7]
 
     index = {label: position for position, label in enumerate(labels)}
     buckets = [{"day": label, "amount": 0} for label in labels]
@@ -97,7 +97,7 @@ def _income_chart_buckets(rows, start_day, end_day):
         buckets.append({"day": "بی‌تاریخ", "amount": undated_total})
     return buckets
 
-def get_user_branch_filter(db: Session, authorization: Optional[str], branch_id: Optional[int]) -> Optional[int]:
+def get_user_branch_filter(db: Session, authorization: str | None, branch_id: int | None) -> int | None:
     # FIX: JWT-aware + teacher_id handling
     if not authorization:
         return branch_id
@@ -163,10 +163,10 @@ def _api_date_or_blank(value) -> str:
 
 @router.get("/reports/chart-data")
 def get_chart_data(
-    class_id: Optional[int] = None,
-    start_date: Optional[str] = None,
-    end_date: Optional[str] = None,
-    authorization: Optional[str] = Header(None),
+    class_id: int | None = None,
+    start_date: str | None = None,
+    end_date: str | None = None,
+    authorization: str | None = Header(None),
     db: Session = Depends(get_db),
     _: str = Depends(check_admin_or_secretary_access)  # FIX (L14/Y4): نمودارهای درآمد/حضور سطح موسسه — فقط کارکنان
 ):
@@ -232,7 +232,7 @@ def get_chart_data(
                                  s.id))
     session_ids = [s.id for s in sessions]
     attendance_trend = []
-    
+
     if session_ids:
         from sqlalchemy import func
         stats = (
@@ -245,7 +245,7 @@ def get_chart_data(
             .group_by(Attendance.session_id, Attendance.status)
             .all()
         )
-        
+
         session_stats = {sid: {"present": 0, "absent": 0} for sid in session_ids}
         for sid, status_val, count in stats:
             if sid in session_stats:
@@ -253,7 +253,7 @@ def get_chart_data(
                     session_stats[sid]["present"] += count
                 elif status_val == "Absent":
                     session_stats[sid]["absent"] += count
-                    
+
         for s in sessions:
             stat = session_stats.get(s.id, {"present": 0, "absent": 0})
             present = stat["present"]
@@ -294,7 +294,7 @@ def get_chart_data(
         shares_trans = [t for t in q_shares.all() if _in_range(t.date)]
         total_teacher_share = sum(t.share_teacher for t in shares_trans if t.share_teacher is not None)
         total_institute_share = sum(t.share_institute for t in shares_trans if t.share_institute is not None)
-        
+
         shares_chart = {
             "teacher": total_teacher_share,
             "institute": total_institute_share
@@ -317,9 +317,9 @@ def get_chart_data(
 def get_financial_report(
     start_date: str = None,
     end_date: str = None,
-    branch_id: Optional[int] = None,
-    teacher_id: Optional[int] = None,
-    authorization: Optional[str] = Header(None),
+    branch_id: int | None = None,
+    teacher_id: int | None = None,
+    authorization: str | None = Header(None),
     db: Session = Depends(get_db),
     _: str = Depends(check_admin_access)
 ):
@@ -393,11 +393,11 @@ def get_financial_report(
 
 @router.get("/reports/financial/excel")
 def get_financial_report_excel(
-    start_date: Optional[str] = None,
-    end_date: Optional[str] = None,
-    branch_id: Optional[int] = None,
-    teacher_id: Optional[int] = None,
-    authorization: Optional[str] = Header(None),
+    start_date: str | None = None,
+    end_date: str | None = None,
+    branch_id: int | None = None,
+    teacher_id: int | None = None,
+    authorization: str | None = Header(None),
     db: Session = Depends(get_db),
     _: str = Depends(check_admin_access),
 ):
@@ -447,8 +447,8 @@ def get_financial_report_excel(
 
 @router.get("/reports/debtors")
 def get_debtors_report(
-    branch_id: Optional[int] = None,
-    authorization: Optional[str] = Header(None),
+    branch_id: int | None = None,
+    authorization: str | None = Header(None),
     db: Session = Depends(get_db),
     _: str = Depends(check_admin_access)
 ):
@@ -478,8 +478,8 @@ def get_debtors_report(
 
 @router.get("/reports/debtors/excel")
 def get_debtors_excel(
-    branch_id: Optional[int] = None,
-    authorization: Optional[str] = Header(None),
+    branch_id: int | None = None,
+    authorization: str | None = Header(None),
     db: Session = Depends(get_db),
     _: str = Depends(check_admin_access)
 ):
@@ -497,7 +497,7 @@ def get_debtors_excel(
     # FIX (گروه۲/آیتم ۹ — «پیشنهاد من»): ستون‌های جدید برای پیگیری عملی
     headers = ["شناسه", "نام و نام خانوادگی", "بدهی به معلم (تومان)", "بدهی به آموزشگاه (تومان)", "کل بدهی (تومان)", "تلفن همراه", "تلفن والدین", "تاریخ آخرین پرداخت", "قدمت بدهی (روز)"]
     ws.append(headers)
-    
+
     header_fill = PatternFill(start_color="00695C", end_color="00695C", fill_type="solid")
     header_font = Font(name="Tahoma", size=11, bold=True, color="FFFFFF")
     for col_num in range(1, len(headers) + 1):
@@ -505,7 +505,7 @@ def get_debtors_excel(
         cell.fill = header_fill
         cell.font = header_font
         cell.alignment = Alignment(horizontal="center", vertical="center")
-        
+
     row_num = 2
     for row in debtor_rows:
         row_data = [
@@ -531,16 +531,16 @@ def get_debtors_excel(
             cell.font = Font(name="Tahoma", size=10)
 
         row_num += 1
-            
+
     for col in ws.columns:
         max_len = max(len(str(cell.value or '')) for cell in col)
         col_letter = col[0].column_letter
         ws.column_dimensions[col_letter].width = max(max_len + 3, 12)
-        
+
     stream = io.BytesIO()
     wb.save(stream)
     stream.seek(0)
-    
+
     return StreamingResponse(
         stream,
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -558,7 +558,7 @@ def get_current_shamsi_date():
     return gregorian_to_jalali(datetime.date.today())
 
 
-def get_logged_in_teacher(db: Session, authorization: Optional[str]) -> Optional[Teacher]:
+def get_logged_in_teacher(db: Session, authorization: str | None) -> Teacher | None:
     # FIX: مقاوم به تغییر موبایل – اول teacher_id مستقیم، بعد fallback به mobile
     if not authorization:
         return None
@@ -589,7 +589,7 @@ def get_logged_in_teacher(db: Session, authorization: Optional[str]) -> Optional
     return db.query(Teacher).filter(Teacher.id == session.user_id).first()
 
 
-def _optional_int_param(value: Optional[str], field_label: str) -> Optional[int]:
+def _optional_int_param(value: str | None, field_label: str) -> int | None:
     """FIX (گروه۲/آیتم۵): پارامتر عددیِ «خالی» در query string ⇒ None، نه ۴۲۲ خام pydantic.
 
     چرا لازم است: کلاینت Retrofit یک `@Query` با مقدار `null` را به‌صورت `teacher_id=`
@@ -612,11 +612,11 @@ def _optional_int_param(value: Optional[str], field_label: str) -> Optional[int]
 @router.get("/reports/financial_summary")
 def get_financial_summary(
     user_type: str,  # "institute" or "teacher"
-    teacher_id: Optional[str] = None,
-    year: Optional[str] = None,
-    month: Optional[str] = None,
-    branch_id: Optional[str] = None,
-    authorization: Optional[str] = Header(None),
+    teacher_id: str | None = None,
+    year: str | None = None,
+    month: str | None = None,
+    branch_id: str | None = None,
+    authorization: str | None = Header(None),
     db: Session = Depends(get_db),
     sub_role: str = Depends(check_user_login)
 ):
@@ -701,7 +701,7 @@ def get_financial_summary(
             "diagnostics": report_period_diagnostics(db, start_date, end_date, branch_id=resolved_branch),
         }
 
-    elif user_type == "teacher":
+    if user_type == "teacher":
         if not teacher_id:
             raise HTTPException(status_code=400, detail="شناسه معلم الزامی است")
 
@@ -749,7 +749,7 @@ def get_financial_summary(
 def get_student_statement(
     student_id: int,
     db: Session = Depends(get_db),
-    authorization: Optional[str] = Header(None),
+    authorization: str | None = Header(None),
     role: str = Depends(check_user_login)
 ):
     # FIX (L14/Y1): صورت‌حساب/چاپ هر شاگرد — فقط ادمین/منشی، معلمِ درگیر، خودِ شاگرد/ولیِ همان فرزند.
@@ -902,7 +902,7 @@ def get_student_statement(
 def print_student_statement(
     student_id: int,
     db: Session = Depends(get_db),
-    authorization: Optional[str] = Header(None),
+    authorization: str | None = Header(None),
     role: str = Depends(check_user_login)
 ):
     # FIX (L14/Y1): صورت‌حساب/چاپ هر شاگرد — فقط ادمین/منشی، معلمِ درگیر، خودِ شاگرد/ولیِ همان فرزند.
@@ -1126,7 +1126,7 @@ def print_student_statement(
 def print_student_profile(
     student_id: int,
     db: Session = Depends(get_db),
-    authorization: Optional[str] = Header(None),
+    authorization: str | None = Header(None),
     role: str = Depends(check_user_login)
 ):
     # FIX (L14/Y1): صورت‌حساب/چاپ هر شاگرد — فقط ادمین/منشی، معلمِ درگیر، خودِ شاگرد/ولیِ همان فرزند.
@@ -1153,7 +1153,7 @@ def print_student_profile(
         course = en.course
         teacher = db.query(Teacher).filter(Teacher.id == course.teacher_id).first()
         teacher_name = display_name(teacher, "نامشخص") if teacher else "بدون معلم"
-        
+
         # Use the same enrollment-scoped source as the in-app profile and
         # statement. A course_id-only aggregate can merge two enrollments that
         # share a teacher, while the helper keeps payment and charge ownership

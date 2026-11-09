@@ -66,8 +66,8 @@ def seed_real_data():
             title="ریاضی کنکور", code="3406",
             teacher_id=teacher.id,
             grade_level="کنکور", education_type="کنکور",
-            class_type="خصوصی", 
-            
+            class_type="خصوصی",
+
             # 👇 فیلدهای جدید
             days_of_week="زوج",
             class_time="16:30",
@@ -105,22 +105,22 @@ def seed_real_data():
     if not db.query(Enrollment).filter(Enrollment.student_id == student1.id, Enrollment.course_id == course.id).first():
         enroll1 = Enrollment(
             student_id=student1.id, course_id=course.id,
-            register_date="1404/09/06", 
+            register_date="1404/09/06",
             shift="عصر",
             total_tuition=0, # در سیستم جدید محاسبه دینامیک است، اینجا صفر یا مبلغ اولیه
             total_paid=2000000
         )
         db.add(enroll1)
-        
+
         # شارژ کیف پول دانش آموز (چون 2 تومن داده)
         # FIX: Bug 18 - update a component, then derive the total through the shared helper.
         student1.wallet_institute = (student1.wallet_institute or 0) + 2000000
         student1.sync_wallet_balance()
-        
+
         # ثبت تراکنش
         trans1 = Transaction(
             student_id=student1.id, # اتصال به شاگرد
-            amount=2000000, 
+            amount=2000000,
             payment_method="دستی", date="1404/09/06",
             receiver="Institute", description="علی‌الحساب شهریه"
         )

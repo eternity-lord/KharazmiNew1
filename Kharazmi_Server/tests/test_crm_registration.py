@@ -89,7 +89,7 @@ class TestKharazmiCRMRegistration(unittest.TestCase):
             shift="عصر"
         )
         self.db.add(enroll)
-        
+
         # Credit student's wallet and insert transaction record
         new_student.wallet_institute = req_1.paid_amount
         trans = Transaction(
@@ -145,7 +145,7 @@ class TestKharazmiCRMRegistration(unittest.TestCase):
             shift="عصر"
         )
         self.db.add(enroll_2)
-        
+
         # Credit wallet and add transaction
         existing_student.wallet_institute = (existing_student.wallet_institute or 0) + req_2.paid_amount
         trans_2 = Transaction(

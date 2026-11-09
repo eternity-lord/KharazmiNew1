@@ -30,7 +30,7 @@ from models import ActivityLog
 
 router = APIRouter()
 
-def get_user_branch_filter(db: Session, authorization: Optional[str], branch_id: Optional[int]) -> Optional[int]:
+def get_user_branch_filter(db: Session, authorization: str | None, branch_id: int | None) -> int | None:
     if not authorization:
         return branch_id
     try:
@@ -49,8 +49,8 @@ def get_user_branch_filter(db: Session, authorization: Optional[str], branch_id:
 @router.get("/finance/search_advanced")
 def search_finance_advanced(
     query: str,
-    branch_id: Optional[int] = None,
-    authorization: Optional[str] = Header(None),
+    branch_id: int | None = None,
+    authorization: str | None = Header(None),
     db: Session = Depends(get_db),
     sub_role: str = Depends(check_user_login)
 ):
@@ -209,7 +209,7 @@ def _replay_idempotent_payment(db: Session, key: str, data: FinanceSubmitData):
 # FIX: Bug 9 - accept the existing branch resolver inputs without changing payment payloads.
 def submit_payment(
     data: FinanceSubmitData, db: Session = Depends(get_db), _: str = Depends(check_admin_or_secretary_access),
-    branch_id: Optional[int] = None, authorization: Optional[str] = Header(None),
+    branch_id: int | None = None, authorization: str | None = Header(None),
 ):
     # FIX (audit-v2/idempotency-قدم۱): کلید اختیاری (سازگار با عقب)؛ اگر آمده و قبلاً پردازش شده → replay بدون هیچ نوشتن.
     _idem_key = (data.idempotency_key or "").strip()
@@ -600,7 +600,7 @@ def _receipt_context(db: Session, trans) -> dict:
 
 
 @router.post("/finance/receipt/print")
-def print_receipt(req: PrintReceiptRequest, db: Session = Depends(get_db), authorization: Optional[str] = Header(None), _: str = Depends(check_user_login)):
+def print_receipt(req: PrintReceiptRequest, db: Session = Depends(get_db), authorization: str | None = Header(None), _: str = Depends(check_user_login)):
     """
     چاپ مستقیم حواله روی پرینتر سیستم
     """
@@ -613,7 +613,7 @@ def print_receipt(req: PrintReceiptRequest, db: Session = Depends(get_db), autho
 
     # FIX H16-IDOR: هماهنگ با GET رسید — فقط ادمین/منشی یا صاحب تراکنش.
     verify_financial_idor(transaction.student_id, authorization, db)
-    
+
     student = db.query(Student).filter(Student.id == transaction.student_id).first()
     if not student:
         raise HTTPException(404, "دانش‌آموز یافت نشد")
@@ -644,7 +644,7 @@ def print_receipt(req: PrintReceiptRequest, db: Session = Depends(get_db), autho
 
 
 @router.post("/finance/receipt/pdf")
-def generate_pdf_receipt(req: PrintReceiptRequest, db: Session = Depends(get_db), authorization: Optional[str] = Header(None), _: str = Depends(check_user_login)):
+def generate_pdf_receipt(req: PrintReceiptRequest, db: Session = Depends(get_db), authorization: str | None = Header(None), _: str = Depends(check_user_login)):
     """
     تولید و دانلود فایل PDF حواله
     """
@@ -657,7 +657,7 @@ def generate_pdf_receipt(req: PrintReceiptRequest, db: Session = Depends(get_db)
 
     # FIX H16-IDOR: هماهنگ با GET رسید — فقط ادمین/منشی یا صاحب تراکنش.
     verify_financial_idor(transaction.student_id, authorization, db)
-    
+
     student = db.query(Student).filter(Student.id == transaction.student_id).first()
     if not student:
         raise HTTPException(404, "دانش‌آموز یافت نشد")
@@ -692,25 +692,25 @@ def generate_pdf_receipt(req: PrintReceiptRequest, db: Session = Depends(get_db)
 
 
 @router.get("/finance/student_class_status")
-def get_student_class_status(student_id: int, course_id: Optional[int] = None, course_code: Optional[str] = None, db: Session = Depends(get_db), authorization: Optional[str] = Header(None), sub_role: str = Depends(check_user_login)):
+def get_student_class_status(student_id: int, course_id: int | None = None, course_code: str | None = None, db: Session = Depends(get_db), authorization: str | None = Header(None), sub_role: str = Depends(check_user_login)):
     # FIX (L14/Y4): وضعیت مالی ثبت‌نام یک شاگرد — check_student_access (نه verify_financial_idor که معلم را کامل 403 می‌کند؛ معلم برای فاکتور شاگرد خودش محق است).
     check_student_access(student_id, authorization, db, sub_role)
     student = db.query(Student).filter(Student.id == student_id, Student.is_deleted == False).first()
     if not student:
         raise HTTPException(status_code=404, detail="دانش‌آموز یافت نشد")
-        
+
     # در صورت ارسال کد کلاس به جای آیدی
     if course_code:
         course = db.query(Course).filter(Course.code == course_code.strip()).first()
         if not course:
             raise HTTPException(status_code=404, detail="کلاس مورد نظر یافت نشد")
         course_id = course.id
-        
+
     # FIX: Bug 13 - exclude archived Enrollment rows from this active view.
     enroll = db.query(Enrollment).filter(Enrollment.is_deleted == False).filter(Enrollment.student_id == student_id, Enrollment.course_id == course_id).first()
     if not enroll:
         raise HTTPException(status_code=404, detail="ثبت‌نام یافت نشد")
-        
+
     # وضعیت صورت‌حساب باید فقط از همین enrollment بیاید؛ wallet کلی دانش‌آموز
     # در این endpoint کلاس‌محور منبع due نیست.
     breakdown = calculate_enrollment_debt_breakdown(db, enroll)
@@ -770,7 +770,7 @@ import models
 PAYMENT_GATEWAY_ENABLED = os.getenv("PAYMENT_GATEWAY_ENABLED", "false").lower() in ("1", "true", "yes")
 
 # --- کمکی امنیتی جهت ممانعت از IDOR برای اولیا و دانش‌آموزان ---
-def verify_financial_idor(student_id: int, authorization: Optional[str], db: Session) -> str:
+def verify_financial_idor(student_id: int, authorization: str | None, db: Session) -> str:
     if not authorization:
         raise HTTPException(status_code=401, detail="توکن احراز هویت یافت نشد")
     parts = authorization.split()
@@ -780,18 +780,18 @@ def verify_financial_idor(student_id: int, authorization: Optional[str], db: Ses
     session = db.query(UserSession).filter(UserSession.token == token).first()
     if not session:
         raise HTTPException(status_code=401, detail="نشست نامعتبر یا منقضی شده است")
-    
+
     # ادمین و منشی دسترسی کامل دارند
     if session.sub_role in ["admin", "secretary"]:
         return session.sub_role
-        
+
     # دانش‌آموز یا ولی فقط به اطلاعات مالی خودشان دسترسی دارند
     if session.sub_role in ["student", "parent"]:
         own = get_session_student(db, session) if session.sub_role == "student" else get_session_parent(db, session)
         if not own or own.id != student_id:
             raise HTTPException(status_code=403, detail="شما مجاز به دسترسی به اطلاعات مالی شخص دیگری نیستید (IDOR Protection)")
         return session.sub_role
-        
+
     raise HTTPException(status_code=403, detail="دسترسی نامعتبر است")
 
 
@@ -800,10 +800,10 @@ class PaymentInitiateRequest(BaseModel):
     student_id: int
     amount: int = Field(gt=0)  # FIX: Bug 22 - reject non-positive amounts even while the gateway is disabled.
     target_wallet: str  # "teacher" یا "institute"
-    enrollment_id: Optional[int] = None
-    installment_id: Optional[int] = None
-    description: Optional[str] = None
-    gateway: Optional[str] = "zarinpal"
+    enrollment_id: int | None = None
+    installment_id: int | None = None
+    description: str | None = None
+    gateway: str | None = "zarinpal"
 
 class InstallmentCreateRequest(BaseModel):
     enrollment_id: int
@@ -821,9 +821,9 @@ class InstallmentCreateRequest(BaseModel):
         return validate_jalali_due_date(value)
 
 class InstallmentUpdateRequest(BaseModel):
-    amount: Optional[int] = Field(default=None, gt=0)
-    due_date: Optional[str] = None  # FIX (F-T2): ویرایش سررسید هم از همان قاعده‌ی تقویمی رد می‌شود
-    is_paid: Optional[bool] = None
+    amount: int | None = Field(default=None, gt=0)
+    due_date: str | None = None  # FIX (F-T2): ویرایش سررسید هم از همان قاعده‌ی تقویمی رد می‌شود
+    is_paid: bool | None = None
 
     @field_validator("amount", mode="before")
     @classmethod
@@ -845,17 +845,17 @@ class InstallmentUpdateRequest(BaseModel):
 def initiate_online_payment(
     req: PaymentInitiateRequest,
     db: Session = Depends(get_db),
-    authorization: Optional[str] = Header(None),
+    authorization: str | None = Header(None),
     _role: str = Depends(check_user_login)
 ):
     # راستی‌آزمایی IDOR
     verify_financial_idor(req.student_id, authorization, db)
-    
+
     raise HTTPException(
         status_code=400,
         detail="⚠️ پرداخت آنلاین در حال حاضر غیرفعال است (پرداخت آنلاین به‌زودی فعال خواهد شد). لطفا جهت پرداخت به صورت حضوری یا کارت به کارت اقدام فرمایید."
     )
-    
+
     # TODO (audit-v2/#12): کد مرده‌ی زیر ۴۰۰ حذف شد (به payment/internal_id تعریف‌نشده ارجاع می‌داد —
     # NameError قطعی؛ اسکلت نبود، پوسیدگی بود). وقتی درگاه واقعی وصل شد، این تابع باید بازنویسی شود:
     #  ۱) ولیدیت (۴۰۰ این‌جا امن است چون هنوز پولی حرکت نکرده): amount>0 (همین حالا در اسکیما هست)،
@@ -927,7 +927,7 @@ def payment_callback(
     request: Request,
     payment_id: int,
     status: str,
-    gateway_ref: Optional[str] = None,
+    gateway_ref: str | None = None,
     db: Session = Depends(get_db)
 ):
     # TODO(security) (audit-v2/#12 + FIX F-B1): وضعیت بازنویسی کال‌بک:
@@ -1026,7 +1026,7 @@ def payment_callback(
                 return _callback_refresh_page(payment_id)  # پایانی شده — رفرش، همان نتیجه را نشان می‌دهد.
         # تایید رسمی صحت مبلغ تراکنش از درگاه — فقط با مقادیر ذخیره‌شده‌ی سرور (هرگز ورودی کوئری):
         verified_ok, trk_code = gateway.verify_payment(payment.gateway_reference, payment.amount)
-        
+
         if verified_ok:
             # FIX F-B1: پیش‌شرط‌های فقط-خواندنی قبل از علامت SUCCESS — هر کدام نامعتبر بود، همان سرنوشت
             # M12 (FAILED مشروط + رد حسابرسی + همان صفحه‌ی خطا؛ پول درگاه وریفای شده پس 400 نه).
@@ -1107,7 +1107,7 @@ def payment_callback(
                 # همگام‌سازی بالانس کل دانش‌آموز
                 # FIX: Bug 18 - derive the total only through the shared wallet helper.
                 student.sync_wallet_balance()
-                
+
                 # ۳. درج فیزیکی در جدول تراکنش‌ها (Transactions) جهت حفظ Traceability مالی کامل بدون حذف
                 from dependencies import get_next_sequence_value
                 if payment.target_wallet == "teacher":
@@ -1298,7 +1298,7 @@ def payment_callback(
                         sent_count=1,
                         date=today_str
                     ))
-                    
+
                     from dependencies import NotificationService, ensure_student_shadow_users
                     if student.user_id is None:
                         ensure_student_shadow_users(db, student)
@@ -1339,17 +1339,16 @@ def payment_callback(
             </body>
             </html>
             """)
-        else:
-            # FIX F-B1: FAILED مشروط (فقط دارنده‌ی VERIFYING) — اگر دیگری جلوتر وضعیت را برده، رفرش.
-            _ffrows = (
-                db.query(models.Payment)
-                .filter(models.Payment.id == payment.id, models.Payment.status == "VERIFYING")
-                .update({models.Payment.status: "FAILED"}, synchronize_session=False)
-            )
-            db.commit()
-            if _ffrows != 1:
-                return _callback_refresh_page(payment.id)
-            return HTMLResponse(content="""
+        # FIX F-B1: FAILED مشروط (فقط دارنده‌ی VERIFYING) — اگر دیگری جلوتر وضعیت را برده، رفرش.
+        _ffrows = (
+            db.query(models.Payment)
+            .filter(models.Payment.id == payment.id, models.Payment.status == "VERIFYING")
+            .update({models.Payment.status: "FAILED"}, synchronize_session=False)
+        )
+        db.commit()
+        if _ffrows != 1:
+            return _callback_refresh_page(payment.id)
+        return HTMLResponse(content="""
             <html>
             <head>
                 <title>پرداخت ناموفق</title>
@@ -1366,18 +1365,17 @@ def payment_callback(
             </body>
             </html>
             """)
-    else:
-        # FIX F-B1: انصراف/شکست سمت درگاه → CANCELLED مشروط (فقط از PENDING؛ SUCCESS/VERIFYING هرگز
-        # با هیت لغو رونویسی نمی‌شود). اگر دیگری جلوتر برده، رفرش همان نتیجه را نشان می‌دهد.
-        _crows = (
-            db.query(models.Payment)
-            .filter(models.Payment.id == payment.id, models.Payment.status == "PENDING")
-            .update({models.Payment.status: "CANCELLED"}, synchronize_session=False)
-        )
-        db.commit()
-        if _crows != 1:
-            return _callback_refresh_page(payment.id)
-        return HTMLResponse(content="""
+    # FIX F-B1: انصراف/شکست سمت درگاه → CANCELLED مشروط (فقط از PENDING؛ SUCCESS/VERIFYING هرگز
+    # با هیت لغو رونویسی نمی‌شود). اگر دیگری جلوتر برده، رفرش همان نتیجه را نشان می‌دهد.
+    _crows = (
+        db.query(models.Payment)
+        .filter(models.Payment.id == payment.id, models.Payment.status == "PENDING")
+        .update({models.Payment.status: "CANCELLED"}, synchronize_session=False)
+    )
+    db.commit()
+    if _crows != 1:
+        return _callback_refresh_page(payment.id)
+    return HTMLResponse(content="""
         <html>
         <head>
             <title>پرداخت لغو شد</title>
@@ -1440,7 +1438,7 @@ def mock_payment_page(
 def refund_transaction(
     transaction_id: int,
     db: Session = Depends(get_db),
-    authorization: Optional[str] = Header(None),
+    authorization: str | None = Header(None),
     _: str = Depends(check_admin_access)  # فقط مخصوص ادمین
 ):
     # FIX: Bug 11 - this audit lookup deliberately includes reversed rows to reject repeat refunds.
@@ -1455,10 +1453,10 @@ def refund_transaction(
     if trans.type not in ("deposit", "enrollment_payment"):
         _m16_hint = "؛ برگشت هزینه‌ی جلسه فقط با حذف جلسه انجام می‌شود" if trans.type == "session_charge" else ""
         raise HTTPException(status_code=400, detail=f"تراکنش نوع «{trans.type}» از مسیر استرداد عمومی قابل برگشت نیست{_m16_hint}")
-        
+
     if trans.is_reversed:
         raise HTTPException(status_code=400, detail="این تراکنش قبلاً استرداد شده است (Idempotent Refund)")
-        
+
     # فریز مبلغ در لحظه‌ی اعتبارسنجی (آبجکت ORM بعد از UPDATE خام، در فیلد is_reversed stale می‌شود).
     t_amount = trans.amount
 
@@ -1472,7 +1470,7 @@ def refund_transaction(
     if claimed_rows != 1:
         db.rollback()
         raise HTTPException(status_code=400, detail="این تراکنش قبلاً استرداد شده است (Idempotent Refund)")
-    
+
     # FIX: Bug 11 - issue a new reference, including protection against pre-counter legacy numbers.
     from dependencies import get_next_sequence_value
     # FIX: Bug 11 - initialize above historical references, including archived transactions.
@@ -1502,7 +1500,7 @@ def refund_transaction(
         remittance_number=next_remittance  # FIX: Bug 11 - never reuse the original reference.
     )
     db.add(reversal_trans)
-    
+
     # ۳. کسر مبلغ استرداد شده از کیف پول دانش‌آموز
     # FIX B2: بدون with_for_update — فقط خواندن برای وجودسنجی/نام؛ کسر با UPDATE اتمیک پایین است.
     student = db.query(Student).filter(Student.id == trans.student_id).first()
@@ -1552,7 +1550,7 @@ def refund_transaction(
             db.refresh(student)
             # FIX: Bug 18 - derive the total only through the shared wallet helper.
             student.sync_wallet_balance()
-            
+
         # 🔗 همگام‌سازی منبع حقیقت بدهی: استردادِ پرداختِ لینک‌شده، total_paid ثبت‌نام را کم می‌کند
         if trans.enrollment_id and trans.type in ("deposit", "enrollment_payment", "tuition") and (trans.amount or 0) > 0:
             # FIX B2 (الگوی H8-P4): کسر اتمیک با کف صفر (همان max(0,...) قبلی، به‌صورت CASE اتمیک در SQL).
@@ -1618,7 +1616,7 @@ def refund_transaction(
             target_name=display_name(student, "نامشخص"),
             details=f"استرداد تراکنش #{trans.id} به مبلغ {trans.amount:,} تومان و کسر از کیف پول {trans.target_wallet}."
         ))
-        
+
     db.commit()
     return {
         "status": "success",
@@ -1632,10 +1630,10 @@ def refund_transaction(
 # دریافت اقساط شهریه (ادمین / منشی)
 @router.get("/finance/installments")
 def get_all_installments(
-    enrollment_id: Optional[int] = None,
-    student_id: Optional[int] = None,
+    enrollment_id: int | None = None,
+    student_id: int | None = None,
     db: Session = Depends(get_db),
-    authorization: Optional[str] = Header(None),
+    authorization: str | None = Header(None),
     sub_role: str = Depends(check_user_login)
 ):
     # FIX (audit-v2/#11): IDOR خواندن — ادمین/منشی همه؛ شاگرد/ولی فقط محدوده‌ی خود (قبلاً بدون فیلتر،
@@ -1668,7 +1666,7 @@ def get_all_installments(
         # FIX: Bug 13 - exclude archived Enrollment rows from this active view.
         enroll_ids = [e.id for e in db.query(Enrollment).filter(Enrollment.is_deleted == False).filter(Enrollment.student_id == student_id).all()]
         query = query.filter(Installment.enrollment_id.in_(enroll_ids))
-        
+
     installments = query.order_by(Installment.due_date.asc()).all()
     result = []
     for inst in installments:
@@ -1692,14 +1690,14 @@ def get_all_installments(
 def create_installment(
     req: InstallmentCreateRequest,
     db: Session = Depends(get_db),
-    authorization: Optional[str] = Header(None),
+    authorization: str | None = Header(None),
     _: str = Depends(check_admin_or_secretary_access)
 ):
     # FIX: Bug 13 - exclude archived Enrollment rows from this active view.
     enroll = db.query(Enrollment).filter(Enrollment.is_deleted == False).filter(Enrollment.id == req.enrollment_id).first()
     if not enroll:
         raise HTTPException(status_code=404, detail="ثبت‌نام دانش‌آموز یافت نشد")
-        
+
     new_inst = Installment(
         enrollment_id=req.enrollment_id,
         amount=req.amount,
@@ -1710,7 +1708,7 @@ def create_installment(
     # FIX (F-C3): تک‌کامیت — flush برای id کافی است؛ کامیت واحد انتهای تابع (با لاگ حسابرسی).
     db.flush()
     db.refresh(new_inst)
-    
+
     # لاگ حسابرسی
     # FIX H9: admin_username باید کاربر واقعی همین درخواست باشد، نه هاردکد "admin_portal".
     # همان الگوی H8-P2؛ چون check_* بالا توکن خراب را از قبل رد کرده، فالبک "unknown"
@@ -1736,7 +1734,7 @@ def create_installment(
         details=f"ایجاد قسط جدید به مبلغ {req.amount:,} تومان با سررسید {req.due_date}."
     ))
     db.commit()
-    
+
     return {"message": "قسط شهریه با موفقیت ایجاد شد", "installment_id": new_inst.id}
 
 # ویرایش قسط شهریه (ادمین / منشی) همراه با Audit دقیق تغییر مبلغ
@@ -1745,18 +1743,18 @@ def update_installment(
     installment_id: int,
     req: InstallmentUpdateRequest,
     db: Session = Depends(get_db),
-    authorization: Optional[str] = Header(None),
+    authorization: str | None = Header(None),
     force: bool = False,
-    reason: Optional[str] = None,
+    reason: str | None = None,
     _: str = Depends(check_admin_or_secretary_access)
 ):
     # FIX: Bug 13 - exclude archived Installment rows from this active view.
     inst = db.query(Installment).filter(Installment.is_deleted == False).filter(Installment.id == installment_id).with_for_update().first()
     if not inst:
         raise HTTPException(status_code=404, detail="قسط یافت نشد")
-        
+
     old_amount = inst.amount
-    
+
     # FIX M10: مبلغ قسط تسویه‌شده قفل است — تغییر فقط با force صریح + دلیل.
     if inst.is_paid and req.amount is not None and req.amount != old_amount:
         if not force:
@@ -1790,10 +1788,10 @@ def update_installment(
                 details=f"تغییر مبلغ قسط #{inst.id} از {old_amount:,} به {req.amount:,} تومان." + (f" [force روی قسط تسویه‌شده: {reason.strip()}]" if inst.is_paid else "")
             ))
         inst.amount = req.amount
-        
+
     if req.due_date is not None:
         inst.due_date = req.due_date
-        
+
     if req.is_paid is not None:
         inst.is_paid = req.is_paid
         if req.is_paid:
@@ -1801,7 +1799,7 @@ def update_installment(
             inst.paid_amount = inst.amount  # FIX M13: مارک تسویه‌ی دستی یعنی پوشش کامل.
         # FIX M10 (تصمیم گزارش اولیه): برگرداندن تسویه، تاریخ پرداخت واقعی را پاک نمی‌کند —
         # paid_at سند تاریخی دریافت وجه است، نه وضعیت فعلی.
-            
+
     db.commit()
     return {"message": "قسط شهریه با موفقیت بروزرسانی شد"}
 
@@ -1810,7 +1808,7 @@ def update_installment(
 def delete_installment(
     installment_id: int,
     db: Session = Depends(get_db),
-    authorization: Optional[str] = Header(None),
+    authorization: str | None = Header(None),
     force: bool = False,
     _: str = Depends(check_admin_or_secretary_access)
 ):
@@ -1818,7 +1816,7 @@ def delete_installment(
     inst = db.query(Installment).filter(Installment.is_deleted == False).filter(Installment.id == installment_id).first()
     if not inst:
         raise HTTPException(status_code=404, detail="قسط یافت نشد")
-        
+
     # FIX H9: admin_username باید کاربر واقعی همین درخواست باشد، نه هاردکد "admin_portal".
     # همان الگوی H8-P2؛ چون check_* بالا توکن خراب را از قبل رد کرده، فالبک "unknown"
     # عملاً نباید هیچ‌وقت اجرا شود (فقط safety net).
@@ -1856,9 +1854,9 @@ def pay_installment_manually(
     installment_id: int,
     db: Session = Depends(get_db),
     _: str = Depends(check_admin_or_secretary_access),
-    branch_id: Optional[int] = None,
-    payment_method: Optional[str] = "نقدی",
-    authorization: Optional[str] = Header(None)
+    branch_id: int | None = None,
+    payment_method: str | None = "نقدی",
+    authorization: str | None = Header(None)
 ):
     # FIX: Bug 13 - exclude archived Installment rows from this active view.
     # FIX B1: بدون with_for_update — این خواندن فقط اعتبارسنجی اولیه است؛ گیت واقعی، UPDATE مشروط پایین است.
@@ -2013,21 +2011,21 @@ def send_installment_payment_reminder(
     inst = db.query(Installment).filter(Installment.is_deleted == False).filter(Installment.id == installment_id).first()
     if not inst:
         raise HTTPException(status_code=404, detail="قسط یافت نشد")
-        
+
     # FIX: Bug 13 - exclude archived Enrollment rows from this active view.
     enroll = db.query(Enrollment).filter(Enrollment.is_deleted == False).filter(Enrollment.id == inst.enrollment_id).first()
     if not enroll:
         raise HTTPException(status_code=404, detail="ثبت‌نام قسط یافت نشد")
-        
+
     student = db.query(Student).filter(Student.id == enroll.student_id).first()
     if not student:
         raise HTTPException(status_code=404, detail="دانش‌آموز یافت نشد")
-        
+
     if not student.parent_mobile:
         raise HTTPException(status_code=400, detail="شماره موبایل ولی برای این دانش‌آموز ثبت نشده است")
 
     msg = f"ولی محترم دانش‌آموز {display_name(student, 'گرامی')}، بدینوسیله به اطلاع می‌رساند قسط شهریه فرزند شما به مبلغ {inst.amount:,} تومان سررسید {inst.due_date} معوقه/سررسید شده است. لطفاً جهت واریز اقدام فرمایید."
-    
+
     # ۱. ثبت در بخش پیامک‌ها
     db.add(SmsLog(
         target_group=f"manual_remind_{inst.id}",
@@ -2035,7 +2033,7 @@ def send_installment_payment_reminder(
         sent_count=1,
         date=_jalali_now_str(),  # FIX (audit-v2/refund-date-followup): شمسی (این تاریخ در تاریخچه‌ی پیامک به کاربر نمایش داده می‌شود).
     ))
-    
+
     # ۲. ارسال نوتیفیکیشن درون‌برنامه‌ای به ولی و دانش‌آموز
     try:
         from dependencies import NotificationService, ensure_student_shadow_users
@@ -2055,7 +2053,7 @@ def send_installment_payment_reminder(
         )
     except Exception:
         pass
-        
+
     db.commit()
     return {"status": "success", "message": "پیامک و نوتیفیکیشن یادآوری قسط شهریه با موفقیت ارسال شد."}
 
@@ -2067,7 +2065,7 @@ def send_installment_payment_reminder(
 def get_student_online_payments(
     student_id: int,
     db: Session = Depends(get_db),
-    authorization: Optional[str] = Header(None),
+    authorization: str | None = Header(None),
     _role: str = Depends(check_user_login)
 ):
     # FIX (F3): مثل invoice — check_student_access؛ معلمِ درگیر محق است (بدون PII اضافه).
@@ -2093,7 +2091,7 @@ def get_student_online_payments(
 def get_student_physical_transactions(
     student_id: int,
     db: Session = Depends(get_db),
-    authorization: Optional[str] = Header(None),
+    authorization: str | None = Header(None),
     _role: str = Depends(check_user_login)
 ):
     # FIX (F3): مثل invoice — check_student_access؛ معلمِ درگیر محق است (بدون PII اضافه).
@@ -2122,22 +2120,22 @@ def get_student_physical_transactions(
 def get_student_financial_dashboard(
     student_id: int,
     db: Session = Depends(get_db),
-    authorization: Optional[str] = Header(None),
+    authorization: str | None = Header(None),
     _role: str = Depends(check_user_login)
 ):
     # FIX (F3): مثل invoice — check_student_access؛ معلمِ درگیر محق است (بدون PII اضافه).
     check_student_access(student_id, authorization, db, _role)
-    
+
     student = db.query(Student).filter(Student.id == student_id).first()
     if not student:
         raise HTTPException(status_code=404, detail="دانش‌آموز یافت نشد")
-        
+
     w_t = student.wallet_teacher if student.wallet_teacher is not None else 0
     w_i = student.wallet_institute if student.wallet_institute is not None else 0
     total_balance = w_t + w_i
     # FIX: Bug 16 - keep wallet credit separate from unpaid enrollment tuition.
     total_debt = calculate_student_debt(db, student)
-    
+
     # دریافت سوابق ثبت‌نام‌ها و مبالغ شهریه
     # FIX: Bug 13 - exclude archived Enrollment rows from this active view.
     enrollments = db.query(Enrollment).filter(Enrollment.is_deleted == False).filter(Enrollment.student_id == student_id).all()
@@ -2153,7 +2151,7 @@ def get_student_financial_dashboard(
         class_teacher_name = display_name(class_teacher, "نامشخص") if class_teacher else None
         paid_for_class = breakdown["paid_teacher"] + breakdown["paid_institute"]
         total_paid_all += paid_for_class
-        
+
         enroll_list.append({
             "enrollment_id": en.id,
             "course_id": en.course_id,
@@ -2167,7 +2165,7 @@ def get_student_financial_dashboard(
             "total_paid": paid_for_class,
             "outstanding": breakdown["debt"]
         })
-        
+
     # لیست اقساط
     enrollment_ids = [e.id for e in enrollments]
     installments_list = []
@@ -2179,12 +2177,12 @@ def get_student_financial_dashboard(
             enroll = db.query(Enrollment).filter(Enrollment.is_deleted == False).filter(Enrollment.id == i.enrollment_id).first()
             course = db.query(Course).filter(Course.id == enroll.course_id).first() if enroll else None
             c_title = course.title if course else "کلاس حذف شده"
-            
+
             from today_summary import parse_project_date  # FIX H3-B3: same B1 pattern — due_date is Jalali (lazy import)
             today_date = datetime.datetime.now().date()
             _due = parse_project_date(i.due_date)
             status_text = "پرداخت شده" if i.is_paid else ("معوقه" if (_due is not None and _due < today_date) else "در انتظار")
-            
+
             installments_list.append({
                 "id": i.id,
                 "course_title": c_title,
@@ -2194,7 +2192,7 @@ def get_student_financial_dashboard(
                 "status": status_text,
                 "paid_at": i.paid_at or "---"
             })
-            
+
     # ۳ تراکنش اخیر
     recent_transactions = (
         # FIX: Bug 12 - exclude archived Transaction rows from this active view.
@@ -2204,7 +2202,7 @@ def get_student_financial_dashboard(
         .limit(3)
         .all()
     )
-    
+
     return {
         "wallet": {
             "balance": total_balance,
@@ -2234,7 +2232,7 @@ def get_student_financial_dashboard(
 @router.get("/finance/parent/dashboard")
 def get_parent_financial_dashboard(
     db: Session = Depends(get_db),
-    authorization: Optional[str] = Header(None),
+    authorization: str | None = Header(None),
     _role: str = Depends(check_user_login)
 ):
     if not authorization:
@@ -2243,11 +2241,11 @@ def get_parent_financial_dashboard(
     if len(parts) != 2 or parts[0].lower() != "bearer":
         raise HTTPException(status_code=401, detail="قالب توکن معتبر نیست")
     token = parts[1]
-    
+
     session = db.query(UserSession).filter(UserSession.token == token, UserSession.sub_role == "parent").first()
     if not session:
         raise HTTPException(status_code=401, detail="نشست والد یافت نشد یا منقضی شده است")
-        
+
     own = get_session_parent(db, session)
     if not own:
         raise HTTPException(status_code=401, detail="نشست معتبر نیست؛ لطفاً دوباره وارد شوید")
@@ -2265,17 +2263,17 @@ def get_parent_financial_dashboard(
 def get_receipt_details(
     transaction_id: int,
     db: Session = Depends(get_db),
-    authorization: Optional[str] = Header(None),
+    authorization: str | None = Header(None),
     _role: str = Depends(check_user_login)
 ):
     # FIX: Bug 12 - exclude archived Transaction rows from this active view.
     trans = db.query(Transaction).filter(Transaction.is_reversed == False).filter(Transaction.id == transaction_id, Transaction.is_deleted == False).first()
     if not trans:
         raise HTTPException(status_code=404, detail="رسید مورد نظر یافت نشد")
-        
+
     # راستی‌آزمایی IDOR
     verify_financial_idor(trans.student_id, authorization, db)
-    
+
     student = db.query(Student).filter(Student.id == trans.student_id).first()
     student_name = display_name(student, "نامشخص")
     student_national = student.national_code if student else "---"
@@ -2283,7 +2281,7 @@ def get_receipt_details(
     # کلاس/معلم/تعداد جلسه با همان helper مشترک چاپ می‌آید.
     ctx = _receipt_context(db, trans)
     course_name = ctx["course_name"]
-    
+
     return {
         "transaction_id": trans.id,
         "remittance_number": trans.remittance_number or "---",
@@ -2315,30 +2313,30 @@ def get_receipt_details(
 def get_invoice_details(
     enrollment_id: int,
     db: Session = Depends(get_db),
-    authorization: Optional[str] = Header(None),
+    authorization: str | None = Header(None),
     _role: str = Depends(check_user_login)
 ):
     # FIX: Bug 13 - exclude archived Enrollment rows from this active view.
     enroll = db.query(Enrollment).filter(Enrollment.is_deleted == False).filter(Enrollment.id == enrollment_id).first()
     if not enroll:
         raise HTTPException(status_code=404, detail="ثبت‌نام مورد نظر یافت نشد")
-        
+
     # FIX (F3): فاکتور ثبت‌نام — check_student_access مثل student_class_status (:653)؛
     # معلمِ درگیر برای فاکتور شاگرد خودش محق است (داده‌ها هم‌سطح statement، بدون PII اضافه).
     check_student_access(enroll.student_id, authorization, db, _role)
-    
+
     student = db.query(Student).filter(Student.id == enroll.student_id).first()
     course = db.query(Course).filter(Course.id == enroll.course_id).first()
-    
+
     final_tuition, discount = get_enrollment_tuition_and_discount(enroll)
     breakdown = calculate_enrollment_debt_breakdown(db, enroll)
     total_paid = breakdown["paid_teacher"] + breakdown["paid_institute"]
     balance_due = breakdown["debt"]
-    
+
     # دریافت اقساط این کلاس
     # FIX: Bug 13 - exclude archived Installment rows from this active view.
     installments = db.query(Installment).filter(Installment.is_deleted == False).filter(Installment.enrollment_id == enrollment_id).order_by(Installment.due_date.asc()).all()
-    
+
     return {
         "enrollment_id": enroll.id,
         "course_id": course.id if course else enroll.course_id,
@@ -2475,7 +2473,7 @@ def _debtor_teacher_rows(db: Session, student_id: int, wallet_teacher_debt: int 
     return rows
 
 
-def build_debtor_rows(db: Session, resolved_branch: Optional[int], search: Optional[str] = None):
+def build_debtor_rows(db: Session, resolved_branch: int | None, search: str | None = None):
     """فهرست بدهکاران با فیلدهای کامل — منبع یگانهٔ لیست/گروه‌بندی/پیامک/خروجی.
 
     FIX (گروه۲/آیتم۶): `branch_scope_clause` به‌جای فیلتر سختِ شعبه؛ در دادهٔ واقعی آموزشگاه
@@ -2487,7 +2485,7 @@ def build_debtor_rows(db: Session, resolved_branch: Optional[int], search: Optio
     from today_summary import parse_project_date
     today = datetime.datetime.now().date()
 
-    query = db.query(Student).filter(Student.is_deleted == False)  # noqa: E712 (سبک پروژه)
+    query = db.query(Student).filter(Student.is_deleted == False)
     scope = branch_scope_clause(Student.branch_id, resolved_branch)
     if scope is not None:
         query = query.filter(scope)
@@ -2504,7 +2502,7 @@ def build_debtor_rows(db: Session, resolved_branch: Optional[int], search: Optio
             continue
 
         enrollments = db.query(Enrollment).filter(
-            Enrollment.is_deleted == False,  # noqa: E712
+            Enrollment.is_deleted == False,
             Enrollment.student_id == s.id).all()
         courses = [e.course.title for e in enrollments if e.course]
 
@@ -2550,9 +2548,9 @@ def build_debtor_rows(db: Session, resolved_branch: Optional[int], search: Optio
 
 @router.get("/finance/reports/debtors_list")
 def get_debtors_list(
-    branch_id: Optional[int] = None,
-    search: Optional[str] = None,  # FIX (گروه۲/آیتم۹): جست‌وجو بر اساس نام دانش‌آموز/معلم/کلاس
-    authorization: Optional[str] = Header(None),
+    branch_id: int | None = None,
+    search: str | None = None,  # FIX (گروه۲/آیتم۹): جست‌وجو بر اساس نام دانش‌آموز/معلم/کلاس
+    authorization: str | None = Header(None),
     db: Session = Depends(get_db),
     _: str = Depends(check_admin_or_secretary_access) # FIX (L14/Y4): کامنت «ادمین و منشی» حالا واقعاً اعمال می‌شود
 ):
@@ -2564,9 +2562,9 @@ def get_debtors_list(
 
 @router.get("/finance/reports/debtors_grouped")
 def get_debtors_grouped(
-    branch_id: Optional[int] = None,
-    search: Optional[str] = None,
-    authorization: Optional[str] = Header(None),
+    branch_id: int | None = None,
+    search: str | None = None,
+    authorization: str | None = Header(None),
     db: Session = Depends(get_db),
     _: str = Depends(check_admin_or_secretary_access),
 ):
@@ -2638,14 +2636,14 @@ def get_debtors_grouped(
 
 
 class DebtorsRemindRequest(BaseModel):
-    student_ids: List[int]
-    message: Optional[str] = None
+    student_ids: list[int]
+    message: str | None = None
 
 
 @router.post("/finance/debtors/remind")
 def remind_debtors(
     req: DebtorsRemindRequest,
-    authorization: Optional[str] = Header(None),
+    authorization: str | None = Header(None),
     db: Session = Depends(get_db),
     _: str = Depends(check_admin_access),
 ):
@@ -2675,8 +2673,8 @@ def remind_debtors(
     recent_ids = {row[0] for row in recent_rows}
 
     admin_username = _get_admin_username(db, authorization)
-    sent_ids: List[int] = []
-    skipped_ids: List[int] = []
+    sent_ids: list[int] = []
+    skipped_ids: list[int] = []
     skipped_reasons: dict = {}
 
     for sid in ids:
@@ -2730,27 +2728,27 @@ def get_revenue_summary(
     cash_teacher = db.query(func.sum(Transaction.amount)).filter(Transaction.is_reversed == False).filter(Transaction.type == "deposit", Transaction.payment_method == "نقدی", Transaction.target_wallet == "teacher", Transaction.is_deleted == False).scalar() or 0
     # FIX: Bug 12 - exclude archived Transaction rows from this active view.
     cash_inst = db.query(func.sum(Transaction.amount)).filter(Transaction.is_reversed == False).filter(Transaction.type == "deposit", Transaction.payment_method == "نقدی", Transaction.target_wallet == "institute", Transaction.is_deleted == False).scalar() or 0
-    
+
     # FIX: Bug 12 - exclude archived Transaction rows from this active view.
     card_teacher = db.query(func.sum(Transaction.amount)).filter(Transaction.is_reversed == False).filter(Transaction.type == "deposit", Transaction.payment_method == "کارت به کارت", Transaction.target_wallet == "teacher", Transaction.is_deleted == False).scalar() or 0
     # FIX: Bug 12 - exclude archived Transaction rows from this active view.
     card_inst = db.query(func.sum(Transaction.amount)).filter(Transaction.is_reversed == False).filter(Transaction.type == "deposit", Transaction.payment_method == "کارت به کارت", Transaction.target_wallet == "institute", Transaction.is_deleted == False).scalar() or 0
-    
+
     # FIX: Bug 12 - exclude archived Transaction rows from this active view.
     online_teacher = db.query(func.sum(Transaction.amount)).filter(Transaction.is_reversed == False).filter(Transaction.type == "deposit", Transaction.payment_method == "online", Transaction.target_wallet == "teacher", Transaction.is_deleted == False).scalar() or 0
     # FIX: Bug 12 - exclude archived Transaction rows from this active view.
     online_inst = db.query(func.sum(Transaction.amount)).filter(Transaction.is_reversed == False).filter(Transaction.type == "deposit", Transaction.payment_method == "online", Transaction.target_wallet == "institute", Transaction.is_deleted == False).scalar() or 0
-    
+
     total_teacher = cash_teacher + card_teacher + online_teacher
     total_inst = cash_inst + card_inst + online_inst
-    
+
     # تعداد تراکنش‌های استرداد شده (Refunds)
     # FIX: Bug 12 - exclude archived Transaction rows from this active view.
     # برگشت payout معلم ledger است و refund دانش‌آموز نیست؛ با settlement_id تفکیک می‌شود.
     refund_count = db.query(Transaction).filter(Transaction.is_deleted == False, Transaction.is_reversed == False, Transaction.settlement_id.is_(None)).filter(Transaction.type == "reversal").count()
     # FIX: Bug 12 - exclude archived Transaction rows from this active view.
     refund_amount = db.query(func.sum(Transaction.amount)).filter(Transaction.is_deleted == False, Transaction.is_reversed == False, Transaction.settlement_id.is_(None)).filter(Transaction.type == "reversal").scalar() or 0
-    
+
     return {
         "revenue_by_wallet": {
             "teacher_wallet": {
@@ -2786,12 +2784,12 @@ def get_teacher_settlements_summary(
         # تعداد کل جلسات مربی
         courses = db.query(Course).filter(Course.teacher_id == t.id).all()
         course_ids = [c.id for c in courses]
-        
+
         session_count = 0
         if course_ids:
             # FIX: Bug 14 - exclude archived SessionLog rows from this active view.
             session_count = db.query(SessionLog).filter(SessionLog.is_deleted == False).filter(SessionLog.course_id.in_(course_ids)).count()
-            
+
         # مبالغ تسویه شده قبلی مربی
         settlements = db.query(models.Settlement).filter(models.Settlement.teacher_id == t.id).all()
         settled_total = sum(s.total_amount for s in settlements)

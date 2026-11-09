@@ -19,7 +19,7 @@ SERVER = ROOT / "Kharazmi_Server"
 if str(SERVER) not in sys.path:
     sys.path.insert(0, str(SERVER))
 
-from .clock import FIXED_NOW  # noqa: E402  — تنها منبع حقیقتِ «اکنونِ» سوئیت
+from .clock import FIXED_NOW
 
 
 def _guard_path(path: Path) -> Path:
@@ -91,14 +91,14 @@ def restore_role_sessions(manifest: dict[str, Any]) -> int:
 
 def _stable_password_hash(dependencies, password: str, identity: str) -> str:
     """Passlib PBKDF2 hash with a fixture-only, identity-scoped salt."""
-    salt = hashlib.sha256(f"route-audit-seed-v1:{identity}".encode("utf-8")).digest()[:16]
+    salt = hashlib.sha256(f"route-audit-seed-v1:{identity}".encode()).digest()[:16]
     return dependencies.pbkdf2_sha256.using(salt=salt, rounds=29_000).hash(password)
 
 
 def _stable_jwt(dependencies, user_id: int, role: str, now: dt.datetime) -> str:
     """Sign a reproducible JWT that remains valid independently of wall time."""
     header = {"alg": dependencies.JWT_ALGORITHM, "typ": "JWT"}
-    issued = int(now.replace(tzinfo=dt.timezone.utc).timestamp())
+    issued = int(now.replace(tzinfo=dt.UTC).timestamp())
     payload = {
         "user_id": user_id,
         "sub_role": role,

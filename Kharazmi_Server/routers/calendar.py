@@ -17,30 +17,30 @@ class RoomCreateRequest(BaseModel):
     name: str
     capacity: int = 30
     location: str
-    equipment: Optional[str] = None
-    branch_id: Optional[int] = 1  # Added branch_id 🆕
+    equipment: str | None = None
+    branch_id: int | None = 1  # Added branch_id 🆕
 
 class RoomResponseModel(BaseModel):
     id: int
     name: str
     capacity: int
     location: str
-    equipment: Optional[str] = None
+    equipment: str | None = None
     active: bool
-    branch_id: Optional[int] = None
+    branch_id: int | None = None
 
 class ConflictCheckRequest(BaseModel):
     teacher_id: int
-    room_id: Optional[int] = None
+    room_id: int | None = None
     days_of_week: str  # e.g., "شنبه"
     class_time: str   # e.g., "16:00"
-    student_ids: List[int] = []
-    resource_ids: Optional[List[int]] = []  # Added resource_ids 🆕
+    student_ids: list[int] = []
+    resource_ids: list[int] | None = []  # Added resource_ids 🆕
 
 class ConflictCheckResponse(BaseModel):
     has_conflict: bool
     message: str
-    details: List[str]
+    details: list[str]
 
 # --- 1. Admin/Secretary: Create Physical Room ---
 @router.post("/rooms/create", response_model=RoomResponseModel)
@@ -53,7 +53,7 @@ def create_physical_room(
     existing = db.query(Room).filter(Room.name == req.name).first()
     if existing:
         raise HTTPException(status_code=400, detail="اتاقی با این نام قبلاً در سیستم ثبت شده است")
-        
+
     new_room = Room(
         name=req.name,
         capacity=req.capacity,
@@ -68,7 +68,7 @@ def create_physical_room(
     return new_room
 
 # --- 2. View All Rooms ---
-@router.get("/rooms/list", response_model=List[RoomResponseModel])
+@router.get("/rooms/list", response_model=list[RoomResponseModel])
 def get_all_rooms(db: Session = Depends(get_db), _: str = Depends(check_user_login)):
     return db.query(Room).all()
 
@@ -77,7 +77,7 @@ def get_all_rooms(db: Session = Depends(get_db), _: str = Depends(check_user_log
 def check_scheduling_conflicts(req: ConflictCheckRequest, db: Session = Depends(get_db), _: str = Depends(check_user_login)):
     has_conflict = False
     details = []
-    
+
     # A) Teacher Conflict check
     teacher_clash = db.query(Course).filter(
         Course.teacher_id == req.teacher_id,
@@ -153,14 +153,14 @@ def check_scheduling_conflicts(req: ConflictCheckRequest, db: Session = Depends(
 @router.get("/calendar/events")
 def get_calendar_events(
     db: Session = Depends(get_db),
-    authorization: Optional[str] = Header(None),
+    authorization: str | None = Header(None),
     role: str = Depends(check_user_login)
 ):
     session = db.query(models.UserSession).filter(models.UserSession.token == authorization.split()[1]).first()
     user_id = session.user_id
-    
+
     events = []
-    
+
     # Fetch based on Role:
     # 1. Admin/Secretary -> see all classes
     if role in ["admin", "secretary"]:
@@ -172,7 +172,7 @@ def get_calendar_events(
                 "detail": f"کد: {c.code} | مربی: {c.teacher.first_name if c.teacher else ''} {c.teacher.last_name if c.teacher else ''}",
                 "schedule": f"{c.days_of_week} {c.class_time}"
             })
-            
+
     # 2. Teacher -> see only own classes
     elif role == "teacher":
         from routers.reports import get_logged_in_teacher
@@ -186,7 +186,7 @@ def get_calendar_events(
                     "detail": f"برگزاری کلاس {c.title}",
                     "schedule": f"{c.days_of_week} {c.class_time}"
                 })
-                
+
     # 3. Student / Parent -> see enrolled classes
     elif role in ["student", "parent"]:
         own = get_session_student(db, session) if role == "student" else get_session_parent(db, session)
@@ -203,7 +203,7 @@ def get_calendar_events(
                 "detail": f"حضور در کلاس {c.title}",
                 "schedule": f"{c.days_of_week} {c.class_time}"
             })
-            
+
         # Add Exams
         grades = db.query(Grade).filter(Grade.student_id == student_id).all()
         for g in grades:
@@ -213,7 +213,7 @@ def get_calendar_events(
                 "detail": f"نمره کسب شده: {g.score} از {g.max_score} در {g.course.title if g.course else ''}",
                 "schedule": g.date
             })
-            
+
         # Add Homework deadlines
         hws = db.query(Homework).filter(Homework.course_id.in_(course_ids)).all()
         for hw in hws:
@@ -223,16 +223,16 @@ def get_calendar_events(
                 "detail": hw.description,
                 "schedule": hw.due_date
             })
-            
+
         # Add Payment dues
         # FIX: Bug 13 - exclude archived Installment rows from this active view.
         insts = db.query(Installment).filter(Installment.is_deleted == False).filter(Installment.enrollment_id.in_([en.id for en in enrolls]), Installment.is_paid == False).all()
         for inst in insts:
             events.append({
                 "type": "payment due",
-                "title": f"💰 سررسید قسط شهریه",
+                "title": "💰 سررسید قسط شهریه",
                 "detail": f"مبلغ: {inst.amount:,} تومان بابت کلاس {inst.enrollment.course.title if inst.enrollment and inst.enrollment.course else ''}",
                 "schedule": inst.due_date
             })
-            
+
     return events

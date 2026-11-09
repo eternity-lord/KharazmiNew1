@@ -49,7 +49,7 @@ _DAY_ALIASES = {
 }
 
 
-def gregorian_to_jalali(date_value: datetime.date) -> Tuple[int, int, int]:
+def gregorian_to_jalali(date_value: datetime.date) -> tuple[int, int, int]:
     """Convert a Gregorian date to its canonical Jalali year, month and day."""
     gy, gm, gd = date_value.year, date_value.month, date_value.day
     cumulative_month_days = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334]
@@ -135,7 +135,7 @@ def jalali_to_gregorian(jy: int, jm: int, jd: int) -> datetime.date:
     return result
 
 
-def parse_project_date(value: Optional[str]) -> Optional[datetime.date]:
+def parse_project_date(value: str | None) -> datetime.date | None:
     """Parse legacy Jalali or Gregorian date strings, with optional time suffix."""
     normalized = (value or "").translate(_PERSIAN_DIGITS).translate(_ARABIC_DIGITS)
     match = re.search(r"(?<!\d)(\d{4})[/-](\d{1,2})[/-](\d{1,2})(?!\d)", normalized)
@@ -150,14 +150,14 @@ def parse_project_date(value: Optional[str]) -> Optional[datetime.date]:
         return None
 
 
-def _normalize_day_text(value: Optional[str]) -> str:
+def _normalize_day_text(value: str | None) -> str:
     normalized = (value or "").strip().replace("ي", "ی").replace("ك", "ک")
     for source, target in _DAY_ALIASES.items():
         normalized = normalized.replace(source, target)
     return normalized
 
 
-def schedule_matches_date(days_of_week: Optional[str], date_value: datetime.date) -> bool:
+def schedule_matches_date(days_of_week: str | None, date_value: datetime.date) -> bool:
     """Match one/multiple Persian weekdays plus the project's زوج/فرد shorthand."""
     schedule = _normalize_day_text(days_of_week)
     if not schedule or schedule == "نامشخص":
@@ -184,7 +184,7 @@ def schedule_matches_date(days_of_week: Optional[str], date_value: datetime.date
     return False
 
 
-def parse_schedule_start(class_time: Optional[str]) -> Optional[Tuple[int, int]]:
+def parse_schedule_start(class_time: str | None) -> tuple[int, int] | None:
     """Return the first HH:MM in a class-time value such as 16:00-17:30."""
     value = (class_time or "").translate(_PERSIAN_DIGITS).translate(_ARABIC_DIGITS)
     match = re.search(r"(?<!\d)([01]?\d|2[0-3])\s*[:٫.]\s*([0-5]\d)(?!\d)", value)
@@ -198,7 +198,7 @@ def parse_schedule_start(class_time: Optional[str]) -> Optional[Tuple[int, int]]
     return None
 
 
-def _date_prefixes(date_value: datetime.date) -> List[str]:
+def _date_prefixes(date_value: datetime.date) -> list[str]:
     """Accepted date prefixes in legacy and newer rows."""
     return [
         jalali_date_string(date_value),
@@ -207,7 +207,7 @@ def _date_prefixes(date_value: datetime.date) -> List[str]:
     ]
 
 
-def _date_prefix_filter(column, date_values: List[datetime.date]):
+def _date_prefix_filter(column, date_values: list[datetime.date]):
     clauses = []
     seen = set()
     for date_value in date_values:
@@ -226,7 +226,7 @@ def _active_courses_query(db: Session):
     )
 
 
-def _today_live_sessions(db: Session, now: datetime.datetime) -> List[LiveSession]:
+def _today_live_sessions(db: Session, now: datetime.datetime) -> list[LiveSession]:
     start = datetime.datetime.combine(now.date(), datetime.time.min).timestamp()
     end = datetime.datetime.combine(now.date() + datetime.timedelta(days=1), datetime.time.min).timestamp()
     gregorian_prefix = now.strftime("%Y-%m-%d")
@@ -256,8 +256,8 @@ def _teacher_settlement_alert_threshold(db: Session) -> int:
 
 def build_admin_smart_alerts(
     db: Session,
-    now: Optional[datetime.datetime] = None,
-) -> Dict:
+    now: datetime.datetime | None = None,
+) -> dict:
     """Read-only installment and teacher-settlement alerts for administrators."""
     now = now or datetime.datetime.now()
     today = now.date()
@@ -402,8 +402,8 @@ def build_admin_smart_alerts(
 def build_admin_today_summary(
     db: Session,
     sub_role: str,
-    now: Optional[datetime.datetime] = None,
-) -> Dict:
+    now: datetime.datetime | None = None,
+) -> dict:
     """Build the admin/secretary summary without changing any financial state."""
     now = now or datetime.datetime.now()
     today = now.date()
@@ -507,10 +507,10 @@ def build_admin_today_summary(
 
 
 def _find_next_class(
-    courses: List[Course],
+    courses: list[Course],
     now: datetime.datetime,
     horizon_days: int = 7,
-) -> Optional[Dict]:
+) -> dict | None:
     candidates = []
     for offset in range(horizon_days + 1):
         candidate_date = now.date() + datetime.timedelta(days=offset)
@@ -543,8 +543,8 @@ def _find_next_class(
 
 def _teacher_unsettled_amount(
     db: Session,
-    course_ids: List[int],
-    week_dates: List[datetime.date],
+    course_ids: list[int],
+    week_dates: list[datetime.date],
 ) -> int:
     """Use the existing pending-settlement marker, limited to the current week."""
     if not course_ids:
@@ -592,8 +592,8 @@ def _teacher_unsettled_amount(
 def build_teacher_today_summary(
     db: Session,
     teacher_id: int,
-    now: Optional[datetime.datetime] = None,
-) -> Dict:
+    now: datetime.datetime | None = None,
+) -> dict:
     """Build a teacher's live/next-class state and compact weekly summary."""
     now = now or datetime.datetime.now()
     teacher = db.query(Teacher).filter(Teacher.id == teacher_id).first()

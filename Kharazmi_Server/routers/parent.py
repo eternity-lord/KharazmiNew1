@@ -20,7 +20,7 @@ from financial_calculations import calculate_student_debt
 
 router = APIRouter()
 
-# FIX(C1): سقف اعلان‌های نمایش‌داده‌شده در پورتال ولی (جدیدترین‌ها اول) — 
+# FIX(C1): سقف اعلان‌های نمایش‌داده‌شده در پورتال ولی (جدیدترین‌ها اول) —
 # جلوگیری از پاسخ سنگین برای ولی‌ای که ماه‌ها اعلان انبار کرده است.
 PORTAL_NOTIFICATIONS_LIMIT = 50
 
@@ -37,7 +37,7 @@ def request_parent_otp(request: Request, req: ParentOtpRequest, db: Session = De
     mobile = normalize_mobile(_raw_mob)
     if not mobile:
         raise HTTPException(status_code=404, detail="شماره همراه ولی در سیستم ثبت نام نشده است")
-        
+
     student_exists = db.query(Student).filter(Student.parent_mobile.in_([mobile, _raw_mob]), Student.is_deleted == False).first()  # FIX H20-ESC
     if not student_exists:
         raise HTTPException(status_code=404, detail="شماره همراه ولی در سیستم ثبت نام نشده است")
@@ -69,7 +69,7 @@ def request_parent_otp(request: Request, req: ParentOtpRequest, db: Session = De
     ).first()
     if locked:
         raise HTTPException(status_code=429, detail="این شماره به دلیل تلاش‌های ناموفق قفل شده")
-            
+
     # FIX: 6 رقمی و هش شده
     otp_code = str(random.randint(100000, 999999))
     expires_at = datetime.datetime.utcnow() + datetime.timedelta(minutes=3)
@@ -84,15 +84,15 @@ def request_parent_otp(request: Request, req: ParentOtpRequest, db: Session = De
         is_locked=False
     )
     db.add(new_otp)
-    
+
     # شبیه‌سازی ارسال واقعی پیامک (ذخیره در sms_logs دیتابیس)
     from models import InstituteSettings
     settings = db.query(InstituteSettings).first()
     inst_name = settings.name if (settings and settings.name) else "خوارزمی"
-    
+
     today = datetime.datetime.now().strftime("%Y/%m/%d %H:%M")
     msg = f"کد تایید ورود به پورتال اولیا {inst_name}: {otp_code} (معتبر تا ۵ دقیقه)"
-    
+
     db.add(SmsLog(
         target_group=f"otp_{mobile}",
         message_text=msg,
@@ -100,7 +100,7 @@ def request_parent_otp(request: Request, req: ParentOtpRequest, db: Session = De
         date=today
     ))
     db.commit()
-    
+
     # برای لو نرفتن کد در حالت پروداکشن، مقدار کد را در بدنه پاسخ ارسال نمی‌کنیم
     # ولی برای راحتی کار تست ادمین، اعلام می‌کنیم که شبیه‌سازی شد
     return {
@@ -183,28 +183,27 @@ def parent_login(request: Request, req: ParentLoginRequest, db: Session = Depend
             "token": token,
             "student_name": f"{student.first_name} {student.last_name}"
         }
-    else:
-        temp_token = create_jwt_token(user_id=-1, sub_role=f"temp_parent:{mobile}")
-        new_session = UserSession(
-            token=temp_token,
-            user_id=-1,
-            sub_role=f"temp_parent:{mobile}"
-        )
-        db.add(new_session)
-        db.commit()
-        # FIX (E2E-B4): فرزندان معلق از لیست انتخاب حذف می‌شوند؛ اگر همه معلق‌اند، 403.
-        _active = [s for s in students if not s.is_suspended]
-        if not _active:
-            raise HTTPException(status_code=403, detail="حساب شما توسط مدیر معلق شده است. لطفاً با آموزشگاه تماس بگیرید")
-        # FIX L3: کد ملی از لیست پیش‌انتخاب حذف شد — انتخاب فقط id لازم دارد و نمایش فقط نام؛
-        # اپ (ParentSimpleStudentItem=id+name) و پورتال وب (child.id/child.name) به چیزی جز این دو نیاز ندارند.
-        children_list = [{"id": s.id, "name": f"{s.first_name} {s.last_name}"} for s in _active]
-        return {
-            "status": "success",
-            "multiple_children": True,
-            "temp_token": temp_token,
-            "children": children_list
-        }
+    temp_token = create_jwt_token(user_id=-1, sub_role=f"temp_parent:{mobile}")
+    new_session = UserSession(
+        token=temp_token,
+        user_id=-1,
+        sub_role=f"temp_parent:{mobile}"
+    )
+    db.add(new_session)
+    db.commit()
+    # FIX (E2E-B4): فرزندان معلق از لیست انتخاب حذف می‌شوند؛ اگر همه معلق‌اند، 403.
+    _active = [s for s in students if not s.is_suspended]
+    if not _active:
+        raise HTTPException(status_code=403, detail="حساب شما توسط مدیر معلق شده است. لطفاً با آموزشگاه تماس بگیرید")
+    # FIX L3: کد ملی از لیست پیش‌انتخاب حذف شد — انتخاب فقط id لازم دارد و نمایش فقط نام؛
+    # اپ (ParentSimpleStudentItem=id+name) و پورتال وب (child.id/child.name) به چیزی جز این دو نیاز ندارند.
+    children_list = [{"id": s.id, "name": f"{s.first_name} {s.last_name}"} for s in _active]
+    return {
+        "status": "success",
+        "multiple_children": True,
+        "temp_token": temp_token,
+        "children": children_list
+    }
 
 # ==========================================
 # ۳. انتخاب فرزند و ارتقای سشن موقت به دایمی (مخصوص چند فرزندی)
@@ -216,16 +215,16 @@ def parent_select_child(req: ChildSelectRequest, db: Session = Depends(get_db)):
     temp_session, _ = get_session_from_token(db, req.temp_token)
     if not temp_session or not (temp_session.sub_role or "").startswith("temp_parent:"):
         raise HTTPException(status_code=401, detail="نشست موقت معتبر نیست یا منقضی شده است")
-        
+
     role_parts = temp_session.sub_role.split(":")
     if len(role_parts) != 2:
         raise HTTPException(status_code=401, detail="نشست موقت نامعتبر است")
     parent_mobile = role_parts[1]
-    
+
     student = db.query(Student).filter(Student.id == req.student_id, Student.is_deleted == False).first()
     if not student:
         raise HTTPException(status_code=404, detail="دانش‌آموز مورد نظر یافت نشد")
-        
+
     # راستی‌آزمایی امنیتی جهت ممانعت از دسترسی به فرزند دیگران (IDOR Protection)
     # FIX H20-B2: مقایسه روی canonical هر دو طرف؛ اگر طرفی غیرقابل‌نرمال بود fallback به مقایسه‌ی دقیق امروز.
     _ns = normalize_mobile(student.parent_mobile)
@@ -236,7 +235,7 @@ def parent_select_child(req: ChildSelectRequest, db: Session = Depends(get_db)):
     # FIX (E2E-B4): انتخاب فرزند معلق ممنوع (توکن موقت ممکن است قبل از تعلیق صادر شده باشد).
     if student.is_suspended:
         raise HTTPException(status_code=403, detail="حساب شما توسط مدیر معلق شده است. لطفاً با آموزشگاه تماس بگیرید")
-        
+
     # FIX(H2): سشن به سایه‌ی parent اشاره می‌کند، نه Student.id (با ساخت lazy اگر نیست)
     from dependencies import create_jwt_token
     from dependencies import ensure_student_shadow_users
@@ -250,7 +249,7 @@ def parent_select_child(req: ChildSelectRequest, db: Session = Depends(get_db)):
     db.add(new_session)
     db.delete(temp_session)
     db.commit()
-    
+
     return {
         "status": "success",
         "token": token,
@@ -297,27 +296,27 @@ def _portal_notifications(db: Session, student: Student) -> list:
 
 
 @router.get("/parent/child_profile")
-def get_parent_child_profile(authorization: Optional[str] = Header(None), db: Session = Depends(get_db)):
+def get_parent_child_profile(authorization: str | None = Header(None), db: Session = Depends(get_db)):
     if not authorization:
         raise HTTPException(status_code=401, detail="توکن احراز هویت یافت نشد")
-        
+
     parts = authorization.split()
     if len(parts) != 2 or parts[0].lower() != "bearer":
         raise HTTPException(status_code=401, detail="قالب توکن معتبر نیست")
-        
+
     token = parts[1]
     from dependencies import get_session_from_token  # FIX H17: وریفای JWT+انقضا به‌جای کوئری دستی
     session, _ = get_session_from_token(db, token)
     if not session or session.sub_role != "parent":
         raise HTTPException(status_code=401, detail="نشست شما نامعتبر یا منقضی شده است")
-        
+
     # شناسه دانش‌آموز (فرزند) مستقیماً از روی سشن امن استخراج می‌گردد (امنیتی - جلوگیری از نشت داده)
     from dependencies import get_session_parent
     student = get_session_parent(db, session)
     if not student:
         raise HTTPException(status_code=404, detail="دانش‌آموز یافت نشد")
     student_id = student.id
-        
+
     # الف) واکشی کلاس‌ها
     classes = []
     # FIX: Bug 13 - exclude archived Enrollment rows from this active view.
@@ -325,7 +324,7 @@ def get_parent_child_profile(authorization: Optional[str] = Header(None), db: Se
     for en in enrollments:
         if en.course:
             classes.append(f"{en.course.title} ({en.course.code}) - {en.course.grade_level}")
-            
+
     # ب) واکشی کارنامه نمرات
     grades_db = db.query(Grade).filter(Grade.student_id == student_id).order_by(desc(Grade.id)).all()
     grades_list = []
@@ -333,11 +332,11 @@ def get_parent_child_profile(authorization: Optional[str] = Header(None), db: Se
     for g in grades_db:
         course = db.query(Course).filter(Course.id == g.course_id).first()
         c_name = course.title if course else "حذف شده"
-        
+
         if c_name not in course_scores:
             course_scores[c_name] = []
         course_scores[c_name].append(g.score)
-        
+
         grades_list.append({
             "course_name": c_name,
             "exam_title": g.exam_title,
@@ -346,12 +345,12 @@ def get_parent_child_profile(authorization: Optional[str] = Header(None), db: Se
             "date": g.date,
             "description": g.description
         })
-        
+
     averages = {}
     for c_name, scores in course_scores.items():
         if scores:
             averages[c_name] = round(sum(scores) / len(scores), 2)
-            
+
     # ج) واکشی تاریخچه حضور غیاب‌ها
     # FIX: Bug 14 - exclude archived SessionLog rows from this active view.
     sessions = db.query(SessionLog).filter(SessionLog.is_deleted == False).filter(SessionLog.course_id.in_([en.course_id for en in enrollments if en.course])).all()
@@ -369,7 +368,7 @@ def get_parent_child_profile(authorization: Optional[str] = Header(None), db: Se
                 "course_title": c_title,
                 "status": status_text
             })
-            
+
     # د) واکشی وضعیت اقساط شهریه
     # FIX: Bug 13 - exclude archived Installment rows from this active view.
     installments_db = db.query(Installment).filter(Installment.is_deleted == False).filter(Installment.enrollment_id.in_([en.id for en in enrollments])).order_by(Installment.due_date.asc()).all()
@@ -379,12 +378,12 @@ def get_parent_child_profile(authorization: Optional[str] = Header(None), db: Se
         enroll = db.query(Enrollment).filter(Enrollment.is_deleted == False).filter(Enrollment.id == inst.enrollment_id).first()
         course = db.query(Course).filter(Course.id == enroll.course_id).first() if enroll else None
         c_title = course.title if course else "کلاس حذف شده"
-        
+
         from today_summary import parse_project_date  # FIX H3-B1: due_date is Jalali; compare as real dates via central converter (lazy import, same pattern as routers/analytics.py)
         today_date = datetime.datetime.now().date()
         due = parse_project_date(inst.due_date)
         status_text = "پرداخت شده" if inst.is_paid else ("معوقه" if (due is not None and due < today_date) else "در انتظار")
-        
+
         installments_list.append({
             "course_title": c_title,
             "amount": inst.amount,
@@ -454,7 +453,7 @@ def get_parent_portal_page(db: Session = Depends(get_db)):
         db.add(settings)
         db.commit()
         db.refresh(settings)
-        
+
     inst_name = settings.name
     inst_phone = settings.phone
     inst_address = settings.address

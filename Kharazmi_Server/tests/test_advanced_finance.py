@@ -151,7 +151,7 @@ class TestKharazmiAdvancedFinance(unittest.TestCase):
         # Step C: Simulate SECOND callback (Idempotency check)
         # Re-fetch payment record
         payment_record_dup = self.db.query(Payment).filter(Payment.id == payment.id).first()
-        
+
         # In a real callback, we check: if payment_record_dup.status == "SUCCESS", we return success HTML immediately!
         # This prevents running any wallet updates or duplicate Transaction creations.
         if payment_record_dup.status == "SUCCESS":
@@ -182,7 +182,7 @@ class TestKharazmiAdvancedFinance(unittest.TestCase):
             is_reversed=False
         )
         self.db.add(trans)
-        
+
         # Apply to student wallet
         student = self.db.query(Student).filter(Student.id == self.student.id).first()
         student.wallet_institute += 100000
@@ -197,7 +197,7 @@ class TestKharazmiAdvancedFinance(unittest.TestCase):
 
         # Apply reversal
         target_trans.is_reversed = True
-        
+
         reversal = Transaction(
             student_id=target_trans.student_id,
             amount=-target_trans.amount,  # Negative amount to offset
@@ -222,7 +222,7 @@ class TestKharazmiAdvancedFinance(unittest.TestCase):
 
         self.assertTrue(target_trans.is_reversed)
         self.assertEqual(student.wallet_institute, -150000) # Back to -150,000!
-        
+
         # Ensure we have BOTH the original transaction and the reversal transaction in the database
         all_trans = self.db.query(Transaction).filter(Transaction.student_id == self.student.id).all()
         self.assertEqual(len(all_trans), 2)

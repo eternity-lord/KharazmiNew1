@@ -47,10 +47,10 @@ def _active_branch_map(db):
 def student_branch_candidates(db, active):
     """For each NULL-branch student: (student, decision, branch_id_or_None, reason)."""
     result = []
-    for st in db.query(Student).filter(Student.branch_id == None).all():  # noqa: E711
+    for st in db.query(Student).filter(Student.branch_id == None).all():
         enrollments = (
             db.query(Enrollment)
-            .filter(Enrollment.student_id == st.id, Enrollment.is_deleted == False)  # noqa: E712
+            .filter(Enrollment.student_id == st.id, Enrollment.is_deleted == False)
             .all()
         )
         branches = set()
@@ -70,7 +70,7 @@ def student_branch_candidates(db, active):
 def course_branch_candidates(db, active):
     """For each NULL-branch course: (course, decision, branch_id_or_None, reason)."""
     result = []
-    for course in db.query(Course).filter(Course.branch_id == None).all():  # noqa: E711
+    for course in db.query(Course).filter(Course.branch_id == None).all():
         teacher = (
             db.query(models.Teacher).filter(models.Teacher.id == course.teacher_id).first()
             if course.teacher_id is not None
@@ -106,7 +106,7 @@ def course_branch_candidates(db, active):
             c.branch_id
             for c in db.query(Course)
             .filter(models.Course.teacher_id == teacher.id, Course.id != course.id,
-                    Course.branch_id != None)  # noqa: E711
+                    Course.branch_id != None)
             .all()
             if c.branch_id in active
         }
@@ -122,7 +122,7 @@ def course_branch_candidates(db, active):
 def _branches_from_enrolled_students(db, course, active):
     enrollments = (
         db.query(Enrollment)
-        .filter(Enrollment.course_id == course.id, Enrollment.is_deleted == False)  # noqa: E712
+        .filter(Enrollment.course_id == course.id, Enrollment.is_deleted == False)
         .all()
     )
     branches = set()
@@ -169,8 +169,8 @@ def _fmt_course(course):
 
 def print_report(db, plan, applied=None):
     active = _active_branch_map(db)
-    students_null = db.query(Student).filter(Student.branch_id == None).count()  # noqa: E711
-    courses_null = db.query(Course).filter(Course.branch_id == None).count()  # noqa: E711
+    students_null = db.query(Student).filter(Student.branch_id == None).count()
+    courses_null = db.query(Course).filter(Course.branch_id == None).count()
 
     lines = []
     lines.append("=" * 78)
@@ -201,8 +201,8 @@ def print_report(db, plan, applied=None):
 
     if applied is not None:
         s_upd, c_upd = applied
-        students_after = db.query(Student).filter(Student.branch_id == None).count()  # noqa: E711
-        courses_after = db.query(Course).filter(Course.branch_id == None).count()  # noqa: E711
+        students_after = db.query(Student).filter(Student.branch_id == None).count()
+        courses_after = db.query(Course).filter(Course.branch_id == None).count()
         lines.append("APPLIED:")
         lines.append(f"  students updated: {s_upd}  (NULL remaining: {students_null} -> {students_after})")
         lines.append(f"  courses  updated: {c_upd}  (NULL remaining: {courses_null} -> {courses_after})")

@@ -16,15 +16,15 @@ def create_interactive_admin():
     print("        KHARAZMI SYSTEM - CREATE ADMIN ACCOUNT")
     print("==================================================")
     print("\nلطفاً اطلاعات خود را برای ساخت حساب ادمین وارد کنید:\n")
-    
+
     full_name = input("👤 نام و نام خانوادگی خودتان: ").strip()
     mobile = input("📱 شماره موبایل شما (نام کاربری): ").strip()
     password = input("🔑 رمز عبور انتخابی شما: ").strip()
-    
+
     if not full_name or not mobile or not password:
         print("\n❌ خطا: تمام فیلدها الزامی هستند! دوباره تلاش کنید.")
         return
-        
+
     # بررسی عدم تکراری بودن شماره موبایل در دیتابیس
     exists = db.query(User).filter(User.username == mobile).first()
     if exists:
@@ -49,7 +49,7 @@ def create_interactive_admin():
     )
     db.add(new_admin)
     db.commit()
-    
+
     print("\n" + "🎉" * 20)
     print("✅ حساب ادمین اختصاصی شما با موفقیت ساخته شد!")
     print(f"👤 نام: {full_name}")

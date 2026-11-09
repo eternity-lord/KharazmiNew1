@@ -55,7 +55,7 @@ def create_jwt_token(user_id: int, sub_role: str, expires_days: int = None) -> s
     sig_b64 = _b64url_encode(signature)
     return f"{header_b64}.{payload_b64}.{sig_b64}"
 
-def verify_jwt_token(token: str) -> Optional[dict]:
+def verify_jwt_token(token: str) -> dict | None:
     # FIX: verify HMAC signature and exp
     try:
         if "." not in token:
@@ -94,23 +94,22 @@ def get_session_from_token(db: Session, token: str):
             db.commit()
             return None, None
         return sess, jwt_payload
-    else:
-        # FIX: a JWT-shaped token that failed verification (bad signature or expired)
-        # must NOT fall back to the 30-day opaque-token lookup — reject it outright.
-        # (Same shape check as verify_jwt_token: contains "." and splits into 3 parts.)
-        if token and "." in token and len(token.split(".")) == 3:
-            return None, None
-        sess = db.query(UserSession).filter(UserSession.token == token).first()
-        if not sess:
-            return None, None
-        expiry_limit = datetime.datetime.utcnow() - datetime.timedelta(days=SESSION_EXPIRY_DAYS)
-        if sess.created_at < expiry_limit:
-            db.delete(sess)
-            db.commit()
-            return None, None
-        return sess, None
+    # FIX: a JWT-shaped token that failed verification (bad signature or expired)
+    # must NOT fall back to the 30-day opaque-token lookup — reject it outright.
+    # (Same shape check as verify_jwt_token: contains "." and splits into 3 parts.)
+    if token and "." in token and len(token.split(".")) == 3:
+        return None, None
+    sess = db.query(UserSession).filter(UserSession.token == token).first()
+    if not sess:
+        return None, None
+    expiry_limit = datetime.datetime.utcnow() - datetime.timedelta(days=SESSION_EXPIRY_DAYS)
+    if sess.created_at < expiry_limit:
+        db.delete(sess)
+        db.commit()
+        return None, None
+    return sess, None
 
-def resolve_actor_user_id(db: Session, authorization: Optional[str]) -> Optional[int]:
+def resolve_actor_user_id(db: Session, authorization: str | None) -> int | None:
     """شناسه‌ی کاربرِ عامل (actor) از هدر Authorization — برای ثبت «چه کسی این کار را کرد».
 
     پیش‌تر این بلوک ۱۰ خطی سه بار در `routers/classes.py` کپی شده بود (حذف مستقیم، تایید، رد
@@ -207,7 +206,7 @@ def display_name(obj, fallback: str = "") -> str:
     return safe_person_name(getattr(obj, "first_name", None), getattr(obj, "last_name", None), fallback)
 
 
-def check_admin_access(authorization: Optional[str] = Header(None), db: Session = Depends(get_db)):
+def check_admin_access(authorization: str | None = Header(None), db: Session = Depends(get_db)):
     # FIX: use signed token verification
     if not authorization:
         raise HTTPException(status_code=401, detail="توکن احراز هویت یافت نشد. لطفاً مجدداً وارد شوید")
@@ -227,7 +226,7 @@ def check_admin_access(authorization: Optional[str] = Header(None), db: Session 
         raise HTTPException(status_code=403, detail="شما دسترسی لازم برای این عملیات را ندارید")
     return sub_role
 
-def check_admin_or_secretary_access(authorization: Optional[str] = Header(None), db: Session = Depends(get_db)):
+def check_admin_or_secretary_access(authorization: str | None = Header(None), db: Session = Depends(get_db)):
     # گارد ادمین + منشی: فقط این دو نقش اجازه عبور دارند (تصمیم کاربر برای C1)
     if not authorization:
         raise HTTPException(status_code=401, detail="توکن احراز هویت یافت نشد. لطفاً مجدداً وارد شوید")
@@ -247,7 +246,7 @@ def check_admin_or_secretary_access(authorization: Optional[str] = Header(None),
         raise HTTPException(status_code=403, detail="شما دسترسی لازم برای این عملیات را ندارید")
     return sub_role
 
-def check_admin_secretary_or_teacher_access(authorization: Optional[str] = Header(None), db: Session = Depends(get_db)):
+def check_admin_secretary_or_teacher_access(authorization: str | None = Header(None), db: Session = Depends(get_db)):
     """ادمین/منشی/معلم — برای کارهایی که معلم هم باید بتواند در **حوزهٔ خودش** انجام دهد.
 
     تفاوت با `check_admin_or_secretary_access`: معلم هم عبور می‌کند، ولی خودِ اندپوینت باید
@@ -277,7 +276,7 @@ def check_admin_secretary_or_teacher_access(authorization: Optional[str] = Heade
     return sub_role
 
 
-def resolve_session_teacher(db: Session, authorization: Optional[str]) -> Optional[Teacher]:
+def resolve_session_teacher(db: Session, authorization: str | None) -> Teacher | None:
     """پروندهٔ معلمِ همین سشن (O-22) — `None` یعنی این کاربر معلمِ دارای پرونده نیست.
 
     ترتیب: `UserSession.teacher_id` (استاندارد جدید) وگرنه تطبیق موبایل سایهٔ کاربر.
@@ -302,7 +301,7 @@ def resolve_session_teacher(db: Session, authorization: Optional[str]) -> Option
                                     Teacher.is_deleted == False).first()
 
 
-def check_user_login(authorization: Optional[str] = Header(None), db: Session = Depends(get_db)):
+def check_user_login(authorization: str | None = Header(None), db: Session = Depends(get_db)):
     # FIX: use signed token verification
     if not authorization:
         raise HTTPException(status_code=401, detail="توکن احراز هویت یافت نشد. لطفاً مجدداً وارد شوید")
@@ -324,7 +323,7 @@ def check_user_login(authorization: Optional[str] = Header(None), db: Session = 
             raise HTTPException(status_code=403, detail="فعالیت همکاران محترم موقتاً توسط مدیریت آموزشگاه متوقف شده است. لطفاً بعداً تلاش فرمایید.")
     return sub_role
 
-def get_current_user(authorization: Optional[str] = Header(None), db: Session = Depends(get_db)) -> User:
+def get_current_user(authorization: str | None = Header(None), db: Session = Depends(get_db)) -> User:
     # FIX: use signed token verification
     if not authorization:
         raise HTTPException(status_code=401, detail="توکن احراز هویت یافت نشد. لطفاً مجدداً وارد شوید")
@@ -359,7 +358,7 @@ def get_enrollment_tuition_and_discount(enroll):
     return final_tuition, discount_amount
 
 
-def get_active_branch(db: Session, branch_id: Optional[int]):
+def get_active_branch(db: Session, branch_id: int | None):
     """شعبه‌ی فعال با شناسه‌ی داده‌شده؛ اگر وجود نداشته باشد یا غیرفعال باشد None."""
     if branch_id is None:
         return None
@@ -372,10 +371,10 @@ def get_active_branch(db: Session, branch_id: Optional[int]):
 def resolve_creation_branch(
     db: Session,
     *,
-    user: Optional[User] = None,
-    teacher: Optional[Teacher] = None,
-    requested_branch_id: Optional[int] = None,
-    fallback_branch_id: Optional[int] = None,
+    user: User | None = None,
+    teacher: Teacher | None = None,
+    requested_branch_id: int | None = None,
+    fallback_branch_id: int | None = None,
 ) -> int:
     """سیاست مرکزی و شفاف تعیین branch_id برای مسیرهای نوشتن (ثبت شاگرد، ساخت کلاس، ...).
 
@@ -699,7 +698,7 @@ def validate_session_item_statuses(items) -> None:
         )
 
 
-def check_student_access(student_id: int, authorization: Optional[str], db: Session, sub_role: str):
+def check_student_access(student_id: int, authorization: str | None, db: Session, sub_role: str):
     # FIX: use signed token helper for JWT compatibility
     if sub_role == "teacher":
         from routers.reports import get_logged_in_teacher
@@ -820,7 +819,7 @@ def ensure_student_shadow_users(db: Session, student) -> None:
                 raise
 
 
-def get_session_student(db: Session, session) -> Optional[Student]:
+def get_session_student(db: Session, session) -> Student | None:
     """FIX(H2): Student متناظر سشن نقش student — از طریق FK موجود Student.user_id.
 
     None یعنی سشن خراب/قدیمی یا شاگرد آرشیوی؛ caller خودش 401/403/404 می‌دهد.
@@ -833,7 +832,7 @@ def get_session_student(db: Session, session) -> Optional[Student]:
     return db.query(Student).filter(Student.user_id == shadow.id, Student.is_deleted == False).first()
 
 
-def get_session_parent(db: Session, session) -> Optional[Student]:
+def get_session_parent(db: Session, session) -> Student | None:
     """FIX(H2): فرزند متناظر سشن نقش parent — از طریق FK موجود Student.parent_user_id.
 
     None یعنی سشن خراب/قدیمی یا شاگرد آرشیوی؛ caller خودش 401/403/404 می‌دهد.
@@ -846,7 +845,7 @@ def get_session_parent(db: Session, session) -> Optional[Student]:
     return db.query(Student).filter(Student.parent_user_id == shadow.id, Student.is_deleted == False).first()
 
 
-def resolve_participant_keys(db: Session, session, role: str) -> Optional[List[int]]:
+def resolve_participant_keys(db: Session, session, role: str) -> list[int] | None:
     """کلیدهای کاندید ConversationParticipant/Message برای سشن فعلی (dual-lookup موقت).
 
     ترتیب مهم است: عنصر اول استاندارد جدید است (تنها مقداری که برای رکورد جدید ثبت می‌شود)،
@@ -880,7 +879,7 @@ def resolve_participant_keys(db: Session, session, role: str) -> Optional[List[i
     return [session.user_id]
 
 
-def resolve_notification_recipient(db: Session, subject_id: int, role: str) -> Optional[int]:
+def resolve_notification_recipient(db: Session, subject_id: int, role: str) -> int | None:
     """مپ مرکزی subject به recipient_user_id نوتیفیکیشن (بچ D — آخرین بچ H2).
 
     خواننده‌ها (get_notifications و...) با current_user.id می‌خوانند، پس خروجی همیشه فضای User.id است.
@@ -978,7 +977,7 @@ ROLE_PERMISSIONS = {
 }
 
 def require_permission(permission: str):
-    def dependency(authorization: Optional[str] = Header(None), db: Session = Depends(get_db)):
+    def dependency(authorization: str | None = Header(None), db: Session = Depends(get_db)):
         # FIX: use signed token verification
         if not authorization:
             raise HTTPException(status_code=401, detail="توکن یافت نشد")
@@ -1013,7 +1012,7 @@ except Exception:
 _MOBILE_DIGITS = str.maketrans("۰۱۲۳۴۵۶۷۸۹٠١٢٣٤٥٦٧٨٩", "01234567890123456789")
 
 
-def normalize_mobile(raw) -> Optional[str]:
+def normalize_mobile(raw) -> str | None:
     """FIX H20: canonical موبایل ایرانی ← «09xxxxxxxxx»؛ None اگر غیرقابل‌نرمال.
 
     هرگز رشته‌ی نامعتبر برنمی‌گرداند — کالر روی None باید 400 بدهد.
@@ -1088,7 +1087,7 @@ class NotificationService:
         type: str,
         title: str,
         body: str,
-        data: Optional[dict] = None,
+        data: dict | None = None,
         priority: int = 1,
         commit: bool = True,  # False فقط وقتی کالر خودش اتمیسیته را مدیریت می‌کند (مثل حلقه شارژ ثبت جلسه)
     ):
@@ -1153,7 +1152,7 @@ class NotificationService:
     # FIX(admin-notifications): گیرندگان اعلانِ کارکنان — همیشه از فضای User.id.
     # ------------------------------------------------------------------
     @staticmethod
-    def get_staff_recipients(db: Session, branch_id: Optional[int] = None):
+    def get_staff_recipients(db: Session, branch_id: int | None = None):
         """لیست (user_id, role) کارکنانِ مجاز برای دریافت اعلان ادمینی.
 
         - منبعِ شناسه: جدول users (User.id) — هرگز Student.id/Teacher.id.
@@ -1174,7 +1173,7 @@ class NotificationService:
 
     @staticmethod
     def send_to_staff(db: Session, *, type: str, title: str, body: str,
-                      data: Optional[dict] = None, branch_id: Optional[int] = None,
+                      data: dict | None = None, branch_id: int | None = None,
                       priority: int = 1):
         """ارسال اعلان به کارکنانِ مجاز (ادمین/منشی) — شناسه‌ها از فضای User.id.
 

@@ -145,7 +145,7 @@ class TestKharazmiAutomationAnalytics(unittest.TestCase):
         """3. Verify optimized databaseaggregations of analytics dashboard"""
         # Call dashboard stats for this Term (includes 1405 dates)
         stats = get_analytics_dashboard(time_filter="Term", db=self.db, _="admin")
-        
+
         # Student 1 is active (has enrollment)
         self.assertEqual(stats["active_students"], 1)
         # Attendance rate should be exactly 33.3%

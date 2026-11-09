@@ -307,13 +307,13 @@ class LiveStatusSave(BaseModel):
 
 
 class LiveEndBody(BaseModel):
-    date: Optional[str] = None  # اختیاری؛ در غیر این صورت تاریخ شروع جلسه به‌کار می‌رود
+    date: str | None = None  # اختیاری؛ در غیر این صورت تاریخ شروع جلسه به‌کار می‌رود
 
 
 @router.post("/attendance/{course_id}/start_live")
 def start_live_session(
     course_id: int,
-    authorization: Optional[str] = Header(None),
+    authorization: str | None = Header(None),
     db: Session = Depends(get_db),
     sub_role: str = Depends(check_user_login),
 ):
@@ -369,8 +369,8 @@ def start_live_session(
 @router.post("/attendance/{session_id}/end_live")
 def end_live_session(
     session_id: int,
-    body: Optional[LiveEndBody] = None,
-    authorization: Optional[str] = Header(None),
+    body: LiveEndBody | None = None,
+    authorization: str | None = Header(None),
     db: Session = Depends(get_db),
     sub_role: str = Depends(check_user_login),
 ):
@@ -449,7 +449,7 @@ def end_live_session(
 @router.post("/attendance/{session_id}/cancel_live")
 def cancel_live_session(
     session_id: int,
-    authorization: Optional[str] = Header(None),
+    authorization: str | None = Header(None),
     db: Session = Depends(get_db),
     sub_role: str = Depends(check_user_login),
 ):
@@ -510,7 +510,7 @@ def cancel_live_session(
 def save_live_status(
     session_id: int,
     body: LiveStatusSave,
-    authorization: Optional[str] = Header(None),
+    authorization: str | None = Header(None),
     db: Session = Depends(get_db),
     sub_role: str = Depends(check_user_login),
 ):
@@ -550,7 +550,7 @@ def save_live_status(
 
 @router.get("/attendance/live/current")
 def get_current_live_session(
-    authorization: Optional[str] = Header(None),
+    authorization: str | None = Header(None),
     db: Session = Depends(get_db),
     sub_role: str = Depends(check_user_login),
 ):
@@ -583,7 +583,7 @@ def get_current_live_session(
 
 
 @router.post("/attendance/get")
-def get_class_attendance(req: AttendanceLogRequest, db: Session = Depends(get_db), authorization: Optional[str] = Header(None), sub_role: str = Depends(check_user_login)):
+def get_class_attendance(req: AttendanceLogRequest, db: Session = Depends(get_db), authorization: str | None = Header(None), sub_role: str = Depends(check_user_login)):
     # دریافت لیست غیبت‌های ثبت شده برای یک کلاس در تاریخ خاص
     course = db.query(Course).filter(Course.id == req.course_id).first()
     if not course:
@@ -630,8 +630,8 @@ def get_class_attendance(req: AttendanceLogRequest, db: Session = Depends(get_db
 
 @router.post("/attendance/submit_session")
 def submit_session_and_calculate(
-    data: AttendanceSubmitData, db: Session = Depends(get_db), authorization: Optional[str] = Header(None),
-    sub_role: str = Depends(check_user_login), _system_caller: Optional[str] = None
+    data: AttendanceSubmitData, db: Session = Depends(get_db), authorization: str | None = Header(None),
+    sub_role: str = Depends(check_user_login), _system_caller: str | None = None
 ):
     print(f"--- شروع ثبت جلسه برای کلاس {data.course_id} ---")  # Log
 
@@ -879,7 +879,7 @@ def submit_session_and_calculate(
 
 
 @router.post("/attendance/get_history")
-def get_history(req: HistoryRequest, db: Session = Depends(get_db), authorization: Optional[str] = Header(None), sub_role: str = Depends(check_user_login)):
+def get_history(req: HistoryRequest, db: Session = Depends(get_db), authorization: str | None = Header(None), sub_role: str = Depends(check_user_login)):
     course = db.query(Course).filter(Course.id == req.course_id).first()
     if not course:
         return []
@@ -924,7 +924,7 @@ def get_history(req: HistoryRequest, db: Session = Depends(get_db), authorizatio
 
 
 @router.post("/attendance/student_history")
-def get_student_attendance_history(req: StudentAttendanceHistoryRequest, db: Session = Depends(get_db), authorization: Optional[str] = Header(None), sub_role: str = Depends(check_user_login)):
+def get_student_attendance_history(req: StudentAttendanceHistoryRequest, db: Session = Depends(get_db), authorization: str | None = Header(None), sub_role: str = Depends(check_user_login)):
     student = db.query(Student).filter(Student.id == req.student_id).first()
     if not student:
         raise HTTPException(status_code=404, detail="دانش‌آموز یافت نشد")
@@ -957,7 +957,7 @@ def get_student_attendance_history(req: StudentAttendanceHistoryRequest, db: Ses
     # واکشی تمامی جلسات این کلاس
     # FIX: Bug 14 - exclude archived SessionLog rows from this active view.
     sessions = db.query(SessionLog).filter(SessionLog.is_deleted == False).filter(SessionLog.course_id == req.course_id).order_by(SessionLog.date.asc()).all()
-    
+
     total_sessions = len(sessions)
     present_count = 0
     absent_count = 0
@@ -1001,12 +1001,12 @@ def get_student_attendance_history(req: StudentAttendanceHistoryRequest, db: Ses
     }
 
 @router.get("/attendance/session/{session_code}")
-def get_session_details(session_code: int, db: Session = Depends(get_db), authorization: Optional[str] = Header(None), sub_role: str = Depends(check_user_login)):
+def get_session_details(session_code: int, db: Session = Depends(get_db), authorization: str | None = Header(None), sub_role: str = Depends(check_user_login)):
     # FIX: Bug 14 - exclude archived SessionLog rows from this active view.
     session = db.query(SessionLog).filter(SessionLog.is_deleted == False).filter(SessionLog.session_code == session_code).first()
     if not session:
         raise HTTPException(status_code=404, detail="جلسه مورد نظر یافت نشد")
-        
+
     course = db.query(Course).filter(Course.id == session.course_id).first()
     # FIX (audit-v2/#11): IDOR خواندن — ادمین/منشی + معلمِ مالک کلاس (AttendanceActivity هم از Main هم
     # از TeacherDashboard باز می‌شود). شاگرد/ولی مسیر مشروعی ندارند (پورتال‌ها جزئیات جلسه نمی‌بینند).
@@ -1020,7 +1020,7 @@ def get_session_details(session_code: int, db: Session = Depends(get_db), author
     t_name = ""
     if course and course.teacher:
         t_name = display_name(course.teacher, "نامشخص")
-        
+
     atts = db.query(Attendance).filter(
         Attendance.session_id == session.id, Attendance.is_deleted == False,  # FIX (F-S2)
     ).all()
@@ -1035,7 +1035,7 @@ def get_session_details(session_code: int, db: Session = Depends(get_db), author
             "excused": a.excused,
             "student_code": student.student_code if student else None
         })
-        
+
     return {
         "session_id": session.id,
         "session_code": session.session_code,
@@ -1050,17 +1050,17 @@ def get_session_details(session_code: int, db: Session = Depends(get_db), author
 
 @router.put("/attendance/session/{session_code}")
 def edit_past_session(
-    session_code: int, 
-    data: AttendanceSubmitData, 
-    db: Session = Depends(get_db), 
-    authorization: Optional[str] = Header(None),
+    session_code: int,
+    data: AttendanceSubmitData,
+    db: Session = Depends(get_db),
+    authorization: str | None = Header(None),
     sub_role: str = Depends(check_user_login)
 ):
     # FIX: Bug 14 - exclude archived SessionLog rows from this active view.
     session = db.query(SessionLog).filter(SessionLog.is_deleted == False).filter(SessionLog.session_code == session_code).first()
     if not session:
         raise HTTPException(status_code=404, detail="جلسه یافت نشد")
-        
+
     course = db.query(Course).filter(Course.id == session.course_id).first()
     if not course:
         raise HTTPException(404, "کلاس یافت نشد")
@@ -1287,8 +1287,8 @@ def edit_past_session(
 
 @router.delete("/attendance/session/{session_code}")
 def delete_session_endpoint(
-    session_code: int, 
-    db: Session = Depends(get_db), 
+    session_code: int,
+    db: Session = Depends(get_db),
     _: str = Depends(check_admin_access)
 ):
     # FIX: Bug 14 - exclude archived SessionLog rows from this active view.
@@ -1313,7 +1313,7 @@ def delete_session_endpoint(
     # FIX (audit-v2/critical-8-قدم۲): اتمیک با is_deleted پایین (تک‌کامیت انتهای تابع) — دیگر پنجره‌ی
     # «کرش وسط = جلسه‌ی فعال بدون شارژ/حضور» وجود ندارد. edit عمداً دست‌نخورده (پیش‌فرض True).
     reverse_session_financial_impacts(session.id, db, commit=False)
-    
+
     # FIX: Bug 14 - archived financial rows still reference this session; retain the parent row too.
     session.is_deleted = True
     db.commit()
@@ -1353,7 +1353,7 @@ class QrCheckInRequest(BaseModel):
 @router.post("/attendance/qr_check-in")
 def qr_student_check_in(
     req: QrCheckInRequest,
-    authorization: Optional[str] = Header(None),
+    authorization: str | None = Header(None),
     db: Session = Depends(get_db),
     role: str = Depends(check_user_login)
 ):
@@ -1370,7 +1370,7 @@ def qr_student_check_in(
     # (هر تاریخ آینده‌ای قبول می‌شد) و حس امنیت کاذب می‌داد؛ جایگزین واقعی: چک همان‌روز + ریت‌لیمیت.
     if not _qr_checkin_allowed(student_id):
         raise HTTPException(status_code=429, detail="تعداد تلاش‌های ثبت حضور بیش از حد مجاز است؛ چند دقیقه بعد دوباره تلاش کنید")
-        
+
     sess = db.query(SessionLog).filter(SessionLog.session_code == req.session_code).first()
     if not sess:
         raise HTTPException(status_code=404, detail="جلسه کلاسی یافت نشد")
@@ -1378,7 +1378,7 @@ def qr_student_check_in(
     from today_summary import parse_project_date  # lazy، هم‌مثل analytics/automation
     if parse_project_date(sess.date) != datetime.datetime.utcnow().date():
         raise HTTPException(status_code=403, detail="این کد QR فقط برای جلسه‌ی همان روز معتبر است")
-        
+
     # FIX (F-S1): دانش‌آموز آرشیوشده اجازه‌ی هیچ مسیر حضور (از جمله QR) ندارد — هم‌سیاست با ثبت جلسه.
     if own.is_deleted:
         raise HTTPException(status_code=403, detail="حساب شما حذف/آرشیو شده است و امکان ثبت حضور وجود ندارد")
@@ -1406,9 +1406,9 @@ def qr_student_check_in(
     else:
         # ردیف آرشیوشده‌ی همین (جلسه، دانش‌آموز) احیا می‌شود، نه INSERT تازه (قید یکتا).
         _upsert_attendance_row(db, sess.id, student_id, "Present", False)
-        
+
     db.commit()
-    
+
     st = db.query(Student).filter(Student.id == student_id, Student.is_deleted == False).first()
     if st:
         from dependencies import NotificationService, ensure_student_shadow_users
@@ -1422,7 +1422,7 @@ def qr_student_check_in(
             title="🟢 ثبت حضور موفقیت‌آمیز با QR",
             body=f"حضور شما در جلسه شماره #{req.session_code} با اسکن کد QR ثبت شد."
         )
-        
+
     return {"message": "حضور شما با موفقیت با اسکن کد QR ثبت گردید"}
 
 

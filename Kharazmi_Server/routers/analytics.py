@@ -18,7 +18,7 @@ from financial_calculations import calculate_student_debt
 
 router = APIRouter()
 
-def get_user_branch_filter(db: Session, authorization: Optional[str], branch_id: Optional[int]) -> Optional[int]:
+def get_user_branch_filter(db: Session, authorization: str | None, branch_id: int | None) -> int | None:
     if not authorization:
         return branch_id
     try:
@@ -35,7 +35,7 @@ def get_user_branch_filter(db: Session, authorization: Optional[str], branch_id:
     return branch_id
 
 # Helper function to get date range for time filters
-def get_date_range_filter(time_filter: str, start_date: Optional[str] = None, end_date: Optional[str] = None):
+def get_date_range_filter(time_filter: str, start_date: str | None = None, end_date: str | None = None):
     today = datetime.date.today()
     if time_filter == "Today":
         start = today.strftime("%Y/%m/%d")
@@ -80,7 +80,7 @@ def get_enrollment_funnel(
     start_date: str = Query(...),
     end_date: str = Query(...),
     branch_id: int = Query(..., ge=1),
-    authorization: Optional[str] = Header(None),
+    authorization: str | None = Header(None),
     db: Session = Depends(get_db),
     _: str = Depends(check_admin_access),
 ):
@@ -152,10 +152,10 @@ def get_enrollment_funnel(
 @router.get("/analytics/dashboard")
 def get_analytics_dashboard(
     time_filter: str = "Month",  # Today, Week, Month, Term, Year, Custom
-    start_date: Optional[str] = None,
-    end_date: Optional[str] = None,
-    branch_id: Optional[int] = None,
-    authorization: Optional[str] = Header(None),
+    start_date: str | None = None,
+    end_date: str | None = None,
+    branch_id: int | None = None,
+    authorization: str | None = Header(None),
     db: Session = Depends(get_db),
     _: str = Depends(check_admin_or_secretary_access)  # FIX (L14/Y4): داشبورد درآمد/بدهی موسسه — فقط کارکنان (فراخوانی داخلی excel/pdf با _="admin" دست‌نخورده)
 ):
@@ -169,14 +169,14 @@ def get_analytics_dashboard(
     def _in_range(value):
         parsed = parse_project_date(value)
         return parsed is not None and start_day <= parsed <= end_day
-    
+
     # ۱. فعال بودن دانش‌آموزان (Active Students): دارای ثبت‌نام در دیتابیس
     # FIX: Bug 13 - exclude archived Enrollment rows from this active view.
     active_st_query = db.query(func.count(func.distinct(Enrollment.student_id))).filter(Enrollment.is_deleted == False)
     if resolved_branch:
         active_st_query = active_st_query.filter(Enrollment.branch_id == resolved_branch)
     active_students_count = active_st_query.scalar() or 0
-    
+
     # ۲. ثبت‌نام‌های جدید (New Registrations): در بازه زمانی تعیین‌شده
     # FIX: Bug 13 - exclude archived Enrollment rows from this active view.
     # FIX H3-B3: register_date mixes Jalali+Gregorian; filter parsed dates in Python.
@@ -184,7 +184,7 @@ def get_analytics_dashboard(
     if resolved_branch:
         new_reg_query = new_reg_query.filter(Enrollment.branch_id == resolved_branch)
     new_registrations_count = sum(1 for (d,) in new_reg_query.all() if _in_range(d))
-    
+
     # ۳. نسبت ماندگاری دانش‌آموزان (Retention Rate)
     # فرمول تقریبی: درصد دانش‌آموزانی که در بیش از ۱ کلاس فعال ثبت‌نام شده‌اند
     # FIX: Bug 13 - exclude archived Enrollment rows from this active view.
@@ -192,11 +192,11 @@ def get_analytics_dashboard(
     if resolved_branch:
         retention_query = retention_query.filter(Enrollment.branch_id == resolved_branch)
     student_classes = retention_query.group_by(Enrollment.student_id).all()
-    
+
     retained_cnt = len([s for s in student_classes if s.class_cnt > 1])
     total_st_cnt = len(student_classes)
     retention_rate = (retained_cnt / total_st_cnt * 100) if total_st_cnt > 0 else 100.0
-    
+
     # ۴. نرخ کل حضور در کلاس‌ها (Attendance Rate)
     # FIX H3-B3: joins/branch stay in SQL; dates filter parsed in Python (also fixes Custom Jalali input).
     # FIX (audit-v2/livedb-join): FROM همان attendances است (نرخ = رکوردهای حضور)، با JOIN صریح به
@@ -232,18 +232,18 @@ def get_analytics_dashboard(
         grade_query = grade_query.filter(Course.branch_id == resolved_branch)
     grade_vals = [float(s) for s, d in grade_query.all() if s is not None and _in_range(d)]
     average_grade = (sum(grade_vals) / len(grade_vals)) if grade_vals else 0.0
-    
+
     # ۶. کل بدهی‌های معوقه (Outstanding Debt)
     # FIX: Bug 16 - aggregate the same tuition balances as finance/reports, with branch isolation.
     debt_students = db.query(Student).filter(Student.is_deleted == False)
     if resolved_branch is not None:
         debt_students = debt_students.filter(Student.branch_id == resolved_branch)
     outstanding_debt = sum(calculate_student_debt(db, student) for student in debt_students.all())
-    
+
     # ۷. سود واقعی آموزشگاه (Institute Earned Revenue) و گردش مالی کل (Total Turnover)
     monthly_revenue = calculate_institute_session_revenue(db, start_str, end_str, resolved_branch)
     total_turnover = calculate_total_turnover(db, start_str, end_str, resolved_branch)
-    
+
     # ۸. عملکرد جذب و نرخ تبدیل سرنخ‌ها (Lead Conversion Rate)
     # FIX H3-B3: Lead.created_at is a real DateTime — compare with parsed dates in SQL (fast),
     # instead of strptime'ing the boundary as Gregorian (silently wrong for Custom Jalali input).
@@ -261,7 +261,7 @@ def get_analytics_dashboard(
     leads_tot = leads_total_query.scalar() or 0
     leads_conv = leads_converted_query.scalar() or 0
     lead_conversion_rate = (leads_conv / leads_tot * 100) if leads_tot > 0 else 100.0
-    
+
     # ۹. نرخ وصول مطالبات اقساط (Payment Collection Rate)
     # مبالغ کل اقساط سررسید شده در این بازه در مقابل اقساط تسویه شده واقعی
     # FIX: Bug 13 - exclude archived Installment rows from this active view.
@@ -271,7 +271,7 @@ def get_analytics_dashboard(
     paid_inst_amount = sum(a or 0 for a, p in due_in_range if p)
     total_inst_amount = sum(a or 0 for a, _ in due_in_range)
     payment_collection_rate = (paid_inst_amount / total_inst_amount * 100) if total_inst_amount > 0 else 100.0
-    
+
     return {
         "period": {"start": start_str, "end": end_str, "filter": time_filter},
         "active_students": active_students_count,
@@ -293,10 +293,10 @@ def get_analytics_dashboard(
 
 @router.get("/analytics/teachers")
 def get_teachers_performance_analytics(
-    branch_id: Optional[int] = None,
+    branch_id: int | None = None,
     limit: int = 10,
     offset: int = 0,
-    authorization: Optional[str] = Header(None),
+    authorization: str | None = Header(None),
     db: Session = Depends(get_db),
     sub_role: str = Depends(check_user_login)
 ):
@@ -307,19 +307,19 @@ def get_teachers_performance_analytics(
     query = db.query(Teacher).filter(Teacher.is_deleted == False)
     if resolved_branch:
         query = query.filter(Teacher.branch_id == resolved_branch)
-        
+
     teachers = query.offset(offset).limit(limit).all()
     results = []
-    
+
     for t in teachers:
         # تعداد دانش‌آموزان این مربی
         courses = db.query(Course).filter(Course.teacher_id == t.id).all()
         c_ids = [c.id for c in courses]
-        
+
         st_count = 0
         avg_score = 0.0
         att_rate = 100.0
-        
+
         if c_ids:
             # FIX: Bug 13 - exclude archived Enrollment rows from this active view.
             st_count = db.query(func.count(Enrollment.id)).filter(Enrollment.is_deleted == False).filter(Enrollment.course_id.in_(c_ids)).scalar() or 0
@@ -329,7 +329,7 @@ def get_teachers_performance_analytics(
             p_cnt = db.query(func.count(Attendance.id)).join(SessionLog).filter(SessionLog.course_id.in_(c_ids), Attendance.status == "Present", Attendance.is_deleted == False, SessionLog.is_deleted == False).scalar() or 0
             tot_cnt = db.query(func.count(Attendance.id)).join(SessionLog).filter(SessionLog.course_id.in_(c_ids), Attendance.is_deleted == False, SessionLog.is_deleted == False).scalar() or 0
             att_rate = (p_cnt / tot_cnt * 100) if tot_cnt > 0 else 100.0
-            
+
         # کیف پول واحد معلم: طلب فعلی = جمع جلسات دارای حضور تسویه‌نشده (همان منطق pending_settlement)
         pending_total = 0
         if c_ids:
@@ -348,16 +348,16 @@ def get_teachers_performance_analytics(
             "attendance_rate": round(att_rate, 1),
             "wallet_balance": pending_total # طلب فعلی مربی (محاسبه زنده؛ ستون wallet_balance معلم استفاده نمی‌شود)
         })
-        
+
     return results
 
 
 @router.get("/analytics/classes")
 def get_classes_performance_analytics(
-    branch_id: Optional[int] = None,
+    branch_id: int | None = None,
     limit: int = 10,
     offset: int = 0,
-    authorization: Optional[str] = Header(None),
+    authorization: str | None = Header(None),
     db: Session = Depends(get_db),
     # FIX (F-A1): مثل خواهرش /analytics/teachers (L14/Y2) — آمار تجمیعی همه‌ی کلاس‌ها فقط کارکنان.
     _: str = Depends(check_admin_or_secretary_access)
@@ -366,10 +366,10 @@ def get_classes_performance_analytics(
     query = db.query(Course).filter(Course.is_deleted == False)
     if resolved_branch:
         query = query.filter(Course.branch_id == resolved_branch)
-        
+
     courses = query.offset(offset).limit(limit).all()
     results = []
-    
+
     for c in courses:
         # FIX: Bug 13 - exclude archived Enrollment rows from this active view.
         st_count = db.query(func.count(Enrollment.id)).filter(Enrollment.is_deleted == False).filter(Enrollment.course_id == c.id).scalar() or 0
@@ -377,7 +377,7 @@ def get_classes_performance_analytics(
         p_cnt = db.query(func.count(Attendance.id)).join(SessionLog).filter(SessionLog.course_id == c.id, Attendance.status == "Present", Attendance.is_deleted == False, SessionLog.is_deleted == False).scalar() or 0
         tot_cnt = db.query(func.count(Attendance.id)).join(SessionLog).filter(SessionLog.course_id == c.id, Attendance.is_deleted == False, SessionLog.is_deleted == False).scalar() or 0
         att_rate = (p_cnt / tot_cnt * 100) if tot_cnt > 0 else 100.0
-        
+
         results.append({
             "course_id": c.id,
             "course_code": c.code,
@@ -396,40 +396,40 @@ def get_classes_performance_analytics(
 @router.get("/analytics/export/excel")
 def export_analytics_excel(
     time_filter: str = "Month",
-    branch_id: Optional[int] = None,
-    authorization: Optional[str] = Header(None),
+    branch_id: int | None = None,
+    authorization: str | None = Header(None),
     db: Session = Depends(get_db),
     _: str = Depends(check_admin_or_secretary_access)  # FIX (L14/Y4): خروجی اکسل همان داده‌ی :153 — فقط کارکنان
 ):
     import openpyxl
     from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
-    
+
     # دریافت آمار داشبورد
     stats = get_analytics_dashboard(time_filter=time_filter, branch_id=branch_id, authorization=authorization, db=db, _="admin")
-    
+
     wb = openpyxl.Workbook()
     # Sheet 1: خلاصه وضعیت
     ws1 = wb.active
     ws1.title = "خلاصه عملکرد آموزشگاه"
     ws1.views.sheetView[0].showGridLines = True
-    
+
     # راست به چپ کردن صفحه
     ws1.sheet_view.rightToLeft = True
-    
+
     # استایل‌ها
     title_font = Font(name="Tahoma", size=14, bold=True, color="FFFFFF")
     header_font = Font(name="Tahoma", size=11, bold=True, color="FFFFFF")
     cell_font = Font(name="Tahoma", size=11)
-    
+
     header_fill = PatternFill(start_color="008080", end_color="008080", fill_type="solid")
     accent_fill = PatternFill(start_color="E6F2F2", end_color="E6F2F2", fill_type="solid")
-    
+
     center_align = Alignment(horizontal="center", vertical="center")
     right_align = Alignment(horizontal="right", vertical="center")
-    
+
     thin_side = Side(border_style="thin", color="CCCCCC")
     thin_border = Border(left=thin_side, right=thin_side, top=thin_side, bottom=thin_side)
-    
+
     # عنوان بالای جدول
     ws1.merge_cells("A1:C1")
     ws1["A1"] = f"گزارش جامع تحلیلی مالی و آموزشی خوارزمی (دوره {time_filter})"
@@ -437,7 +437,7 @@ def export_analytics_excel(
     ws1["A1"].fill = header_fill
     ws1["A1"].alignment = center_align
     ws1.row_dimensions[1].height = 40
-    
+
     headers = ["شاخص کلیدی عملکرد (KPI)", "مقدار آماری", "شرح شاخص"]
     for col_idx, h in enumerate(headers, 1):
         cell = ws1.cell(row=2, column=col_idx, value=h)
@@ -446,7 +446,7 @@ def export_analytics_excel(
         cell.alignment = center_align
         cell.border = thin_border
     ws1.row_dimensions[2].height = 25
-    
+
     data = [
         ("تعداد دانش‌آموزان فعال", stats["active_students"], "کل دانش‌آموزان ثبت‌نام شده در دوره‌ها"),
         ("ثبت‌نام‌های جدید در این بازه", stats["new_registrations"], "ثبت‌نام‌های جدید ثبت شده در بازه زمانی گزارش"),
@@ -458,7 +458,7 @@ def export_analytics_excel(
         ("نرخ تبدیل سرنخ‌های جذب (CRM)", f"{stats['lead_conversion_rate']}%", "درصد سرنخ‌های جذب تبدیل شده به دانش‌آموز"),
         ("نرخ وصول اقساط شهریه", f"{stats['payment_collection_rate']}%", "درصد اقساط پرداخت‌شده به کل معوقات سررسید شده")
     ]
-    
+
     for row_idx, row_data in enumerate(data, 3):
         for col_idx, val in enumerate(row_data, 1):
             cell = ws1.cell(row=row_idx, column=col_idx, value=val)
@@ -472,17 +472,17 @@ def export_analytics_excel(
             else:
                 cell.alignment = right_align
         ws1.row_dimensions[row_idx].height = 22
-        
+
     # تنظیم عرض ستون‌ها
     ws1.column_dimensions["A"].width = 30
     ws1.column_dimensions["B"].width = 20
     ws1.column_dimensions["C"].width = 45
-    
+
     # Sheet 2: عملکرد مربیان
     ws2 = wb.create_sheet(title="عملکرد مدرسین")
     ws2.sheet_view.rightToLeft = True
     ws2.views.sheetView[0].showGridLines = True
-    
+
     headers_t = ["آیدی مربی", "نام و نام خانوادگی", "تعداد دانش‌آموزان", "میانگین نمرات کلاسی", "نرخ کل حضور کلاسی", "وضعیت حسابرسی"]
     for col_idx, h in enumerate(headers_t, 1):
         cell = ws2.cell(row=1, column=col_idx, value=h)
@@ -491,7 +491,7 @@ def export_analytics_excel(
         cell.alignment = center_align
         cell.border = thin_border
     ws2.row_dimensions[1].height = 28
-    
+
     teachers_perf = get_teachers_performance_analytics(branch_id=branch_id, limit=50, offset=0, db=db, authorization=authorization, sub_role="admin")
     for r_idx, t in enumerate(teachers_perf, 2):
         ws2.cell(row=r_idx, column=1, value=t["teacher_id"]).alignment = center_align
@@ -500,13 +500,13 @@ def export_analytics_excel(
         ws2.cell(row=r_idx, column=4, value=t["average_grade"]).alignment = center_align
         ws2.cell(row=r_idx, column=5, value=f"{t['attendance_rate']}%").alignment = center_align
         ws2.cell(row=r_idx, column=6, value=f"{t['wallet_balance']:,} ریال").alignment = center_align
-        
+
         for col_idx in range(1, 7):
             cell = ws2.cell(row=r_idx, column=col_idx)
             cell.font = cell_font
             cell.border = thin_border
         ws2.row_dimensions[r_idx].height = 22
-        
+
     ws2.column_dimensions["A"].width = 12
     ws2.column_dimensions["B"].width = 25
     ws2.column_dimensions["C"].width = 18
@@ -518,7 +518,7 @@ def export_analytics_excel(
     file_stream = io.BytesIO()
     wb.save(file_stream)
     file_stream.seek(0)
-    
+
     return StreamingResponse(
         file_stream,
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -529,8 +529,8 @@ def export_analytics_excel(
 @router.get("/analytics/export/pdf")
 def export_analytics_pdf(
     time_filter: str = "Month",
-    branch_id: Optional[int] = None,
-    authorization: Optional[str] = Header(None),
+    branch_id: int | None = None,
+    authorization: str | None = Header(None),
     db: Session = Depends(get_db),
     _: str = Depends(check_admin_or_secretary_access)  # FIX (L14/Y4): خروجی PDF همان داده‌ی :153 — فقط کارکنان
 ):
@@ -538,14 +538,14 @@ def export_analytics_pdf(
     from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
     from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
     from reportlab.lib import colors
-    
+
     # دریافت آمار داشبورد
     stats = get_analytics_dashboard(time_filter=time_filter, branch_id=branch_id, authorization=authorization, db=db, _="admin")
-    
+
     pdf_buffer = io.BytesIO()
     doc = SimpleDocTemplate(pdf_buffer, pagesize=A4, rightMargin=30, leftMargin=30, topMargin=30, bottomMargin=30)
     story = []
-    
+
     # تعریف استایل‌های متنی با پشتیبانی فونت انگلیسی و یونیکد
     # نکته: برای پروداکشن واقعی فونت‌های فارسی اضافه می‌شوند ولی در اینجا ساختار استاندارد را پیاده‌سازی می‌کنیم
     styles = getSampleStyleSheet()
@@ -566,12 +566,12 @@ def export_analytics_pdf(
         textColor=colors.HexColor('#333333'),
         alignment=2 # Right (Note: ReportLab doesn't RTL wrap natively without external registered fonts, but we layout table nicely)
     )
-    
+
     # تیتر اصلی سند
     story.append(Paragraph("Kharazmi Intelligent Analytics Report Card", title_style))
     story.append(Paragraph(f"Period: {time_filter} | Generated at: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M')}", normal_style))
     story.append(Spacer(1, 20))
-    
+
     # جدول شاخص‌های کلیدی عملکرد (KPIs)
     data = [
         ["Key Performance Indicator (KPI)", "Value", "Metric Description"],
@@ -585,7 +585,7 @@ def export_analytics_pdf(
         ["CRM Leads Conversion Rate", f"{stats['lead_conversion_rate']}%", "Converted CRM leads to registrations"],
         ["Installment Collection Rate", f"{stats['payment_collection_rate']}%", "Paid installment ratio"]
     ]
-    
+
     table = Table(data, colWidths=[200, 100, 240])
     table.setStyle(TableStyle([
         ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#008080')),
@@ -600,10 +600,10 @@ def export_analytics_pdf(
         ('FONTSIZE', (0,0), (-1,-1), 10),
         ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
     ]))
-    
+
     story.append(table)
     doc.build(story)
-    
+
     pdf_buffer.seek(0)
     return StreamingResponse(
         pdf_buffer,

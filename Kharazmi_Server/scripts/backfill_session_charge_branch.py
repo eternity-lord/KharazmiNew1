@@ -24,7 +24,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from models import (  # noqa: E402
+from models import (
     Course,
     Enrollment,
     SessionLocal,
@@ -72,7 +72,7 @@ def main() -> int:
             db.query(Transaction)
             .filter(
                 Transaction.type == "session_charge",
-                Transaction.is_deleted == False,  # noqa: E712
+                Transaction.is_deleted == False,
             )
             .order_by(Transaction.id)
             .all()

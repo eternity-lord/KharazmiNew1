@@ -132,7 +132,7 @@ class TestCreateAdminScript(unittest.TestCase):
         self.assertEqual(rows[0].username, MOBILE, "نام کاربری باید شکل canonical داشته باشد")
 
     def test_6_aborts_when_confirmation_is_declined(self):
-        result = self.run_script(f"n\n")
+        result = self.run_script("n\n")
         self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
         self.assertEqual(self.admin_rows(), [], "بدون تأیید نباید چیزی نوشته شود")
 

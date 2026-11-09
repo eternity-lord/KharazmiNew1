@@ -7,8 +7,8 @@ from sqlalchemy.orm import sessionmaker
 # REFAC(P1): منتقل‌شده از ریشهٔ Kharazmi_Server/ به scripts/ ⇒ bootstrap یک سطح بالاتر.
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-import models  # noqa: E402
-from models import (  # noqa: E402
+import models
+from models import (
     ActivityLog,
     Attendance,
     Branch,
@@ -86,7 +86,7 @@ def run_audit():
     enroll_b = Enrollment(id=2, student_id=2, course_id=1, register_date="1405/01/01", total_tuition=1000000, discount_type="percentage", discount_value=20, branch_id=1)
     # Enrollment C: Fixed discount (100,000)
     enroll_c = Enrollment(id=3, student_id=3, course_id=1, register_date="1405/01/01", total_tuition=1000000, discount_type="fixed", discount_value=100000, branch_id=1)
-    
+
     db.add_all([enroll_a, enroll_b, enroll_c])
     db.commit()
 
@@ -96,7 +96,7 @@ def run_audit():
     tuition_b, _ = get_enrollment_tuition_and_discount(enroll_b)
     tuition_c, _ = get_enrollment_tuition_and_discount(enroll_c)
 
-    print(f"Step 2: Calculated tuitions:")
+    print("Step 2: Calculated tuitions:")
     print(f"  - Student A (No discount): Expected: 1,000,000 | Actual: {tuition_a:,}")
     print(f"  - Student B (20% discount): Expected: 800,000 | Actual: {tuition_b:,}")
     print(f"  - Student C (100k discount): Expected: 900,000 | Actual: {tuition_c:,}")
@@ -195,21 +195,21 @@ def run_audit():
 
     # Let's perform payments using submit_payment from routers/finance.py
     from routers.finance import submit_payment, FinanceSubmitData
-    
+
     # 1. Student A pays exact debt (100,001)
     # We will pay to institute and teacher wallets
     submit_payment(FinanceSubmitData(student_id=1, amount=66667, target_wallet="teacher", description="تسویه", payment_method="نقدی", date="1405/01/22"), db, "admin")
     submit_payment(FinanceSubmitData(student_id=1, amount=33334, target_wallet="institute", description="تسویه", payment_method="نقدی", date="1405/01/22"), db, "admin")
-    
+
     # 2. Student B pays half debt (125,000)
     submit_payment(FinanceSubmitData(student_id=2, amount=83333, target_wallet="teacher", description="تسویه نصف", payment_method="نقدی", date="1405/01/22"), db, "admin")
     submit_payment(FinanceSubmitData(student_id=2, amount=41667, target_wallet="institute", description="تسویه نصف", payment_method="نقدی", date="1405/01/22"), db, "admin")
-    
+
     # 3. Student C pays more than debt (300,000)
     # Surplus: 300,000 - 249,999 = 50,001. Wallet should become +50,001 (credit / طلبکار)
     submit_payment(FinanceSubmitData(student_id=3, amount=200000, target_wallet="teacher", description="تسویه مازاد", payment_method="نقدی", date="1405/01/22"), db, "admin")
     submit_payment(FinanceSubmitData(student_id=3, amount=100000, target_wallet="institute", description="تسویه مازاد", payment_method="نقدی", date="1405/01/22"), db, "admin")
-    
+
     db.commit()
     db.refresh(student_a)
     db.refresh(student_b)
@@ -234,11 +234,11 @@ def run_audit():
     # Execute settlement
     from routers.teachers import settle_teacher_sessions
     from schemas import SettleRequest
-    
+
     # Get all unbilled session IDs
     sessions_db = db.query(SessionLog).all()
     session_ids = [s.id for s in sessions_db]
-    
+
     settle_req = SettleRequest(session_ids=session_ids)
     res_settle = settle_teacher_sessions(teacher_id=1, req=settle_req, db=db, admin_sub_role="admin")
     db.commit()
@@ -251,7 +251,7 @@ def run_audit():
 
     # --- STEP 8: Delete Enrollment of Student A ---
     enroll_a_db = db.query(Enrollment).filter(Enrollment.id == 1).first()
-    
+
     from dependencies import perform_delete_enrollment
     perform_delete_enrollment(enroll_a_db, db)
     db.commit()
@@ -268,7 +268,7 @@ def run_audit():
 
     # Reports legacy revenue:
     legacy_rev = get_financial_report(db=db, _="admin")
-    
+
     # Analytics Dashboard revenue:
     analytics_dash = get_analytics_dashboard(db=db, _="admin")
 

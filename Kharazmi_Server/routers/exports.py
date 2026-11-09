@@ -19,7 +19,8 @@ Design Notes:
 import csv
 import datetime
 import io
-from typing import Iterator, List, Optional
+from typing import List, Optional
+from collections.abc import Iterator
 
 from fastapi import APIRouter, Depends, Header
 from fastapi.responses import StreamingResponse
@@ -38,7 +39,7 @@ _UTF8_BOM = "\ufeff"
 _CSV_MEDIA_TYPE = "text/csv; charset=utf-8"
 
 
-def _csv_stream(header: List[str], rows: Iterator[List[object]]) -> Iterator[str]:
+def _csv_stream(header: list[str], rows: Iterator[list[object]]) -> Iterator[str]:
     """استریم CSV: BOM + سرستون‌ها + ردیف‌ها یکی‌یکی (بدون ساخت کل فایل در حافظه)."""
     buffer = io.StringIO()
     writer = csv.writer(buffer)
@@ -65,7 +66,7 @@ def _safe_cell(value: object) -> object:
     return value
 
 
-def _csv_response(filename: str, header: List[str], rows: Iterator[List[object]]) -> StreamingResponse:
+def _csv_response(filename: str, header: list[str], rows: Iterator[list[object]]) -> StreamingResponse:
     return StreamingResponse(
         _csv_stream(header, rows),
         media_type=_CSV_MEDIA_TYPE,
@@ -76,7 +77,7 @@ def _csv_response(filename: str, header: List[str], rows: Iterator[List[object]]
 # ==========================================
 # ۱) بدهکاران — GET /exports/debtors
 # ==========================================
-def _iter_debtor_rows(db: Session, resolved_branch: Optional[int]) -> Iterator[List[object]]:
+def _iter_debtor_rows(db: Session, resolved_branch: int | None) -> Iterator[list[object]]:
     """FIX (گروه۲/آیتم ۶ و ۹): به‌جای کپی‌منطق، از منبع یگانهٔ `build_debtor_rows`
     (finance.py) استفاده می‌شود ⇒ فیلتر شعبه (NULL = سراسری/legacy) و ستون‌های جدید
     («تاریخ آخرین پرداخت»، «قدمت بدهی») با لیست و Excel یکسان می‌ماند و واگرا نمی‌شود."""
@@ -98,8 +99,8 @@ def _iter_debtor_rows(db: Session, resolved_branch: Optional[int]) -> Iterator[L
 
 @router.get("/exports/debtors")
 def export_debtors(
-    branch_id: Optional[int] = None,
-    authorization: Optional[str] = Header(None),
+    branch_id: int | None = None,
+    authorization: str | None = Header(None),
     db: Session = Depends(get_db),
     _: str = Depends(check_admin_access),
 ):
@@ -131,7 +132,7 @@ def export_debtors(
 # ==========================================
 # ۲) اقساط معوق — GET /exports/overdue_installments
 # ==========================================
-def _iter_overdue_rows(db: Session, today: datetime.date) -> Iterator[List[object]]:
+def _iter_overdue_rows(db: Session, today: datetime.date) -> Iterator[list[object]]:
     """اقساط پرداخت‌نشده با سررسید گذشته.
 
     فیلتر SQL (ایندکس‌پسند، همان الگوی dashboard.py): رشته‌ی جلالی «YYYY/MM/DD» قابل مقایسه‌ی
@@ -150,10 +151,10 @@ def _iter_overdue_rows(db: Session, today: datetime.date) -> Iterator[List[objec
             joinedload(Installment.enrollment).joinedload(Enrollment.course),
         )
         .filter(
-            Installment.is_paid == False,  # noqa: E712 (سبک پروژه)
-            Installment.is_deleted == False,  # noqa: E712
-            Enrollment.is_deleted == False,  # noqa: E712
-            Student.is_deleted == False,  # noqa: E712
+            Installment.is_paid == False,
+            Installment.is_deleted == False,
+            Enrollment.is_deleted == False,
+            Student.is_deleted == False,
             Installment.due_date.isnot(None),
             or_(
                 Installment.due_date < today_jalali,
@@ -212,7 +213,7 @@ def export_overdue_installments(
 # ==========================================
 # ۳) هشدارهای رادار — GET /exports/audit_alerts
 # ==========================================
-def _iter_alert_rows(alerts) -> Iterator[List[object]]:
+def _iter_alert_rows(alerts) -> Iterator[list[object]]:
     for a in alerts:
         yield [
             a.type,

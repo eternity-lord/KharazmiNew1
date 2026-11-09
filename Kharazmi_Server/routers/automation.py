@@ -22,10 +22,10 @@ class RuleCreateRequest(BaseModel):
     confirm_unknown_action: bool = False
 
 class RuleUpdateRequest(BaseModel):
-    name: Optional[RequiredText] = None
-    threshold: Optional[float] = None
-    action_type: Optional[RequiredText] = None
-    active: Optional[bool] = None
+    name: RequiredText | None = None
+    threshold: float | None = None
+    action_type: RequiredText | None = None
+    active: bool | None = None
     confirm_unknown_action: bool = False
 
 
@@ -71,7 +71,7 @@ def trigger_notification_action(db: Session, rule_id: int, recipient_id: int, re
         body=body
     )
     db.add(notif)
-    
+
     # Write to AutomationLog
     log = AutomationLog(
         rule_id=rule_id,
@@ -92,12 +92,12 @@ def create_automation_rule(
     _: str = Depends(check_admin_access)
 ):
     valid_conditions = ["attendance_low", "absence_high", "installment_due", "installment_overdue", "homework_deadline", "grade_low", "student_inactive", "lead_uncontacted"]
-    
+
     if req.condition_type not in valid_conditions:
         raise HTTPException(status_code=400, detail="نوع شرط نامعتبر است")
     if req.action_type not in VALID_ACTIONS and not req.confirm_unknown_action:
         raise _unknown_action_error()
-        
+
     new_rule = AutomationRule(
         name=req.name,
         condition_type=req.condition_type,
@@ -121,7 +121,7 @@ def update_automation_rule(
     rule = db.query(AutomationRule).filter(AutomationRule.id == rule_id).first()
     if not rule:
         raise HTTPException(status_code=404, detail="قانون مورد نظر یافت نشد")
-        
+
     if req.name is not None:
         rule.name = req.name
     if req.threshold is not None:
@@ -132,7 +132,7 @@ def update_automation_rule(
         rule.action_type = req.action_type
     if req.active is not None:
         rule.active = req.active
-        
+
     db.commit()
     return {"message": "قانون خودکارسازی با موفقیت بروزرسانی شد"}
 
@@ -147,7 +147,7 @@ def get_automation_rules(
 
 @router.get("/automation/logs")
 def get_automation_logs(
-    rule_id: Optional[int] = None,
+    rule_id: int | None = None,
     limit: int = 100,
     offset: int = 0,
     db: Session = Depends(get_db),
@@ -170,7 +170,7 @@ def run_automation_engine(
 ):
     active_rules = db.query(AutomationRule).filter(AutomationRule.active == True).all()
     triggered_count = 0
-    
+
     for rule in active_rules:
         # 1. Attendance < 80% (attendance_low)
         if rule.condition_type == "attendance_low":
@@ -206,7 +206,7 @@ def run_automation_engine(
                             if not already:
                                 trigger_notification_action(db, rule.id, s.id, "parent", title, body, f"Student #{s.id} in class {en.course_id} has {rate:.1f}% attendance.")
                                 triggered_count += 1
-                                
+
         # 2. Absence >= 2 (absence_high)
         elif rule.condition_type == "absence_high":
             students = db.query(Student).filter(Student.is_deleted == False).all()
@@ -360,7 +360,7 @@ def run_automation_engine(
                             ).first()
                             if not already:
                                 # Trigger parent or admin alert
-                                trigger_notification_action(db, rule.id, s.id, "parent", title, f"دانش‌آموز گرامی، مدتی است در کلاس‌ها غایب هستید. جهت هماهنگی با مدیریت تماس بگیرید.", f"Inactive Student #{s.id} with last activity {days_diff} days ago.")
+                                trigger_notification_action(db, rule.id, s.id, "parent", title, "دانش‌آموز گرامی، مدتی است در کلاس‌ها غایب هستید. جهت هماهنگی با مدیریت تماس بگیرید.", f"Inactive Student #{s.id} with last activity {days_diff} days ago.")
                                 triggered_count += 1
                     except Exception:
                         pass

@@ -48,6 +48,12 @@ _FROZEN_DATETIME_MODULE = SimpleNamespace(
     time=_REAL_TIME,
     timedelta=_REAL_TIMEDELTA,
     timezone=_REAL_TIMEZONE,
+    # سطحِ ماژولِ stdlib را کامل نگه می‌دارد: کدی که `datetime.UTC` (پایتون ۳٫۱۱+)
+    # بنویسد زیرِ این proxy هم کار کند، وگرنه AttributeError می‌گیرد.
+    # سابقه: autofix قاعدهٔ UP017 در فاز ۲ ریفکتور، `datetime.timezone.utc` را به
+    # `datetime.UTC` بدل کرد و دو تستِ CRM convert را ۵۰۰ کرد. آن قاعده حالا در
+    # pyproject.toml خاموش است و این هم لایهٔ دفاعیِ دوم است.
+    UTC=_REAL_TIMEZONE.utc,
 )
 _FIXED_EPOCH = FIXED_NOW.replace(tzinfo=_REAL_TIMEZONE.utc).timestamp()
 _FROZEN_TIME_MODULE = SimpleNamespace(
@@ -69,7 +75,7 @@ def freeze_loaded_server_modules():
     # same module-global clock proxy as the route handlers.
     if str(SERVER) not in sys.path:
         sys.path.insert(0, str(SERVER))
-    import today_summary  # type: ignore  # noqa: F401
+    import today_summary  # type: ignore
 
     changes: list[tuple[object, str, object]] = []
     server_root = str(SERVER.resolve())

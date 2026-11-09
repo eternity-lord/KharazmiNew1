@@ -23,7 +23,8 @@ import json
 import logging
 import os
 from dataclasses import dataclass, field
-from typing import Callable, Iterable, Optional
+from typing import Optional
+from collections.abc import Callable, Iterable
 
 import requests
 
@@ -41,7 +42,7 @@ BATCH_SIZE = 100  # سقف registration_ids در هر درخواست FCM
 # توکن‌هایی که FCM قطعی می‌گوید دیگر معتبر نیستند ⇒ باید از DB پاک شوند
 PERMANENT_TOKEN_ERRORS = {"NotRegistered", "InvalidRegistration", "MismatchSenderId"}
 
-_sender_override: Optional[Callable[..., dict]] = None
+_sender_override: Callable[..., dict] | None = None
 
 
 @dataclass
@@ -64,7 +65,7 @@ def fcm_configured() -> bool:
     return bool((os.environ.get(ENV_FCM_KEY) or "").strip())
 
 
-def set_sender_override(sender: Optional[Callable[..., dict]]) -> None:
+def set_sender_override(sender: Callable[..., dict] | None) -> None:
     """تزریق sender برای تست‌ها (None ⇒ بازگشت به sender واقعی)."""
     global _sender_override
     _sender_override = sender
@@ -78,7 +79,7 @@ def _post_to_fcm(url: str, headers: dict, payload: dict, timeout: float) -> dict
         return {"failure": len(payload.get("registration_ids", [])), "raw_status": response.status_code}
 
 
-def _default_sender(tokens: list, title: str, body: str, data: Optional[dict]) -> dict:
+def _default_sender(tokens: list, title: str, body: str, data: dict | None) -> dict:
     """ارسال واقعی به FCM — فقط وقتی گارد محیطی اجازه داده باشد فراخوانی می‌شود."""
     key = (os.environ.get(ENV_FCM_KEY) or "").strip()
     endpoint = (os.environ.get(ENV_FCM_ENDPOINT) or "").strip() or DEFAULT_ENDPOINT
@@ -98,7 +99,7 @@ def _default_sender(tokens: list, title: str, body: str, data: Optional[dict]) -
 
 
 def deliver_push(db, tokens: Iterable, *, title: str, body: str,
-                 data: Optional[dict] = None, sender: Optional[Callable] = None,
+                 data: dict | None = None, sender: Callable | None = None,
                  commit: bool = True) -> PushResult:
     """ارسال اعلان سیستمی به توکن‌های دستگاه — با گارد محیطی و بدون ریسک برای کالر.
 
