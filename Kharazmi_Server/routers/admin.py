@@ -18,6 +18,7 @@ from dependencies import (
     check_user_login,
     get_current_user,
     get_db,
+    get_logged_in_teacher,
     get_next_sequence_value,
     hash_password,
     normalize_mobile,
@@ -258,7 +259,6 @@ def get_pending_teachers(
         شعبه‌دار، شعبه‌ی خودش بر پارامتر غلبه می‌کند (branch isolation قابل دورزدن با query نیست).
       • ترتیب قطعی (id صعودی) و متادیتای شعبه در پاسخ برای UI ادمین.
     """
-    from routers.analytics import get_user_branch_filter  # lazy: جلوگیری از import چرخه‌ای
     resolved_branch = get_user_branch_filter(db, authorization, branch_id)
     explicit_filter = branch_id is not None
 
@@ -300,7 +300,6 @@ def _teacher_in_scope(db: Session, teacher, authorization: str | None) -> bool:
     ادمین کل (بدون شعبه) → همه. کاربر شعبه‌دار → فقط شعبه‌ی خودش + رکوردهای بدون شعبه
     (branch_id IS NULL = بدون انتساب، متعلق به هیچ شعبه‌ای نیست). رکورد شعبه‌ی دیگر → خارج از دامنه.
     """
-    from routers.analytics import get_user_branch_filter  # lazy: جلوگیری از import چرخه‌ای
     resolved_branch = get_user_branch_filter(db, authorization, None)
     if resolved_branch is None:
         return True
@@ -501,7 +500,6 @@ def get_pending_classes(db: Session = Depends(get_db), authorization: str | None
         raise HTTPException(status_code=403, detail="شما دسترسی لازم برای مشاهده کلاس‌های درانتظار را ندارید")
     _own_teacher_id = None
     if sub_role == "teacher":
-        from routers.reports import get_logged_in_teacher  # lazy (جلوگیری از import چرخه‌ای)
         _me = get_logged_in_teacher(db, authorization)
         if not _me:
             raise HTTPException(status_code=403, detail="شما دسترسی لازم برای مشاهده کلاس‌های درانتظار را ندارید")
@@ -655,6 +653,7 @@ from openpyxl import Workbook
 from openpyxl.styles import Alignment, Font, PatternFill
 
 from services import class_restore, student_profile, transaction_admin
+from services.branch_scope import get_user_branch_filter
 
 
 @router.get("/admin/transactions/list/excel")
@@ -1057,7 +1056,6 @@ def get_deleted_classes(
     grade_level/bg_color) دست‌نخورده مانده‌اند تا کلاینت قدیمی نشکند.
     """
     # الگوی branch isolation پروژه (analytics/crm/exports) — ادمینِ شعبه‌دار فقط شعبه‌ی خودش.
-    from routers.analytics import get_user_branch_filter  # lazy: جلوگیری از import چرخه‌ای
     resolved_branch = get_user_branch_filter(db, authorization, branch_id)
 
     # FIX(null-data): is_deleted=True صریح؛ ردیف‌های legacy با NULL «فعال» حساب می‌شوند و
@@ -1158,7 +1156,6 @@ def get_deleted_class_detail(
     فقط کلاسِ آرشیوشده سرو می‌شود؛ کلاس فعال، ناموجود و متعلق به شعبه‌ی دیگر همه 404
     می‌گیرند (بدون نشت وجود رکورد). خروجی dict تعریف‌شده است، نه dump خام ORM.
     """
-    from routers.analytics import get_user_branch_filter  # lazy: جلوگیری از import چرخه‌ای
     resolved_branch = get_user_branch_filter(db, authorization, None)
 
     course = (

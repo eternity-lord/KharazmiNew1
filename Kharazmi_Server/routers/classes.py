@@ -19,6 +19,7 @@ from dependencies import (
     display_name,
     get_db,
     get_enrollment_tuition_and_discount,
+    get_logged_in_teacher,
 )
 
 # FIX: Bug 16 - share the tuition-minus-payment debt calculation across financial views.
@@ -72,7 +73,6 @@ def create_class(course: CourseCreate, override: bool = False, db: Session = Dep
     # معلم فقط برای خودش (teacher_id اجباری، ورودی کلاینت نادیده) و با سقف نرخ؛ ادمین/منشی
     # معاف از سقف‌اند چون آگاهانه ثبت می‌کنند (approve بالای سقف جداگانه هشدار می‌دهد).
     if sub_role not in ("admin", "secretary"):
-        from routers.reports import get_logged_in_teacher
         me = get_logged_in_teacher(db, authorization)
         if not me:
             raise HTTPException(status_code=403, detail="فقط ادمین، منشی یا معلم می‌تواند کلاس تعریف کند")
@@ -160,7 +160,6 @@ def get_class_details(course_id: int, db: Session = Depends(get_db), authorizati
     if sub_role not in ("admin", "secretary"):
         if sub_role != "teacher":
             raise HTTPException(status_code=403, detail="شما مجاز به مشاهده اطلاعات این کلاس نیستید")
-        from routers.reports import get_logged_in_teacher  # lazy (جلوگیری از import چرخه‌ای)
         _me = get_logged_in_teacher(db, authorization)
         if not _me or course.teacher_id != _me.id:
             raise HTTPException(status_code=403, detail="شما مجاز به مشاهده اطلاعات این کلاس نیستید")
@@ -453,7 +452,6 @@ def get_class_students_full(id: int, db: Session = Depends(get_db), authorizatio
     if sub_role not in ("admin", "secretary"):
         if sub_role != "teacher":
             raise HTTPException(status_code=403, detail="شما مجاز به مشاهده اطلاعات این کلاس نیستید")
-        from routers.reports import get_logged_in_teacher  # lazy (جلوگیری از import چرخه‌ای)
         _me = get_logged_in_teacher(db, authorization)
         if not _me or course.teacher_id != _me.id:
             raise HTTPException(status_code=403, detail="شما مجاز به مشاهده اطلاعات این کلاس نیستید")
@@ -777,7 +775,6 @@ def update_class_info(
     # ClassDetail اپ (مسیر مشروع معلم) همین اندپوینت را صدا می‌زند (قدم ۴)؛ باقی‌مانده‌ی آگاهانه:
     # grade_level روی تعرفه اثر دارد پس تغییرش توسط معلم بعداً باید audit شود (follow-up).
     if sub_role not in ("admin", "secretary"):
-        from routers.reports import get_logged_in_teacher
         logged = get_logged_in_teacher(db, authorization)
         if not logged or logged.id != course.teacher_id:
             raise HTTPException(status_code=403, detail="شما مجاز به ویرایش اطلاعات این کلاس نیستید")

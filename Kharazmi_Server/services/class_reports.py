@@ -3,7 +3,13 @@ from fastapi import Depends, Header, HTTPException
 from sqlalchemy import desc, or_
 from sqlalchemy.orm import Session
 
-from dependencies import check_admin_or_secretary_access, check_user_login, display_name, get_db
+from dependencies import (
+    check_admin_or_secretary_access,
+    check_user_login,
+    display_name,
+    get_db,
+    get_logged_in_teacher,
+)
 from financial_calculations import calculate_enrollment_debt_breakdown
 from models import Attendance, Course, Enrollment, SessionLog, Student, Teacher
 from schemas import ClassReportInfo, ClassSessionHistory, ClassSessionStudent, ClassStudentData, FullClassReport
@@ -189,7 +195,6 @@ def get_class_full_report(id: int, db: Session = Depends(get_db), authorization:
     if sub_role not in ("admin", "secretary"):
         if sub_role != "teacher":
             raise HTTPException(status_code=403, detail="شما مجاز به مشاهده اطلاعات این کلاس نیستید")
-        from routers.reports import get_logged_in_teacher  # lazy (جلوگیری از import چرخه‌ای)
         _me = get_logged_in_teacher(db, authorization)
         if not _me or course.teacher_id != _me.id:
             raise HTTPException(status_code=403, detail="شما مجاز به مشاهده اطلاعات این کلاس نیستید")

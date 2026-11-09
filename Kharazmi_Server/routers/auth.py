@@ -14,6 +14,7 @@ from dependencies import (
     ensure_student_shadow_users,
     get_current_user,
     get_db,
+    get_logged_in_teacher,
     get_session_parent,
     get_session_student,
     hash_password,
@@ -250,7 +251,6 @@ def change_password(req: ChangePasswordRequest, authorization: str | None = Head
         if getattr(session, "teacher_id", None):
             teacher = db.query(Teacher).filter(Teacher.id == session.teacher_id).first()
         if teacher is None:
-            from routers.reports import get_logged_in_teacher
             teacher = get_logged_in_teacher(db, authorization)
         if not teacher:
             raise HTTPException(status_code=404, detail="معلم یافت نشد")

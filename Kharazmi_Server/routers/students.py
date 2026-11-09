@@ -13,6 +13,7 @@ from dependencies import (
     check_user_login,
     ensure_student_shadow_users,
     get_db,
+    get_logged_in_teacher,
     get_session_student,
     limiter,
     normalize_mobile,
@@ -48,6 +49,7 @@ router = APIRouter()
 
 # FIX: Bug 22 - reuse the same checksum as schemas and online registration.
 # FIX (F-T1): اعتبارسنجی مرکزی اقساط — مسیر ثبت دانش‌آموز + ثبت‌نام هم همان قاعده‌ی مسیر مستقل قسط را دارد.
+from services.branch_scope import get_user_branch_filter
 from validation import is_valid_iranian_national_code, normalize_installments
 
 
@@ -302,7 +304,6 @@ def search_students_simple(query: str, authorization: str | None = Header(None),
     if len(q) < 2:
         return []
 
-    from routers.analytics import get_user_branch_filter
     # FIX(search): branch isolation — کاربر شعبه‌دار فقط شعبه‌ی خودش (شامل عدم دیدن رکوردهای
     # branch=NULL legacy). ادمین بدون شعبه = policy فعلی (دیدن همه). نقش‌های دیگر بدون شعبه
     # scope مشخصی ندارند → نتیجه خالی (نشت داده ممنوع؛ fallback حدسی ممنوع).
@@ -361,7 +362,6 @@ def submit_grade(data: GradeCreate, db: Session = Depends(get_db), authorization
     # _verify_live_course_teacher)، چون اصلاح نمره توسط ادمین مسیر مشروع اپ است و الگوی
     # teacher-only مرجع، ادمین را می‌شکست (قدم ۴). شاگرد/ولی همین‌جا 403 می‌گیرند.
     if role not in ("admin", "secretary"):
-        from routers.reports import get_logged_in_teacher
         logged_teacher = get_logged_in_teacher(db, authorization)
         if not logged_teacher or logged_teacher.id != course.teacher_id:
             raise HTTPException(status_code=403, detail="شما مجاز به ثبت نمره برای این کلاس نیستید")
@@ -483,7 +483,6 @@ def get_student_communication_history(
     include_sms = True
     if role == "teacher":
         check_student_access(student_id, authorization, db, role)
-        from routers.reports import get_logged_in_teacher
 
         viewer_teacher = get_logged_in_teacher(db, authorization)
         if not viewer_teacher:

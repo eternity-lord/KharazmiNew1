@@ -17,6 +17,7 @@ from dependencies import (
     check_user_login,
     display_name,
     get_db,
+    get_logged_in_teacher,
     resolve_effective_sub_role,
 )
 
@@ -568,37 +569,6 @@ def get_current_shamsi_date():
     # FIX H3-B3: unified on the central converter (was a second ~30-line day-counting implementation).
     from today_summary import gregorian_to_jalali  # lazy import, same pattern as routers/analytics.py
     return gregorian_to_jalali(datetime.date.today())
-
-
-def get_logged_in_teacher(db: Session, authorization: str | None) -> Teacher | None:
-    # FIX: مقاوم به تغییر موبایل – اول teacher_id مستقیم، بعد fallback به mobile
-    if not authorization:
-        return None
-    parts = authorization.split()
-    if len(parts) != 2 or parts[0].lower() != "bearer":
-        return None
-    token = parts[1]
-    # FIX: از helper جدید برای JWT + fallback استفاده کن
-    try:
-        from dependencies import get_session_from_token
-        session, _ = get_session_from_token(db, token)
-    except Exception:
-        session = db.query(UserSession).filter(UserSession.token == token).first()
-    if not session:
-        return None
-    # اگر teacher_id مستقیم ذخیره شده باشد (فیکس Bug 3)
-    if getattr(session, "teacher_id", None):
-        t = db.query(Teacher).filter(Teacher.id == session.teacher_id).first()
-        if t:
-            return t
-    user = db.query(User).filter(User.id == session.user_id).first()
-    if not user or user.role != "teacher":
-        return None
-    teacher = db.query(Teacher).filter(Teacher.mobile == user.username).first()
-    if teacher:
-        return teacher
-    # فقط برای کاربر معلم: ممکن است session.user_id در مهاجرت قدیمی همان Teacher.id باشد
-    return db.query(Teacher).filter(Teacher.id == session.user_id).first()
 
 
 def _optional_int_param(value: str | None, field_label: str) -> int | None:

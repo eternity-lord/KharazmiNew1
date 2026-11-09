@@ -11,6 +11,7 @@ import models
 from dependencies import (
     NotificationService,
     get_db,
+    get_logged_in_teacher,
     require_permission,
     resolve_notification_recipient,
     resolve_participant_keys,
@@ -307,7 +308,6 @@ def send_broadcast_message(
         # The Android broadcast card has no class selector yet. For a teacher,
         # a missing target_id therefore means "my active classes"; the old code
         # silently created a successful-looking broadcast with zero recipients.
-        from routers.reports import get_logged_in_teacher
         course_ids = []
         if role == "teacher":
             logged_teacher = get_logged_in_teacher(db, authorization)

@@ -14,7 +14,8 @@ from sqlalchemy.orm import Session
 import models
 
 # FIX: Bug 16 - share the tuition-minus-payment debt calculation across financial views.
-from dependencies import (  # FIX (L14/Y4): check_student_access برای 637
+from dependencies import (
+    _get_admin_username,
     check_admin_access,
     check_admin_or_secretary_access,
     check_student_access,
@@ -22,9 +23,10 @@ from dependencies import (  # FIX (L14/Y4): check_student_access برای 637
     display_name,
     get_db,
     get_enrollment_tuition_and_discount,
+    get_logged_in_teacher,
     get_session_parent,
     get_session_student,
-    limiter,  # FIX F-B1: ریت‌لیمیت کال‌بک پرداخت (endpoint پول بدون احراز).
+    limiter,
 )
 from financial_calculations import (
     calculate_enrollment_debt_breakdown,
@@ -78,7 +80,6 @@ def search_finance_advanced(
         raise HTTPException(status_code=403, detail="شما دسترسی لازم برای جستجوی مالی را ندارید")
     _own_course_ids = _own_student_ids = None
     if sub_role == "teacher":
-        from routers.reports import get_logged_in_teacher  # lazy (جلوگیری از import چرخه‌ای)
         _me = get_logged_in_teacher(db, authorization)
         if not _me:
             raise HTTPException(status_code=403, detail="شما دسترسی لازم برای جستجوی مالی را ندارید")
@@ -411,7 +412,8 @@ def get_student_class_status(student_id: int, course_id: int | None = None, cour
 from fastapi.responses import HTMLResponse
 
 from services import payments
-from services.payments import PAYMENT_GATEWAY_ENABLED, _jalali_now_str
+from services.jalali_time import _jalali_now_str
+from services.payments import PAYMENT_GATEWAY_ENABLED
 
 
 # --- کمکی امنیتی جهت ممانعت از IDOR برای اولیا و دانش‌آموزان ---
@@ -1441,7 +1443,6 @@ def remind_debtors(
     (بدهکار ممکن است اصلاً قسط نداشته باشد). ارسال واقعی مثل بقیهٔ پروژه mock است
     (بدون `FCM_SERVER_KEY`/درگاه پیامک فعال) و فقط رکورد/لاگ می‌سازد. فقط ادمین.
     """
-    from routers.dunning import _get_admin_username, _jalali_now_str  # lazy: استفادهٔ مجدد، نه بازنویسی
 
     ids = list(dict.fromkeys(int(sid) for sid in (req.student_ids or [])))
     if not ids:

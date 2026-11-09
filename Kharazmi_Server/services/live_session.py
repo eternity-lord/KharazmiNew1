@@ -29,6 +29,7 @@ import time as time_module
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
+from dependencies import get_logged_in_teacher
 from models import Attendance, InstituteSettings, LiveSession, SessionLog
 
 
@@ -54,7 +55,6 @@ def _verify_live_course_teacher(db: Session, course, authorization, sub_role, ac
     """فقط معلمِ مالکِ کلاس (یا ادمین/منشی) مجاز است (پیش‌فرض: کنترل جلسه‌ی زنده؛ action_label برای مسیرهای دیگر)."""
     if sub_role in ("admin", "secretary"):
         return
-    from routers.reports import get_logged_in_teacher
     logged = get_logged_in_teacher(db, authorization)
     if not logged or logged.id != course.teacher_id:
         raise HTTPException(status_code=403, detail=f"شما مالک این کلاس نیستید و مجاز به مدیریت {action_label} نیستید")

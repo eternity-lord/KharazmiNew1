@@ -19,6 +19,7 @@ from dependencies import (
     require_permission,
 )
 from models import Branch, Course, Enrollment, Lead, SmsLog, Student, Transaction
+from services.branch_scope import get_user_branch_filter
 
 # FIX: Bug 22 - public registration uses the same identity validation as staff registration.
 from validation import NationalCodeRequest
@@ -112,7 +113,6 @@ def create_crm_lead(
     role: str = Depends(require_permission("student.create")),
     _login_role: str = Depends(check_user_login)
 ):
-    from routers.analytics import get_user_branch_filter
 
     # FIX(crm): شعبهٔ کاربر شعبه‌دار همیشه شعبه‌ی خودش است (isolation دست‌نخورده)؛ برای کاربر
     # بدون شعبه، branch_id ارسالی اعتبارسنجی می‌شود. قبلاً `or 1` شعبه را حدسی انتخاب می‌کرد و
