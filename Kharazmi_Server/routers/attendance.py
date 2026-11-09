@@ -722,9 +722,9 @@ def edit_past_session(
     sub_role: str = Depends(check_user_login)
 ):
     # REFAC(P3b): بدنهٔ دامنه به `services/session_submission.py` رفت؛ این پوسته فقط لایهٔ HTTP است
-    #     # (همان امضا، همان تزریق‌ها، همان پاسخ JSON). نام تابع عمداً این‌جا می‌ماند:
-    #     # تست‌ها و اسکریپت‌ها این handler را مستقیم — گاهی با آرگومان پوزیشنال —
-    #     # صدا می‌زنند، پس `routers.attendance.edit_past_session` باید همان قرارداد قبلی را داشته باشد.
+    # (همان امضا، همان تزریق‌ها، همان پاسخ JSON). نام تابع عمداً این‌جا می‌ماند:
+    # تست‌ها و اسکریپت‌ها این handler را مستقیم — گاهی با آرگومان پوزیشنال —
+    # صدا می‌زنند، پس `routers.attendance.edit_past_session` باید همان قرارداد قبلی را داشته باشد.
     return session_submission.edit_past_session(session_code, data, db, authorization, sub_role)
 
 @router.delete("/attendance/session/{session_code}")

@@ -539,3 +539,10 @@ class PricingRowModel(BaseModel):
 
 class PricingTableUpdateModel(BaseModel):
     rows: list[PricingRowModel]
+
+
+class ClassRestoreRequest(BaseModel):
+    """Restore class and operational history; financial history is explicit opt-in."""
+    mode: str = "full"
+    include_financial_history: bool = False
+    reason: str | None = None
