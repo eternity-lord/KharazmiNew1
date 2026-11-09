@@ -7,7 +7,7 @@ from fastapi.responses import StreamingResponse
 from openpyxl import Workbook
 from openpyxl.styles import Alignment, Font, PatternFill
 from pydantic import BaseModel
-from sqlalchemy import desc, func, or_
+from sqlalchemy import desc, or_
 from sqlalchemy.orm import Session
 
 import models
@@ -51,55 +51,28 @@ from schemas import (
     FullClassReport,
 )
 
+# REFAC(P3a): منطق زمان‌بندی و چرخهٔ حذف/بازیابی کلاس به لایهٔ service رفت
+# (services/scheduling.py و services/class_lifecycle.py). این importها **بازصادرات** هم
+# هستند: `routers/admin.py` پیش‌تر این نام‌ها را از همین ماژول import می‌کرد
+# (`from routers.classes import check_scheduling_conflicts` و `_apply_class_deletion,
+# _build_class_deletion_snapshot`) و چند تست ساختاری هم همین نام‌ها را در متنِ این فایل
+# جست‌وجو می‌کنند. پس مسیرهای import قبلی دست‌نخورده کار می‌کنند و رفتار یکسان می‌ماند.
+from services.class_lifecycle import (
+    _apply_class_deletion,
+    _build_class_deletion_snapshot,
+    _record_class_decision,
+)
+from services.scheduling import (
+    check_scheduling_conflicts,
+    days_overlap,
+    parse_time_to_minutes,
+)
+
 # FIX (F-T1): اعتبارسنجی مرکزی اقساط — همان قاعده‌ی مسیر مستقل قسط، برای مسیر ثبت‌نام همراه اقساط.
 from validation import normalize_installments
 
 router = APIRouter()
 
-def parse_time_to_minutes(time_str):
-    # E.g. "16:00-17:30" or "16:00" or "16"
-    try:
-        time_str = time_str.strip().replace(" ", "")
-        if "-" in time_str:
-            parts = time_str.split("-")
-            start_str = parts[0]
-            end_str = parts[1]
-        else:
-            start_str = time_str
-            end_str = None
-
-        def to_min(t_s):
-            if ":" in t_s:
-                h, m = t_s.split(":")
-                return int(h) * 60 + int(m)
-            return int(t_s) * 60
-
-        start_m = to_min(start_str)
-        if end_str:
-            end_m = to_min(end_str)
-        else:
-            end_m = start_m + 90 # پیش‌فرض ۹۰ دقیقه برای جلسه کلاسی تک‌ساعته
-        return start_m, end_m
-    except Exception:
-        return None
-
-def days_overlap(day1, day2):
-    day1 = day1.strip()
-    day2 = day2.strip()
-    if day1 == day2:
-        return True
-
-    even_days = {"شنبه", "دوشنبه", "چهارشنبه", "زوج"}
-    odd_days = {"یکشنبه", "سه‌شنبه", "پنج‌شنبه", "فرد"}
-
-    if day1 in even_days and day2 in even_days:
-        if day1 == "زوج" or day2 == "زوج" or day1 == day2:
-            return True
-    if day1 in odd_days and day2 in odd_days:
-        if day1 == "فرد" or day2 == "فرد" or day1 == day2:
-            return True
-
-    return False
 
 @router.post("/classes/create")
 def create_class(course: CourseCreate, override: bool = False, db: Session = Depends(get_db), authorization: str | None = Header(None), sub_role: str = Depends(check_user_login)):
@@ -1049,125 +1022,6 @@ class DeletionDecisionRequest(BaseModel):
     admin_note: str | None = None
 
 
-def _build_class_deletion_snapshot(db: Session, course) -> dict:
-    """اسنپ‌شات لحظه درخواست: جلسات رفته و بدهی هر شاگرد + اثر حذف بر معلم."""
-    sessions = db.query(SessionLog).filter(SessionLog.is_deleted == False, SessionLog.course_id == course.id).all()
-    session_ids = [s.id for s in sessions]
-    enrollments = db.query(Enrollment).filter(Enrollment.is_deleted == False, Enrollment.course_id == course.id).all()
-    students_rows = []
-    total_debt = 0
-    total_paid = 0
-    for en in enrollments:
-        st = db.query(Student).filter(Student.id == en.student_id).first()
-        attended = 0
-        if session_ids:
-            attended = db.query(func.count(Attendance.id)).filter(
-                Attendance.session_id.in_(session_ids),
-                Attendance.student_id == en.student_id,
-                Attendance.is_deleted == False,   # FIX (F-S2): آرشیوشده‌ها در «جلسات حاضرشده» نمی‌آیند.
-                Attendance.status.in_(["Present", "Late"])
-            ).scalar() or 0
-        final_tuition, _ = get_enrollment_tuition_and_discount(en)
-        breakdown = calculate_enrollment_debt_breakdown(db, en)
-        paid = breakdown["paid_teacher"] + breakdown["paid_institute"]
-        debt = breakdown["debt"]
-        total_debt += debt
-        total_paid += paid
-        students_rows.append({
-            "student_id": en.student_id,
-            "name": display_name(st, "نامشخص"),
-            "sessions_attended": attended,
-            "tuition_final": final_tuition,
-            "total_paid": paid,
-            "debt": debt,
-            "wallet_teacher": st.wallet_teacher if st and st.wallet_teacher is not None else 0,
-            "wallet_institute": st.wallet_institute if st and st.wallet_institute is not None else 0,
-        })
-    # طلب معلم از همین کلاس (اثر حذف بر معلم) — همان منطق pending_settlement محدود به این کلاس
-    teacher_pending = 0
-    if session_ids:
-        unbilled = {r[0] for r in db.query(Attendance.session_id).filter(
-            Attendance.session_id.in_(session_ids),
-            Attendance.is_billed == False,
-            Attendance.is_deleted == False,   # FIX (F-S2): آرشیوشده‌ها طلب معلم را باز نمی‌کنند.
-            Attendance.status.in_(["Present", "Late"])
-        ).distinct().all()}
-        # FIX: H6(A2) - طلب معلم = مبالغ قراردادی + جریمه‌ی غایبین غیرموجه.
-        # FIX H8-gap/follow-up: شاخه‌ی جریمه هم طلب است (همان منطق دوشاخه‌ی settle).
-        teacher_pending = sum((s.final_teacher_cost or 0) + (s.absent_penalty_teacher or 0) for s in sessions if s.id in unbilled or ((s.absent_penalty_teacher or 0) > 0 and not s.is_penalty_settled))
-    return {
-        "course_id": course.id,
-        "course_title": course.title,
-        "course_code": course.code,
-        "sessions_total": len(session_ids),
-        "students": students_rows,
-        "totals": {
-            "students": len(students_rows),
-            "total_debt": total_debt,
-            "total_paid": total_paid,
-            "teacher_pending_this_class": teacher_pending,
-        },
-    }
-
-
-def _apply_class_deletion(db: Session, course, forgive_session_charges: bool):
-    """Archive a class and return deletion-scoped restore provenance.
-
-    Only rows actually transitioned by this deletion are recorded. Financial
-    row snapshots and wallet credits are stored with the approved deletion
-    request so later restores can be exact and fail closed on legacy records.
-    """
-    from dependencies import perform_delete_enrollment
-
-    course.is_deleted = True
-    enrollment_ids = []
-    transaction_rows = []
-    installment_rows = []
-    wallet_credits = {}
-    enrollments = db.query(Enrollment).filter(
-        Enrollment.is_deleted == False,
-        Enrollment.course_id == course.id,
-    ).all()
-    for enrollment in enrollments:
-        effect = perform_delete_enrollment(
-            enrollment, db, forgive_session_charges=forgive_session_charges
-        )
-        if not effect.get("enrollment_archived"):
-            continue
-        enrollment_ids.append(int(enrollment.id))
-        transaction_rows.extend(effect.get("transaction_rows") or [])
-        installment_rows.extend(effect.get("installment_rows") or [])
-        for raw_student_id, amounts in (effect.get("wallet_credits") or {}).items():
-            student_id = int(raw_student_id)
-            aggregate = wallet_credits.setdefault(student_id, {"teacher": 0, "institute": 0})
-            aggregate["teacher"] += int(amounts.get("teacher") or 0)
-            aggregate["institute"] += int(amounts.get("institute") or 0)
-
-    session_ids = []
-    if forgive_session_charges:
-        session_ids = [int(row[0]) for row in db.query(SessionLog.id).filter(
-            SessionLog.is_deleted == False,
-            SessionLog.course_id == course.id,
-        ).all()]
-        if session_ids:
-            db.query(SessionLog).filter(
-                SessionLog.id.in_(session_ids),
-                SessionLog.is_deleted == False,
-            ).update({SessionLog.is_deleted: True}, synchronize_session="fetch")
-
-    return {
-        "version": 1,
-        "enrollment_ids": sorted(set(enrollment_ids)),
-        "session_ids": sorted(set(session_ids)),
-        "transaction_rows": sorted(transaction_rows, key=lambda row: int(row["id"])),
-        "installment_rows": sorted(installment_rows, key=lambda row: int(row["id"])),
-        "wallet_credits": [
-            {"student_id": student_id, **amounts}
-            for student_id, amounts in sorted(wallet_credits.items())
-        ],
-    }
-
-
 @router.post("/classes/{course_id}/request_delete")
 def request_class_deletion(
     course_id: int,
@@ -1379,27 +1233,6 @@ class ClassAdminUpdateModel(BaseModel):
     is_paused: bool | None = None
 
 
-def check_scheduling_conflicts(db: Session, teacher_id: int, days_of_week: str,
-                               class_time: str, exclude_course_id: int | None = None):
-    """Return active classes which overlap the proposed weekly slot."""
-    proposed = parse_time_to_minutes(class_time)
-    if not proposed:
-        raise HTTPException(status_code=400, detail="ساعت کلاس معتبر نیست")
-    result = []
-    for other in db.query(Course).filter(
-        Course.teacher_id == teacher_id, Course.is_deleted == False,
-        Course.is_suspended == False, Course.is_paused == False
-    ).all():
-        if exclude_course_id and other.id == exclude_course_id:
-            continue
-        if not days_overlap(other.days_of_week or "", days_of_week or ""):
-            continue
-        other_time = parse_time_to_minutes(other.class_time or "")
-        if other_time and proposed[0] < other_time[1] and other_time[0] < proposed[1]:
-            result.append(other)
-    return result
-
-
 @router.get("/classes/pending_approval")
 def pending_classes_for_admin(
     db: Session = Depends(get_db), _: str = Depends(check_admin_access)
@@ -1414,16 +1247,6 @@ def pending_classes_for_admin(
         "capacity": c.capacity, "rejection_reason": c.rejection_reason,
         "pending_since": c.pending_since.isoformat() if c.pending_since else None,
     } for c in rows]
-
-
-def _record_class_decision(db: Session, course: Course, action: str, reason: str | None):
-    course.is_admin_approved = action == "approve"
-    course.rejection_reason = None if action == "approve" else (reason or "بدون توضیح")
-    course.pending_since = None
-    db.add(ActivityLog(
-        admin_username="group6", action=f"class_{action}", target_id=course.id,
-        target_name=course.title, details=course.rejection_reason
-    ))
 
 
 @router.post("/classes/pending_approval/bulk_approve")

@@ -118,6 +118,12 @@ known-first-party = [
     "payment_gateways",
     "backfill_branch_ids",
     "routers",
+    # REFAC(P3a): لایهٔ service جدید — منطق دامنهٔ بی‌HTTP که از روترهای غول‌پیکر
+    # بیرون کشیده شد (Kharazmi_Server/services/). مثل بقیهٔ ماژول‌های سرور با نام کوتاه
+    # import می‌شود (`from services.scheduling import ...`) پس first-party است؛ بدون این
+    # ورود، isort آن را third-party فرض می‌کرد و importش را وسط بلوک fastapi/sqlalchemy
+    # می‌برد (که هم گمراه‌کننده است و هم مرزِ لایه‌ها را در کد ناپدید می‌کند).
+    "services",
 ]
 
 [tool.mypy]
