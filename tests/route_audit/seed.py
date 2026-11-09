@@ -19,6 +19,8 @@ SERVER = ROOT / "Kharazmi_Server"
 if str(SERVER) not in sys.path:
     sys.path.insert(0, str(SERVER))
 
+from .clock import FIXED_NOW  # noqa: E402  — تنها منبع حقیقتِ «اکنونِ» سوئیت
+
 
 def _guard_path(path: Path) -> Path:
     path = path.expanduser().resolve()
@@ -37,6 +39,54 @@ def _imports():
     import models  # type: ignore
 
     return models, dependencies
+
+
+def restore_role_sessions(manifest: dict[str, Any]) -> int:
+    """بازگرداندن سشن‌های نقشی که پاک‌سازیِ زمانِ import حذف کرده است.
+
+    چرا لازم است (FIX route-audit-rot, ۲۰۲۶-۱۱-۰۹):
+      `main.py` در انتهای ماژول `auto_patch_database()` را صدا می‌زند و آن بلوک،
+      `UserSession`های قدیمی‌تر از ۳۰ روز را با **ساعت واقعی** حذف می‌کند
+      (`datetime.datetime.utcnow() - timedelta(days=30)`). تاریخِ seed روی
+      `FIXED_NOW = 2026-09-28` ثابت است، پس از ۲۰۲۶-۱۰-۲۸ به بعد این پاک‌سازی
+      هر ۵ سشنِ seed را می‌بُرد و همهٔ مسیرهای احراز هویت‌شده `401` می‌دادند
+      (۱۶۷ تست قرمز، بدون هیچ تغییرِ کد برنامه).
+
+      چرا همین راه‌حل: فریز کردن ساعتِ stdlib در پنجرهٔ import امتحان شد و درست
+      کار نکرد — `bind_processor` دیالکت SQLite کلاس `datetime.datetime` را در
+      همان پنجره cache می‌کند و بعد از آن، هر مقدارِ datetime واقعی با
+      `TypeError: SQLite DateTime type only accepts Python datetime…` رد می‌شد
+      (۴۰ خطای جدید). پس به‌جای دست‌کاری ساعت، همان ردیف‌هایی که پاک‌سازی برده
+      است با **همان توکن قطعی و همان created_at** برگردانده می‌شوند؛ کد برنامه و
+      assertها دست‌نخورده می‌مانند.
+
+    idempotent است: سشنی که توکنش موجود باشد دوباره ساخته نمی‌شود، پس اگر روزی
+    پاک‌سازیِ زمانِ import حذفی نکند، این تابع هیچ کاری نمی‌کند.
+    """
+    models, dependencies = _imports()
+    db = models.SessionLocal()
+    restored = 0
+    try:
+        for role, token in (manifest.get("roles") or {}).items():
+            if db.query(models.UserSession).filter(models.UserSession.token == token).first():
+                continue
+            payload = json.loads(dependencies._b64url_decode(token.split(".")[1]))
+            sub_role = payload.get("sub_role") or role
+            db.add(models.UserSession(
+                user_id=payload["user_id"],
+                teacher_id=1 if sub_role == "teacher" else None,
+                sub_role=sub_role,
+                token=token,
+                created_at=FIXED_NOW,
+            ))
+            restored += 1
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
+    finally:
+        db.close()
+    return restored
 
 
 def _stable_password_hash(dependencies, password: str, identity: str) -> str:
@@ -83,7 +133,7 @@ def seed_database(path: str | Path, *, large: bool = False) -> dict[str, Any]:
     os.environ["DATABASE_URL"] = f"sqlite:///{target}"
     os.environ.setdefault("JWT_SECRET_KEY", "route-audit-test-secret-" + "x" * 48)
     models, dependencies = _imports()
-    now = dt.datetime(2026, 9, 28, 9, 0, 0)
+    now = FIXED_NOW
     _freeze_model_timestamp_defaults(models, now)
 
     # A fresh target is safer than trying to make the fixture idempotent by

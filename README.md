@@ -60,6 +60,46 @@ python3 -m pytest "Kharazmi_Server/tests/test_reports.py::TestReports::test_stud
 - تست‌های مربوط به ریت‌لیمیت در چند فایل به‌صورت داخلی `limiter.enabled = False` می‌کنند (الگوی موجود پروژه).
 - `pytest.ini` در ریشه، مسیر کشف تست‌ها (`Kharazmi_Server/tests`) را تثبیت می‌کند و درخت اندروید (`KharazmiAdmin/`) و مستندات (`checkpoints/`) را از کشف تست بیرون می‌گذارد.
 
+### سوئیت دوم: `tests/route_audit` (۲۴۹ تستِ route-level)
+
+این سوئیت **هر route** اپ را با دیتابیسِ seed‌شدهٔ قطعی و oracle محاسباتی بررسی می‌کند
+(مقادیر پولی، نقش‌ها، شکل JSON، سازگاری با DTOهای اندروید). عمداً در `testpaths` فایل
+`pytest.ini` نیست و باید **در فرایند جدا** اجرا شود:
+
+```bash
+DATABASE_URL=sqlite:////tmp/kharazmi_route_audit.db \
+JWT_SECRET_KEY=test-secret-not-production \
+python3 -m pytest tests/route_audit -q
+```
+
+> ⚠️ **دو سوئیت را در یک فرایند اجرا نکنید.** `models.py` در اولین import، `engine` را از
+> `DATABASE_URL` می‌سازد و در `sys.modules` کش می‌شود؛ بعدتر که conftestِ route_audit
+> متغیر را به DB موقتِ خودش تغییر می‌دهد، seed روی همان engine قدیمی می‌نویسد. نتیجهٔ
+> اندازه‌گیری‌شده: `1326 passed, 202 errors` با `UNIQUE constraint failed: branches.id`.
+> در CI هم این دو، **دو job جدا** هستند.
+>
+> سابقه: این سوئیت به‌دلیل «پوسیدگی زمانیِ» seed (تاریخ ثابت `2026-09-28` در برابر
+> پاک‌سازی سشنِ ۳۰ روزه با ساعت واقعی در `import main`) از ۲۰۲۶-۱۰-۲۸ به بعد بی‌سروصدا
+> قرمز شده بود؛ ریشه‌یابی و تعمیرش در
+> `checkpoints/2026-11-09-route-audit-clock-rot-fix.md` مستند است.
+
+### lint و type-check
+
+پیکربندی راف و mypy در `pyproject.toml` ریشه است (وابستگی‌ها در
+`Kharazmi_Server/requirements-dev.txt`):
+
+```bash
+.venv/bin/pip install -r Kharazmi_Server/requirements.txt -r Kharazmi_Server/requirements-dev.txt
+.venv/bin/ruff check .            # گزارش lint
+.venv/bin/ruff check . --fix      # اصلاح خودکارِ امن
+.venv/bin/mypy                    # بررسی تایپ (پیکربندی تدریجی)
+```
+
+> چند `ignore` در پیکربندی **بار رفتاری** دارند و نباید «تمیزکاری» شوند: `E712`
+> (در SQLAlchemy عبارت `Col == True` کوئری SQL می‌سازد)، `RUF001/002/003` (متن فارسی
+> زبان محصول است) و `B008` (الگوی `Depends()` با `extend-immutable-calls` قانونی شده).
+> دلیل کامل در `checkpoints/2026-11-09-refactor-phase1-hygiene.md`.
+
 ### CI (گیت‌هاب اکشنز)
 
 workflow `.github/workflows/tests.yml` در هر push روی شاخه‌های کاری این موارد را اجرا می‌کند:
@@ -67,5 +107,6 @@ workflow `.github/workflows/tests.yml` در هر push روی شاخه‌های �
 1. کل سوئیت از **ریشهٔ ریپو** با DB موقت،
 2. گارد مستقل‌بودن از پوشهٔ اجرا (اجرا از داخل `Kharazmi_Server/`),
 3. گارد یکپارچگی: md5 فایل `Kharazmi_Server/gaj_db.db` قبل و بعد از تست‌ها باید یکی باشد (در غیر این‌صورت CI شکست می‌خورد).
+4. job جدا برای سوئیت `tests/route_audit` (۲۴۹ تست route-level) با همان گارد md5.
 
 > تست‌های اندروید در CI اجرا نمی‌شوند (نیازمند JDK/SDK و Gradle است)؛ تغییرات سمت اندروید باید دستی بررسی/بیلد شوند.

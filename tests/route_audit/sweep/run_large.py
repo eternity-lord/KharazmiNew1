@@ -11,6 +11,7 @@ from fastapi.testclient import TestClient
 
 from ..clock import freeze_loaded_server_modules
 from .common import block_external_network_calls
+from ..seed import restore_role_sessions
 from .large_seed import seed_large_list_database
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -37,6 +38,10 @@ def run() -> dict:
             import main  # type: ignore
         finally:
             threading.Thread.start = original_start
+        # FIX route-audit-rot: auto_patch_database در زمانِ importِ main، سشن‌های
+        # seed را با ساعت واقعی «منقضی» می‌داند و حذف می‌کند ⇒ همان ردیف‌ها با همان
+        # توکن قطعی برمی‌گردند، وگرنه هر مسیر احراز هویت‌شده ۴۰۱ می‌شود.
+        restore_role_sessions(manifest)
         freeze_loaded_server_modules()
 
         client = TestClient(main.app, raise_server_exceptions=False)
