@@ -77,9 +77,9 @@ def _csv_response(filename: str, header: list[str], rows: Iterator[list[object]]
 # ==========================================
 def _iter_debtor_rows(db: Session, resolved_branch: int | None) -> Iterator[list[object]]:
     """FIX (گروه۲/آیتم ۶ و ۹): به‌جای کپی‌منطق، از منبع یگانهٔ `build_debtor_rows`
-    (finance.py) استفاده می‌شود ⇒ فیلتر شعبه (NULL = سراسری/legacy) و ستون‌های جدید
+    (services/debtor_report.py) استفاده می‌شود ⇒ فیلتر شعبه (NULL = سراسری/legacy) و ستون‌های جدید
     («تاریخ آخرین پرداخت»، «قدمت بدهی») با لیست و Excel یکسان می‌ماند و واگرا نمی‌شود."""
-    from routers.finance import build_debtor_rows  # lazy: بدون چرخهٔ import
+    from services.debtor_report import build_debtor_rows  # REFAC(P3a): مستقیم از لایهٔ service (بدون وابستگی روتر→روتر)
     for row in build_debtor_rows(db, resolved_branch):
         yield [
             row["student_id"],
@@ -103,8 +103,8 @@ def export_debtors(
     _: str = Depends(check_admin_access),
 ):
     """خروجی CSV بدهکاران — فقط ادمین. فیلتر شعبه مثل debtors_list از توکن ادمین resolve می‌شود."""
-    # lazy import (سبک dashboard.py): از finance.py فقط تابع هلپر خوانده می‌شود، نه اندپوینت
-    from routers.finance import get_user_branch_filter
+    # REFAC(P3a): هلپر از لایهٔ service خوانده می‌شود (نه از روترِ مالی) — بدون importِ lazy
+    from services.branch_scope import get_user_branch_filter  # REFAC(P3a): مستقیم از لایهٔ service
 
     # شعبهٔ ناموجود نباید با سیاست legacy (`branch_id=NULL`) اشتباه شود و ردیف سراسری برگرداند.
     # برای شعبهٔ معتبر، ردیف‌های legacy همچنان طبق قرارداد گزارش بدهکاران قابل مشاهده‌اند.

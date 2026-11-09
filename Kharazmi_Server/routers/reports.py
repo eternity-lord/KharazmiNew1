@@ -470,7 +470,7 @@ def get_debtors_report(
     # ادمینِ شعبه‌دار `branch_id=1` دارد ⇒ `NULL == 1` هرگز درست نیست.
     # حالا از منبع یگانهٔ `build_debtor_rows` استفاده می‌شود: ردیف بی‌شعبه = سراسری/legacy
     # (دیده می‌شود)، ردیف شعبهٔ دیگر = پنهان (بدون نشت داده بین شعبه‌ها).
-    from routers.finance import build_debtor_rows  # lazy: بدون چرخهٔ import
+    from services.debtor_report import build_debtor_rows  # REFAC(P3a): مستقیم از لایهٔ service (بدون وابستگی روتر→روتر)
     rows = build_debtor_rows(db, resolved_branch)
     return [
         {
@@ -498,7 +498,7 @@ def get_debtors_excel(
     resolved_branch = get_user_branch_filter(db, authorization, branch_id)
     # FIX (گروه۲/آیتم ۶): همان اصلاح لیست بدهکاران — فیلتر سختِ شعبه با دادهٔ واقعی
     # (دانش‌آموزان بی‌شعبه/legacy) فایل Excel را هم خالی تحویل می‌داد. منبع یگانه: build_debtor_rows
-    from routers.finance import build_debtor_rows  # lazy: بدون چرخهٔ import
+    from services.debtor_report import build_debtor_rows  # REFAC(P3a): مستقیم از لایهٔ service (بدون وابستگی روتر→روتر)
     debtor_rows = build_debtor_rows(db, resolved_branch)
 
     wb = Workbook()
