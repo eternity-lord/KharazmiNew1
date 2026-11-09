@@ -135,8 +135,8 @@ class TestClassRestoreMetadata(unittest.TestCase):
             "wallet_institute": student.wallet_institute,
             "wallet_balance": student.wallet_balance,
             "transactions_total": sum(t.amount or 0 for t in self.db.query(Transaction).all()),
-            "sessions_active": self.db.query(SessionLog).filter(SessionLog.is_deleted == False).count(),  # noqa: E712
-            "enrollments_active": self.db.query(Enrollment).filter(Enrollment.is_deleted == False).count(),  # noqa: E712
+            "sessions_active": self.db.query(SessionLog).filter(SessionLog.is_deleted == False).count(),
+            "enrollments_active": self.db.query(Enrollment).filter(Enrollment.is_deleted == False).count(),
             "course_price": self.db.query(Course).filter(Course.id == self.c_arch.id).first().teacher_session_price,
         }
 
@@ -273,7 +273,7 @@ class TestClassRestoreMetadata(unittest.TestCase):
         after_ids = [c["id"] for c in self.client.get("/classes/list", headers=headers).json()]
         self.assertIn(self.c_arch.id, after_ids, "کلاس بازیابی‌شده باید در /classes/list برگردد")
         # شمارش کلاس‌های فعال: باید شامل کلاس بازیابی‌شده باشد
-        active_ids = [c.id for c in self.db.query(Course).filter(Course.is_deleted == False).all()]  # noqa: E712
+        active_ids = [c.id for c in self.db.query(Course).filter(Course.is_deleted == False).all()]
         self.assertIn(self.c_arch.id, active_ids)
 
     # ------------------------------------------------------------------

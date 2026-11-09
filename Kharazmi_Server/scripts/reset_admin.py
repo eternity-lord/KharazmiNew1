@@ -8,7 +8,7 @@ db = SessionLocal()
 
 def force_reset_admin():
     target_mobile = "09219868213"
-    
+
     # 1. اول چک میکنیم اگه مدیر قبلی هست، پاکش کنیم (که ارور تکراری نده)
     old_admin = db.query(User).filter(User.username == target_mobile).first()
     if old_admin:
@@ -25,11 +25,11 @@ def force_reset_admin():
     )
     db.add(new_admin)
     db.commit()
-    
+
     print("------------------------------------------------")
     print("✅ مدیر جدید با موفقیت ساخته شد!")
     print(f"👤 نام کاربری: {target_mobile}")
-    print(f"🔑 رمز عبور: 123")
+    print("🔑 رمز عبور: 123")
     print("------------------------------------------------")
 
 if __name__ == "__main__":

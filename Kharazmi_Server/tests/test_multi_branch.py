@@ -88,9 +88,9 @@ class TestKharazmiMultiBranch(unittest.TestCase):
         new_b = Branch(name="شعبه نیاوران", address="نیاوران", phone="123", manager="احمدی", active=True)
         self.db.add(new_b)
         self.db.commit()
-        
+
         self.assertIsNotNone(new_b.id)
-        
+
         # Verify listing
         branches = self.db.query(Branch).all()
         self.assertEqual(len(branches), 3)  # Central, Tajrish, Niavaran
@@ -141,7 +141,7 @@ class TestKharazmiMultiBranch(unittest.TestCase):
             is_deleted=False
         )
         self.db.add(trans1)
-        
+
         # Add transaction to Branch 2
         trans2 = Transaction(
             student_id=self.student2.id,

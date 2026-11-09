@@ -153,7 +153,7 @@ class AttendanceItem(BaseModel):
 class AttendanceSubmitData(BaseModel):
     course_id: int
     date: str
-    items: List[AttendanceItem]
+    items: list[AttendanceItem]
 
 
 @router.post("/sms/send")
@@ -182,13 +182,13 @@ def send_sms(req: SmsSendRequest, db: Session = Depends(get_db), _: str = Depend
 # FIX(security): ماسک کدهای OTP و سایر رشته‌های عددی داخل متن پیامک (کدها ۶رقمی‌اند؛ سال/مبلغ هم ماسک می‌شود).
 _OTP_MASK_RE = re.compile(r"\d{4,}")
 
-def _mask_otp_codes(text: Optional[str]) -> Optional[str]:
+def _mask_otp_codes(text: str | None) -> str | None:
     if not text:
         return text
     return _OTP_MASK_RE.sub("***", text)
 
 
-@router.get("/sms/history", response_model=List[SmsHistoryItem])
+@router.get("/sms/history", response_model=list[SmsHistoryItem])
 def get_sms_history(db: Session = Depends(get_db), _: str = Depends(check_admin_or_secretary_access)):  # FIX (L14/R1-align): تاریخچه برای منشی هم باز — چون ارسال (تکی+گروهی) دارد، ندیدن تاریخچه ناسازگار بود.
     logs = db.query(models.SmsLog).order_by(desc(models.SmsLog.id)).all()
     return [
@@ -208,11 +208,11 @@ def get_sms_history(db: Session = Depends(get_db), _: str = Depends(check_admin_
 # ==========================================
 
 
-@router.get("/teachers/pending", response_model=List[PendingTeacherItem])
+@router.get("/teachers/pending", response_model=list[PendingTeacherItem])
 def get_pending_teachers(
-    branch_id: Optional[int] = None,
+    branch_id: int | None = None,
     db: Session = Depends(get_db),
-    authorization: Optional[str] = Header(None),
+    authorization: str | None = Header(None),
     _: str = Depends(check_admin_or_secretary_access),  # FIX (audit-v2/#11): لیست درانتظار (حاوی موبایل) فقط ادمین/منشی
 ):
     """صف «درخواست‌های تایید معلم» — در انتظار (is_approved=False) و حذف‌نشده.
@@ -231,7 +231,7 @@ def get_pending_teachers(
     resolved_branch = get_user_branch_filter(db, authorization, branch_id)
     explicit_filter = branch_id is not None
 
-    q = db.query(Teacher).filter(Teacher.is_deleted == False, Teacher.is_approved == False)  # noqa: E712
+    q = db.query(Teacher).filter(Teacher.is_deleted == False, Teacher.is_approved == False)
     if resolved_branch is not None:
         if explicit_filter:
             q = q.filter(Teacher.branch_id == resolved_branch)      # فیلتر صریح: فقط همان شعبه
@@ -263,7 +263,7 @@ def get_pending_teachers(
     ]
 
 
-def _teacher_in_scope(db: Session, teacher, authorization: Optional[str]) -> bool:
+def _teacher_in_scope(db: Session, teacher, authorization: str | None) -> bool:
     """آیا این معلم در دامنه‌ی کاربرِ فراخوان است؟ (همان policy لیست pending)
 
     ادمین کل (بدون شعبه) → همه. کاربر شعبه‌دار → فقط شعبه‌ی خودش + رکوردهای بدون شعبه
@@ -278,7 +278,7 @@ def _teacher_in_scope(db: Session, teacher, authorization: Optional[str]) -> boo
 
 @router.post("/teachers/approve/{teacher_id}")
 def approve_teacher(teacher_id: int, db: Session = Depends(get_db),
-                    authorization: Optional[str] = Header(None),
+                    authorization: str | None = Header(None),
                     _: str = Depends(check_admin_or_secretary_access)):  # FIX H10-S2: تایید فقط ادمین/منشی (الگوی C1/H10-S)
     teacher = db.query(Teacher).filter(Teacher.id == teacher_id, Teacher.is_deleted == False).first()
     # FIX(teacher-approval): کاربر شعبه‌دار نباید درخواست شعبه‌ی دیگر را تایید کند (404 بدون نشت وجود رکورد).
@@ -291,7 +291,7 @@ def approve_teacher(teacher_id: int, db: Session = Depends(get_db),
 
 @router.delete("/teachers/reject/{teacher_id}")
 def reject_teacher(teacher_id: int, db: Session = Depends(get_db),
-                   authorization: Optional[str] = Header(None),
+                   authorization: str | None = Header(None),
                    _: str = Depends(check_admin_access)):
     teacher = db.query(Teacher).filter(Teacher.id == teacher_id, Teacher.is_deleted == False).first()
     # FIX(teacher-approval): همان policy دامنه‌ی شعبه برای رد کردن (404 بدون نشت وجود رکورد).
@@ -349,8 +349,8 @@ def reject_class(
     course_id: int,
     db: Session = Depends(get_db),
     _: str = Depends(check_admin_access),
-    authorization: Optional[str] = Header(None),
-    reason: Optional[str] = Query(None, description="علت رد درخواست کلاس"),
+    authorization: str | None = Header(None),
+    reason: str | None = Query(None, description="علت رد درخواست کلاس"),
 ):
     """رد و آرشیو کلاس (مسیر «کلاس در انتظار تایید» در اپ).
 
@@ -409,7 +409,7 @@ def reject_class(
 
 
 @router.get("/admin/students/{id}/full_profile")
-def get_student_full_profile(id: int, authorization: Optional[str] = Header(None), db: Session = Depends(get_db), role: str = Depends(check_user_login)):
+def get_student_full_profile(id: int, authorization: str | None = Header(None), db: Session = Depends(get_db), role: str = Depends(check_user_login)):
     # FIX (L14/Y1): بازنویسی کامل تله‌ی گارد نصفه (مشابه students.py:414) — شاگرد/ولیِ غریبه دیگر رد نمی‌شوند.
     check_student_access(id, authorization, db, role)
 
@@ -492,7 +492,7 @@ def get_student_full_profile(id: int, authorization: Optional[str] = Header(None
         course = en.course
         teacher = db.query(Teacher).filter(Teacher.id == course.teacher_id).first()
         teacher_name = f"{teacher.first_name} {teacher.last_name}" if teacher else "بدون معلم"
-        
+
         # breakdown به enrollment متصل است؛ کیف کلی دانش‌آموز و پرداخت عمومی
         # در بدهی این کلاس وارد نمی‌شوند. سهم پرداخت‌های target_wallet=both نیز
         # داخل helper با share_teacher/share_institute تفکیک می‌شود.
@@ -508,7 +508,7 @@ def get_student_full_profile(id: int, authorization: Optional[str] = Header(None
             class_debt_total += int(debt_teacher_course) + int(debt_inst_course)
         else:
             class_debt_total += int(breakdown["debt"])
-        
+
         teachers_financial.append({
             "enrollment_id": en.id,
             "course_id": course.id,
@@ -599,7 +599,7 @@ class TeacherProfileInfo(BaseModel):
     mobile: str
     national_code: str
     status: str  # فعال/غیرفعال
-    profile_image: Optional[str] = None
+    profile_image: str | None = None
 
 
 class FullTeacherProfile(BaseModel):
@@ -607,7 +607,7 @@ class FullTeacherProfile(BaseModel):
     total_students: int
     total_revenue: int  # درآمدزایی کل
     active_classes_count: int
-    classes: List[str]  # لیست نام کلاس‌ها
+    classes: list[str]  # لیست نام کلاس‌ها
 
 
 @router.get("/config/share")
@@ -652,7 +652,7 @@ def update_share_config(data: ShareConfigModel, db: Session = Depends(get_db), _
 
 
 @router.get("/admin/pending_classes")
-def get_pending_classes(db: Session = Depends(get_db), authorization: Optional[str] = Header(None), sub_role: str = Depends(check_user_login)):
+def get_pending_classes(db: Session = Depends(get_db), authorization: str | None = Header(None), sub_role: str = Depends(check_user_login)):
     # FIX (L14/Y3): کلاس‌های درانتظار — کارکنان کامل؛ معلم فقط پیشنهادهای خودش (پیگیری ثبت از ClassSetup)؛ شاگرد/ولی 403.
     if sub_role not in ("admin", "secretary", "teacher"):
         raise HTTPException(status_code=403, detail="شما دسترسی لازم برای مشاهده کلاس‌های درانتظار را ندارید")
@@ -760,8 +760,8 @@ def approve_class(course_id: int, db: Session = Depends(get_db), _: str = Depend
 
 @router.get("/admin/parent_contacts")
 def get_parent_contacts(
-    class_id: Optional[int] = None,
-    search: Optional[str] = None,
+    class_id: int | None = None,
+    search: str | None = None,
     db: Session = Depends(get_db),
     _: str = Depends(check_admin_or_secretary_access)  # FIX (audit-v2/contacts-PII): دفترچه‌ی تماس والدین گزارش مدیریتی است — فقط ادمین/منشی
 ):
@@ -769,10 +769,10 @@ def get_parent_contacts(
         joinedload(Student.enrollments).joinedload(Enrollment.course)
     )
     q = q.filter(Student.is_deleted == False)
-    
+
     if class_id:
         q = q.filter(Enrollment.course_id == class_id)
-        
+
     if search:
         search_fmt = f"%{search}%"
         q = q.filter(
@@ -782,9 +782,9 @@ def get_parent_contacts(
                 Student.national_code.ilike(search_fmt)
             )
         )
-        
+
     students = q.all()
-    
+
     result = []
     for st in students:
         # Get student classes
@@ -792,7 +792,7 @@ def get_parent_contacts(
         for en in st.enrollments:
             if en.course:
                 classes.append(en.course.title)
-                
+
         result.append({
             "student_id": st.id,
             "student_name": f"{st.first_name} {st.last_name}",
@@ -813,7 +813,7 @@ from openpyxl.styles import Font, Alignment, PatternFill
 
 
 @router.get("/admin/transactions/list/excel")
-def get_transactions_excel(search: Optional[str] = None, db: Session = Depends(get_db), _: str = Depends(check_admin_access)):
+def get_transactions_excel(search: str | None = None, db: Session = Depends(get_db), _: str = Depends(check_admin_access)):
     # FIX: Bug 12 - exclude archived Transaction rows from this active view.
     q = db.query(Transaction).filter(Transaction.is_deleted == False, Transaction.is_reversed == False).outerjoin(Student).order_by(desc(Transaction.id))
 
@@ -829,15 +829,15 @@ def get_transactions_excel(search: Optional[str] = None, db: Session = Depends(g
         )
 
     trans_list = q.all()
-    
+
     wb = Workbook()
     ws = wb.active
     ws.title = "گزارش تراکنش‌های مالی"
     ws.views.sheetView[0].rightToLeft = True
-    
+
     headers = ["شناسه", "نام دانش‌آموز", "کلاس", "مبلغ (تومان)", "روش پرداخت", "کد پیگیری", "تاریخ", "دریافت‌کننده", "کیف پول هدف", "سهم معلم", "سهم آموزشگاه", "توضیحات"]
     ws.append(headers)
-    
+
     header_fill = PatternFill(start_color="00695C", end_color="00695C", fill_type="solid")
     header_font = Font(name="Tahoma", size=11, bold=True, color="FFFFFF")
     for col_num in range(1, len(headers) + 1):
@@ -845,14 +845,14 @@ def get_transactions_excel(search: Optional[str] = None, db: Session = Depends(g
         cell.fill = header_fill
         cell.font = header_font
         cell.alignment = Alignment(horizontal="center", vertical="center")
-        
+
     row_num = 2
     for t in trans_list:
         course_name = t.course.title if t.course else "---"
         student_name = f"{t.student.first_name} {t.student.last_name}" if t.student else "ناشناس"
-        
+
         target_w = "معلم" if t.target_wallet == "teacher" else "آموزشگاه" if t.target_wallet == "institute" else "---"
-        
+
         row_data = [
             t.id,
             student_name,
@@ -868,27 +868,27 @@ def get_transactions_excel(search: Optional[str] = None, db: Session = Depends(g
             t.description or ""
         ]
         ws.append(row_data)
-        
+
         ws.cell(row=row_num, column=4).number_format = '#,##0'
         ws.cell(row=row_num, column=10).number_format = '#,##0'
         ws.cell(row=row_num, column=11).number_format = '#,##0'
-        
+
         for col_num in range(1, len(headers) + 1):
             cell = ws.cell(row=row_num, column=col_num)
             cell.alignment = Alignment(horizontal="center", vertical="center")
             cell.font = Font(name="Tahoma", size=10)
-            
+
         row_num += 1
-        
+
     for col in ws.columns:
         max_len = max(len(str(cell.value or '')) for cell in col)
         col_letter = col[0].column_letter
         ws.column_dimensions[col_letter].width = max(max_len + 3, 12)
-        
+
     stream = io.BytesIO()
     wb.save(stream)
     stream.seek(0)
-    
+
     return StreamingResponse(
         stream,
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -913,7 +913,7 @@ class PersonListItem(BaseModel):
 
 
 @router.get("/admin/transactions/list")
-def get_all_transactions(search: Optional[str] = None, db: Session = Depends(get_db), _: str = Depends(check_admin_access)):
+def get_all_transactions(search: str | None = None, db: Session = Depends(get_db), _: str = Depends(check_admin_access)):
     # FIX: Bug 12 - exclude archived Transaction rows from this active view.
     q = db.query(Transaction).filter(Transaction.is_deleted == False, Transaction.is_reversed == False).join(Student).order_by(desc(Transaction.id))
 
@@ -1520,20 +1520,20 @@ def send_bulk_sms(req: BulkSmsRequest, db: Session = Depends(get_db), _: str = D
     results = []
     success_count = 0
     today = datetime.datetime.now().strftime("%Y/%m/%d %H:%M")
-    
+
     for s_id in req.student_ids:
         st = db.query(Student).filter(Student.id == s_id, Student.is_deleted == False).first()
         if not st:
             results.append({"student_id": s_id, "status": "failed", "message": "دانش‌آموز یافت نشد"})
             continue
-            
+
         # Keep bulk reminders on the same tuition-aware calculation as the
         # debtor list and single SMS endpoint; aggregate wallets are not copied
         # into any class row and are not the sole source of tuition debt.
         debt = calculate_student_debt(db, st)
-        
+
         msg = f"سلام {st.first_name} عزیز، بدینوسیله به شما اعلام می‌گردد که مبلغ {debt:,} تومان بدهی شهریه در سیستم دارید. لطفاً جهت تسویه حساب اقدام فرمایید."
-        
+
         # ثبت تک‌تک لاگ‌های پیامک‌ها در دیتابیس
         db.add(
             models.SmsLog(
@@ -1545,7 +1545,7 @@ def send_bulk_sms(req: BulkSmsRequest, db: Session = Depends(get_db), _: str = D
         )
         success_count += 1
         results.append({"student_id": s_id, "student_name": f"{st.first_name} {st.last_name}", "status": "success", "message": "پیامک یادآوری بدهی ارسال شد"})
-        
+
     db.commit()
     return {
         "status": "success",
@@ -1559,17 +1559,17 @@ def send_bulk_sms(req: BulkSmsRequest, db: Session = Depends(get_db), _: str = D
 def suspend_bulk_classes(req: BulkSuspendRequest, db: Session = Depends(get_db), _: str = Depends(check_admin_access)):
     results = []
     success_count = 0
-    
+
     for c_id in req.course_ids:
         course = db.query(Course).filter(Course.id == c_id).first()
         if not course:
             results.append({"course_id": c_id, "status": "failed", "message": "کلاس یافت نشد"})
             continue
-            
+
         course.is_suspended = True # معلق کردن کلاس
         success_count += 1
         results.append({"course_id": c_id, "course_title": course.title, "status": "success", "message": "کلاس با موفقیت معلق شد"})
-        
+
     db.commit()
     return {
         "status": "success",
@@ -1601,7 +1601,7 @@ def update_institute_settings(data: InstituteSettingsModel, db: Session = Depend
     if not settings:
         settings = InstituteSettings()
         db.add(settings)
-        
+
     settings.name = data.name
     settings.address = data.address
     settings.phone = data.phone
@@ -1629,7 +1629,7 @@ def update_institute_settings(data: InstituteSettingsModel, db: Session = Depend
         settings.live_session_max_minutes = data.live_session_max_minutes
     if data.teacher_settlement_alert_days is not None:
         settings.teacher_settlement_alert_days = data.teacher_settlement_alert_days
-        
+
     db.commit()
     db.refresh(settings)
     return {"message": "تنظیمات آموزشگاه با موفقیت بروزرسانی شد", "settings": settings}
@@ -1640,27 +1640,27 @@ async def upload_institute_logo(file: UploadFile = File(...), db: Session = Depe
     if not settings:
         settings = InstituteSettings()
         db.add(settings)
-        
+
     # Read file and validate size
     MAX_SIZE = 5 * 1024 * 1024 # 5 MB
     contents = await file.read()
     if len(contents) > MAX_SIZE:
         raise HTTPException(status_code=400, detail="حجم فایل نباید بیشتر از ۵ مگابایت باشد")
-        
+
     # Validate extension
     allowed_extensions = {".jpg", ".jpeg", ".png", ".webp"}
     file_ext = os.path.splitext(file.filename)[1].lower()
     if file_ext not in allowed_extensions:
         raise HTTPException(status_code=400, detail="فرمت فایل غیرمجاز است. فقط فرمت‌های JPG, PNG, WEBP مجاز هستند")
-        
+
     # Generate unique filename
     unique_filename = f"logo_{uuid.uuid4().hex}{file_ext}"
     filepath = os.path.join(storage_dir("profiles"), unique_filename)
-    
+
     # Write to disk
     with open(filepath, "wb") as f_out:
         f_out.write(contents)
-        
+
     # Delete old file
     if settings.logo_path:
         # پاک‌کردن لوگوی قبلی — حتی اگر در مسیر قدیمی (نسبت به cwd) مانده باشد
@@ -1670,10 +1670,10 @@ async def upload_institute_logo(file: UploadFile = File(...), db: Session = Depe
                 os.remove(old_path)
             except Exception:
                 pass
-                
+
     settings.logo_path = unique_filename
     db.commit()
-    
+
     return {
         "message": "لوگوی آموزشگاه با موفقیت آپلود شد",
         "logo_path": unique_filename,
@@ -1695,7 +1695,7 @@ def _safe_person_name(obj) -> str:
     return f"{obj.first_name or ''} {obj.last_name or ''}".strip()
 
 
-def _archived_deletion_meta(db: Session, course_ids: List[int]) -> dict:
+def _archived_deletion_meta(db: Session, course_ids: list[int]) -> dict:
     """متادیتای حذف از جدول ClassDeletionRequest (بدون تاریخ حدسی).
 
     `Course` ستون تاریخ حذف **ندارد**؛ هر دو مسیر حذف (حذف مستقیم ادمین در classes.py و
@@ -1733,7 +1733,7 @@ def _archived_deletion_meta(db: Session, course_ids: List[int]) -> dict:
     return meta
 
 
-def _archived_class_aggregates(db: Session, course_ids: List[int]) -> dict:
+def _archived_class_aggregates(db: Session, course_ids: list[int]) -> dict:
     """شمارش تاریخی ثبت‌نام/جلسه/تراکنش هر کلاس با کوئری گروهی (بدون N+1).
 
     همه‌ی ردیف‌ها شمرده می‌شوند (آرشیوشده‌ها هم) چون آرشیو باید **تاریخچه** را نشان دهد؛
@@ -1784,19 +1784,19 @@ def _archived_class_aggregates(db: Session, course_ids: List[int]) -> dict:
     return stats
 
 
-def _archive_search_variants(term: str) -> List[str]:
+def _archive_search_variants(term: str) -> list[str]:
     """«ی/ي» و «ک/ك» عربی و فارسی را هم‌ارز می‌کند تا جست‌وجوی آرشیو به تایپ کیبورد حساس نباشد."""
     term = (term or "").strip()
     fa = term.replace("ي", "ی").replace("ك", "ک")
     ar = term.replace("ی", "ي").replace("ک", "ك")
-    out: List[str] = []
+    out: list[str] = []
     for v in (term, fa, ar):
         if v and v not in out:
             out.append(v)
     return out
 
 
-def _archive_parse_filter_date(value: Optional[str], label: str) -> Optional[datetime.date]:
+def _archive_parse_filter_date(value: str | None, label: str) -> datetime.date | None:
     """تاریخ فیلتر آرشیو: جلالی (۱۴۰۵/۰۷/۰۶) یا میلادی؛ نامعتبر ⇒ ۴۲۲ (نه نادیده‌گرفتن بی‌صدا)."""
     if value is None or not str(value).strip():
         return None
@@ -1807,7 +1807,7 @@ def _archive_parse_filter_date(value: Optional[str], label: str) -> Optional[dat
     return parsed
 
 
-def _archive_jalali(dt: Optional[datetime.datetime]) -> dict:
+def _archive_jalali(dt: datetime.datetime | None) -> dict:
     """تاریخ حذف به جلالی + روز هفته (اپ فارسی است؛ تاریخ میلادی برای کاربر بی‌معنی بود)."""
     if not dt:
         return {"deleted_at_jalali": "", "deleted_weekday": ""}
@@ -1976,7 +1976,7 @@ def _archived_class_people_report(db: Session, course, forgive_session_charges: 
     att_rows = (
         db.query(Attendance.student_id, Attendance.session_id, Attendance.status, Attendance.excused)
         .join(SessionLog, SessionLog.id == Attendance.session_id)
-        .filter(SessionLog.course_id == course.id, Attendance.is_deleted == False)  # noqa: E712
+        .filter(SessionLog.course_id == course.id, Attendance.is_deleted == False)
         .all()
     )
     per_student: dict = {}
@@ -2013,7 +2013,7 @@ def _archived_class_people_report(db: Session, course, forgive_session_charges: 
         if session_ids:
             for t in db.query(Transaction).filter(
                 Transaction.type == "session_charge",
-                Transaction.is_deleted == True,  # noqa: E712
+                Transaction.is_deleted == True,
                 Transaction.session_id.in_(session_ids),
             ).all():
                 if (t.student_id, t.session_id) in active_pairs:
@@ -2124,20 +2124,20 @@ class ClassRestoreRequest(BaseModel):
     """Restore class and operational history; financial history is explicit opt-in."""
     mode: str = "full"
     include_financial_history: bool = False
-    reason: Optional[str] = None
+    reason: str | None = None
 
 
 @router.get("/admin/deleted_classes")
 def get_deleted_classes(
-    query: Optional[str] = None,
-    title: Optional[str] = None,
-    teacher: Optional[str] = None,
-    code: Optional[str] = None,
-    deleted_from: Optional[str] = None,
-    deleted_to: Optional[str] = None,
-    branch_id: Optional[int] = None,
+    query: str | None = None,
+    title: str | None = None,
+    teacher: str | None = None,
+    code: str | None = None,
+    deleted_from: str | None = None,
+    deleted_to: str | None = None,
+    branch_id: int | None = None,
     db: Session = Depends(get_db),
-    authorization: Optional[str] = Header(None),
+    authorization: str | None = Header(None),
     _: str = Depends(check_admin_access),
 ):
     """آرشیو کلاس‌های حذف‌شده — فقط ادمین، با branch isolation و اطلاعات کامل.
@@ -2152,7 +2152,7 @@ def get_deleted_classes(
 
     # FIX(null-data): is_deleted=True صریح؛ ردیف‌های legacy با NULL «فعال» حساب می‌شوند و
     # طبق سیاست موجود پروژه در آرشیو نمی‌آیند (لیست عادی و آرشیو قاطی نمی‌شوند).
-    q = db.query(Course).filter(Course.is_deleted == True)  # noqa: E712
+    q = db.query(Course).filter(Course.is_deleted == True)
     if resolved_branch is not None:
         q = q.filter(Course.branch_id == resolved_branch)
     # فیلترهای جست‌وجو (همه با AND): عبارت آزاد، نام کلاس، نام معلم، کد کلاس. هر واژه جدا حساب می‌شود
@@ -2162,7 +2162,7 @@ def get_deleted_classes(
     )
     field_map = {"title": Course.title, "code": Course.code, "teacher": teacher_full}
 
-    def _apply_terms(q_, raw: Optional[str], fields):
+    def _apply_terms(q_, raw: str | None, fields):
         for token in (raw or "").split():
             clauses = [f.ilike(f"%{v}%") for v in _archive_search_variants(token) for f in fields]
             q_ = q_.filter(or_(*clauses))
@@ -2240,7 +2240,7 @@ def get_deleted_classes(
 def get_deleted_class_detail(
     course_id: int,
     db: Session = Depends(get_db),
-    authorization: Optional[str] = Header(None),
+    authorization: str | None = Header(None),
     _: str = Depends(check_admin_access),
 ):
     """جزئیات کنترول‌شده‌ی یک کلاس آرشیوشده (فقط ادمین + همان شعبه).
@@ -2253,7 +2253,7 @@ def get_deleted_class_detail(
 
     course = (
         db.query(Course)
-        .filter(Course.id == course_id, Course.is_deleted == True)  # noqa: E712
+        .filter(Course.id == course_id, Course.is_deleted == True)
         .first()
     )
     if not course or (resolved_branch is not None and course.branch_id != resolved_branch):
@@ -2265,10 +2265,10 @@ def get_deleted_class_detail(
     teacher = db.query(Teacher).filter(Teacher.id == course.teacher_id).first() if course.teacher_id else None
     branch = db.query(models.Branch).filter(models.Branch.id == course.branch_id).first() if course.branch_id else None
     archived_enrollments = db.query(Enrollment).filter(
-        Enrollment.course_id == course.id, Enrollment.is_deleted == True  # noqa: E712
+        Enrollment.course_id == course.id, Enrollment.is_deleted == True
     ).count()
     archived_sessions = db.query(SessionLog).filter(
-        SessionLog.course_id == course.id, SessionLog.is_deleted == True  # noqa: E712
+        SessionLog.course_id == course.id, SessionLog.is_deleted == True
     ).count()
 
     return {
@@ -2312,7 +2312,7 @@ def restore_deleted_class(
     course_id: int,
     data: ClassRestoreRequest,
     db: Session = Depends(get_db),
-    authorization: Optional[str] = Header(None),
+    authorization: str | None = Header(None),
     _: str = Depends(check_admin_access),
 ):
     """Restore a deleted class and its operational history; finance is explicit opt-in.
@@ -2336,7 +2336,7 @@ def restore_deleted_class(
         raise HTTPException(status_code=404, detail="کلاس آرشیوشده یافت نشد")
     if resolved_branch is not None and course.branch_id != resolved_branch:
         raise HTTPException(status_code=404, detail="کلاس آرشیوشده یافت نشد")
-    if course.is_deleted is not True:  # noqa: E712 — فقط ردیف‌های صریحاً آرشیوشده
+    if course.is_deleted is not True:
         raise HTTPException(status_code=409, detail="این کلاس از قبل فعال است و نیازی به بازیابی ندارد")
 
     provenance = _latest_class_restore_provenance(db, course.id)
@@ -2355,11 +2355,11 @@ def restore_deleted_class(
             # policy, operational history can still be restored; finance stays closed.
             enrollment_ids = [row[0] for row in db.query(Enrollment.id).filter(
                 Enrollment.course_id == course.id,
-                Enrollment.is_deleted == True,  # noqa: E712
+                Enrollment.is_deleted == True,
             ).all()]
             session_ids = [row[0] for row in db.query(SessionLog.id).filter(
                 SessionLog.course_id == course.id,
-                SessionLog.is_deleted == True,  # noqa: E712
+                SessionLog.is_deleted == True,
             ).all()]
     else:
         enrollment_ids, session_ids = [], []
@@ -2382,7 +2382,7 @@ def restore_deleted_class(
         collision = db.query(SessionLog.id).filter(
             SessionLog.course_id == course.id,
             SessionLog.date == archived_session.date,
-            SessionLog.is_deleted == False,  # noqa: E712
+            SessionLog.is_deleted == False,
             SessionLog.id != archived_session.id,
         ).first()
         if collision:
@@ -2467,13 +2467,13 @@ def restore_deleted_class(
         "is_deleted": True,
         "is_suspended": bool(course.is_suspended),
         "archived_enrollments": db.query(Enrollment).filter(
-            Enrollment.course_id == course.id, Enrollment.is_deleted == True  # noqa: E712
+            Enrollment.course_id == course.id, Enrollment.is_deleted == True
         ).count(),
         "archived_sessions": db.query(SessionLog).filter(
-            SessionLog.course_id == course.id, SessionLog.is_deleted == True  # noqa: E712
+            SessionLog.course_id == course.id, SessionLog.is_deleted == True
         ).count(),
         "archived_transactions": db.query(Transaction).filter(
-            Transaction.course_id == course.id, Transaction.is_deleted == True  # noqa: E712
+            Transaction.course_id == course.id, Transaction.is_deleted == True
         ).count(),
         "wallet_debit": sum(int(item["teacher"]) + int(item["institute"]) for item in wallet_credits),
         "financial_restore_available": provenance is not None,
@@ -2502,7 +2502,7 @@ def restore_deleted_class(
     try:
         claimed = db.query(Course).filter(
             Course.id == course.id,
-            Course.is_deleted == True,  # noqa: E712
+            Course.is_deleted == True,
         ).update({Course.is_deleted: False}, synchronize_session=False)
         if claimed != 1:
             db.rollback()
@@ -2512,7 +2512,7 @@ def restore_deleted_class(
             restored = db.query(Enrollment).filter(
                 Enrollment.id.in_(enrollment_ids),
                 Enrollment.course_id == course.id,
-                Enrollment.is_deleted == True,  # noqa: E712
+                Enrollment.is_deleted == True,
             ).update({Enrollment.is_deleted: False}, synchronize_session=False)
             if restored != len(enrollment_ids):
                 db.rollback()
@@ -2521,7 +2521,7 @@ def restore_deleted_class(
             restored = db.query(SessionLog).filter(
                 SessionLog.id.in_(session_ids),
                 SessionLog.course_id == course.id,
-                SessionLog.is_deleted == True,  # noqa: E712
+                SessionLog.is_deleted == True,
             ).update({SessionLog.is_deleted: False}, synchronize_session=False)
             if restored != len(session_ids):
                 db.rollback()
@@ -2532,8 +2532,8 @@ def restore_deleted_class(
             if transaction_ids:
                 restored = db.query(Transaction).filter(
                     Transaction.id.in_(transaction_ids),
-                    Transaction.is_deleted == True,  # noqa: E712
-                    Transaction.is_reversed == False,  # noqa: E712
+                    Transaction.is_deleted == True,
+                    Transaction.is_reversed == False,
                 ).update({Transaction.is_deleted: False}, synchronize_session=False)
                 if restored != len(transaction_ids):
                     db.rollback()
@@ -2543,7 +2543,7 @@ def restore_deleted_class(
             if installment_ids:
                 restored = db.query(Installment).filter(
                     Installment.id.in_(installment_ids),
-                    Installment.is_deleted == True,  # noqa: E712
+                    Installment.is_deleted == True,
                 ).update({Installment.is_deleted: False}, synchronize_session=False)
                 if restored != len(installment_ids):
                     db.rollback()
@@ -2662,8 +2662,8 @@ def update_pricing_table(data: PricingTableUpdateModel, db: Session = Depends(ge
     return {"message": "جدول قیمت‌گذاری با موفقیت بروزرسانی شد"}
 
 
-@router.get("/admin/students/search", response_model=List[PersonListItem])
-def search_admin_students(query: Optional[str] = None, db: Session = Depends(get_db), sub_role: str = Depends(check_user_login)):
+@router.get("/admin/students/search", response_model=list[PersonListItem])
+def search_admin_students(query: str | None = None, db: Session = Depends(get_db), sub_role: str = Depends(check_user_login)):
     # FIX (L14/Y1): جستجوی سراسری PII شاگردان — فقط کارکنان (ادمین/منشی/معلم). شاگرد/ولی 403.
     if sub_role not in ("admin", "secretary", "teacher"):
         raise HTTPException(status_code=403, detail="شما دسترسی لازم برای جستجوی دانش‌آموزان را ندارید")
@@ -2692,8 +2692,8 @@ def search_admin_students(query: Optional[str] = None, db: Session = Depends(get
     ]
 
 
-@router.get("/admin/teachers/search", response_model=List[PersonListItem])
-def search_admin_teachers(query: Optional[str] = None, db: Session = Depends(get_db), sub_role: str = Depends(check_user_login)):
+@router.get("/admin/teachers/search", response_model=list[PersonListItem])
+def search_admin_teachers(query: str | None = None, db: Session = Depends(get_db), sub_role: str = Depends(check_user_login)):
     # FIX (L14/Y2): جستجوی سراسری PII معلمان — فقط کارکنان (ادمین/منشی/معلم؛ معلم برای PersonList). شاگرد/ولی 403.
     if sub_role not in ("admin", "secretary", "teacher"):
         raise HTTPException(status_code=403, detail="شما دسترسی لازم برای جستجوی معلمان را ندارید")
@@ -2731,13 +2731,13 @@ class TeacherCredentialsResponse(BaseModel):
     name: str
     national_code: str
     mobile: str
-    teacher_code: Optional[int] = None
+    teacher_code: int | None = None
     password: str
-    card_number: Optional[str] = None
+    card_number: str | None = None
 
 class TeacherCredentialsUpdateRequest(BaseModel):
     mobile: str
-    card_number: Optional[str] = None
+    card_number: str | None = None
 
 @router.get("/admin/teachers/{id}/credentials", response_model=TeacherCredentialsResponse)
 def get_teacher_credentials(id: int, db: Session = Depends(get_db), _: str = Depends(check_admin_access)):
@@ -2761,17 +2761,17 @@ def reset_teacher_password(id: int, db: Session = Depends(get_db), current_user 
     teacher = db.query(Teacher).filter(Teacher.id == id, Teacher.is_deleted == False).first()
     if not teacher:
         raise HTTPException(status_code=404, detail="معلم یافت نشد")
-        
+
     # FIX H12: کد بدون‌تصادم از شمارنده‌ی ترتیبی (نه رندوم خام روی ستون UNIQUE).
     new_code = get_next_sequence_value(db, "teacher", 101)
 
     # FIX H12: پسورد تصادفی امن با الگوی C12 (مستقل از کد حدس‌زدنی)؛ فقط همین یک‌بار در پاسخ برمی‌گردد.
     _READABLE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789"  # بدون 0/O/1/l/I
     new_password = "".join(secrets.choice(_READABLE_ALPHABET) for _ in range(8))
-    
+
     old_code = teacher.teacher_code
     old_password = teacher.password
-    
+
     teacher.teacher_code = new_code
     teacher.password = hash_password(new_password)
 
@@ -2798,7 +2798,7 @@ def reset_teacher_password(id: int, db: Session = Depends(get_db), current_user 
     )
     db.add(log_entry)
     db.commit()
-    
+
     return {
         "message": "رمز عبور جدید معلم با موفقیت صادر شد",
         "new_password": new_password
@@ -2856,7 +2856,7 @@ def update_teacher_credentials(id: int, data: TeacherCredentialsUpdateRequest, d
         # backstop مسابقه‌ی هم‌زمان (race) بین چک بالا و commit
         db.rollback()
         raise HTTPException(status_code=409, detail="این شماره موبایل قبلاً در سیستم ثبت شده است")
-    
+
     return {
         "message": "اطلاعات تماس و حساب بانکی معلم با موفقیت به‌روزرسانی شد"
     }
@@ -2882,10 +2882,10 @@ def _session_problem_flags(db: Session, session: SessionLog) -> list[str]:
 
 @router.get("/admin/session_history")
 def admin_session_history(
-    date_from: Optional[str] = None, date_to: Optional[str] = None,
-    teacher_id: Optional[int] = None, course_id: Optional[int] = None,
-    flag: Optional[str] = None, status: Optional[str] = None,
-    search: Optional[str] = None, export: bool = False,
+    date_from: str | None = None, date_to: str | None = None,
+    teacher_id: int | None = None, course_id: int | None = None,
+    flag: str | None = None, status: str | None = None,
+    search: str | None = None, export: bool = False,
     db: Session = Depends(get_db), _: str = Depends(check_admin_access)
 ):
     query = db.query(SessionLog).join(Course).filter(SessionLog.is_deleted == False)

@@ -37,7 +37,7 @@ class AuditAlert(BaseModel):
     detected_at: str
 
 
-def _parse_hour(time_str: Optional[str]) -> Optional[int]:
+def _parse_hour(time_str: str | None) -> int | None:
     """Extract hour from time string like '08:30', '16:00', '08:00-10:00'."""
     if not time_str:
         return None
@@ -84,7 +84,7 @@ def _now_str() -> str:
     return datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 
-@router.get("/suspicious_patterns", response_model=List[AuditAlert])
+@router.get("/suspicious_patterns", response_model=list[AuditAlert])
 def get_suspicious_patterns(
     db: Session = Depends(get_db),
     _: str = Depends(check_admin_access)
@@ -95,7 +95,7 @@ def get_suspicious_patterns(
     Pattern B: Rapid Deletion (Transaction deleted <1h, only last 30 days via ActivityLog)
     Pattern C: Perfect Attendance (last 10 sessions 0 absences) - bulk optimized
     """
-    alerts: List[AuditAlert] = []
+    alerts: list[AuditAlert] = []
     now_str = _now_str()
 
     # Pattern A: Suspicious Attendance - N+1 FIXED via joinedload
@@ -373,10 +373,7 @@ def count_suspicious_patterns(db: Session) -> int:
             for log in recent_logs_with_details:
                 if log.details:
                     for tid in txn_ids:
-                        if f"#{tid}" in log.details or f"تراکنش #{tid}" in log.details or f"#{tid} " in log.details:
-                            if log not in logs_by_txn[tid]:
-                                logs_by_txn[tid].append(log)
-                        elif str(tid) in log.details and "تراکنش" in log.details:
+                        if f"#{tid}" in log.details or f"تراکنش #{tid}" in log.details or f"#{tid} " in log.details or str(tid) in log.details and "تراکنش" in log.details:
                             if log not in logs_by_txn[tid]:
                                 logs_by_txn[tid].append(log)
             for tid, logs in logs_by_txn.items():

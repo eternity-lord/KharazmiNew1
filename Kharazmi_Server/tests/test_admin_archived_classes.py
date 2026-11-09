@@ -265,11 +265,11 @@ class TestAdminArchivedClasses(unittest.TestCase):
         # تاریخچهٔ عملیاتی/مالی از همان endpoint کنترل‌شده بازمی‌گردد، نه مسیر جداگانه.
         self.assertEqual([p for p in restore_paths if "enrollment" in p or "session" in p.lower()], [])
         # خواندن آرشیو نباید وضعیت را تغییر دهد
-        before = (self.db.query(Course).filter(Course.is_deleted == True).count(),  # noqa: E712
+        before = (self.db.query(Course).filter(Course.is_deleted == True).count(),
                   self.db.query(Enrollment).filter(Enrollment.course_id == self.c_arch_legacy.id).count())
         self._archive(token="tok-global")
         self._detail(self.c_arch_legacy.id, token="tok-global")
-        after = (self.db.query(Course).filter(Course.is_deleted == True).count(),  # noqa: E712
+        after = (self.db.query(Course).filter(Course.is_deleted == True).count(),
                  self.db.query(Enrollment).filter(Enrollment.course_id == self.c_arch_legacy.id).count())
         self.assertEqual(before, after)
         self.assertEqual(self._archive(token="tok-global").status_code, 200)

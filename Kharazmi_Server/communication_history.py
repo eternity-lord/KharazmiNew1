@@ -3,7 +3,8 @@
 import datetime
 import re
 from collections import defaultdict
-from typing import Dict, Iterable, List, Optional, Sequence, Set, Tuple
+from typing import Dict, List, Optional, Set, Tuple
+from collections.abc import Iterable, Sequence
 
 from sqlalchemy.orm import Session
 
@@ -22,14 +23,14 @@ from models import (
 from today_summary import parse_project_date
 
 
-Identity = Tuple[str, int]
+Identity = tuple[str, int]
 
 
-def _role(value: Optional[str]) -> str:
+def _role(value: str | None) -> str:
     return (value or "").strip().lower()
 
 
-def _summary(value: Optional[str], limit: int = 240) -> str:
+def _summary(value: str | None, limit: int = 240) -> str:
     text = re.sub(r"\s+", " ", (value or "").strip())
     if not text:
         return "پیام بدون متن"
@@ -46,7 +47,7 @@ def _sms_summary(log: SmsLog) -> str:
     return _summary(log.message_text)
 
 
-def _sms_datetime(value: Optional[str]) -> datetime.datetime:
+def _sms_datetime(value: str | None) -> datetime.datetime:
     date_value = parse_project_date(value)
     if not date_value:
         return datetime.datetime.min
@@ -60,7 +61,7 @@ def _sms_datetime(value: Optional[str]) -> datetime.datetime:
     return datetime.datetime.combine(date_value, datetime.time(hour, minute, second))
 
 
-def _linked_teacher_user_ids(db: Session, teacher: Teacher) -> Set[int]:
+def _linked_teacher_user_ids(db: Session, teacher: Teacher) -> set[int]:
     ids = {teacher.id}
     if teacher.mobile:
         users = (
@@ -75,9 +76,9 @@ def _linked_teacher_user_ids(db: Session, teacher: Teacher) -> Set[int]:
 class _IdentityNames:
     def __init__(self, db: Session):
         self.db = db
-        self.cache: Dict[Identity, str] = {}
+        self.cache: dict[Identity, str] = {}
 
-    def get(self, role: Optional[str], user_id: int) -> str:
+    def get(self, role: str | None, user_id: int) -> str:
         normalized_role = _role(role)
         key = (normalized_role, user_id)
         if key in self.cache:
@@ -123,10 +124,10 @@ class _IdentityNames:
 
 def _internal_message_items(
     db: Session,
-    target_identities: Set[Identity],
+    target_identities: set[Identity],
     target_display_name: str,
-    required_participant_identities: Optional[Set[Identity]] = None,
-) -> List[Dict]:
+    required_participant_identities: set[Identity] | None = None,
+) -> list[dict]:
     target_parts = (
         db.query(ConversationParticipant)
         .filter(
@@ -173,7 +174,7 @@ def _internal_message_items(
             .all()
         )
     }
-    participants_by_conversation: Dict[int, List[ConversationParticipant]] = defaultdict(list)
+    participants_by_conversation: dict[int, list[ConversationParticipant]] = defaultdict(list)
     participants = (
         db.query(ConversationParticipant)
         .filter(ConversationParticipant.conversation_id.in_(conversation_ids))
@@ -191,14 +192,14 @@ def _internal_message_items(
         .all()
     )
     names = _IdentityNames(db)
-    items: List[Dict] = []
+    items: list[dict] = []
     for message in messages:
         sender_identity = (_role(message.sender_role), message.sender_id)
         is_target_sender = sender_identity in target_identities
         sender_name = names.get(message.sender_role, message.sender_id)
 
         if is_target_sender:
-            other_names: List[str] = []
+            other_names: list[str] = []
             for participant in participants_by_conversation[message.conversation_id]:
                 identity = (_role(participant.role), participant.user_id)
                 if identity in target_identities:
@@ -256,10 +257,10 @@ def _internal_message_items(
     return items
 
 
-def _student_sms_recipients(db: Session, student: Student) -> Dict[str, str]:
+def _student_sms_recipients(db: Session, student: Student) -> dict[str, str]:
     student_name = f"{student.first_name or ''} {student.last_name or ''}".strip()
     parent_name = f"ولی {student_name}".strip()
-    recipients: Dict[str, str] = {
+    recipients: dict[str, str] = {
         "all_students": student_name,
         f"student_{student.id}": student_name,
         f"online_reg_{student.id}": student_name,
@@ -312,7 +313,7 @@ def _student_sms_recipients(db: Session, student: Student) -> Dict[str, str]:
     return recipients
 
 
-def _sms_items(db: Session, recipients: Dict[str, str]) -> List[Dict]:
+def _sms_items(db: Session, recipients: dict[str, str]) -> list[dict]:
     if not recipients:
         return []
     logs = (
@@ -320,7 +321,7 @@ def _sms_items(db: Session, recipients: Dict[str, str]) -> List[Dict]:
         .filter(SmsLog.target_group.in_(list(recipients.keys())))
         .all()
     )
-    items: List[Dict] = []
+    items: list[dict] = []
     for log in logs:
         sort_at = _sms_datetime(log.date)
         items.append(
@@ -340,7 +341,7 @@ def _sms_items(db: Session, recipients: Dict[str, str]) -> List[Dict]:
     return items
 
 
-def _sorted_public_items(items: Iterable[Dict]) -> List[Dict]:
+def _sorted_public_items(items: Iterable[dict]) -> list[dict]:
     sorted_items = sorted(
         items,
         key=lambda item: (item["_sort_at"], item["source_id"]),
@@ -354,11 +355,11 @@ def _sorted_public_items(items: Iterable[Dict]) -> List[Dict]:
 def build_student_communication_history(
     db: Session,
     student: Student,
-    viewer_teacher: Optional[Teacher] = None,
+    viewer_teacher: Teacher | None = None,
     include_sms: bool = True,
-) -> List[Dict]:
+) -> list[dict]:
     student_name = f"{student.first_name or ''} {student.last_name or ''}".strip()
-    target_identities: Set[Identity] = {
+    target_identities: set[Identity] = {
         ("student", student.id),
         ("parent", student.id),
     }
@@ -383,7 +384,7 @@ def build_student_communication_history(
 def build_teacher_communication_history(
     db: Session,
     teacher: Teacher,
-) -> List[Dict]:
+) -> list[dict]:
     teacher_name = f"{teacher.first_name or ''} {teacher.last_name or ''}".strip()
     teacher_ids = _linked_teacher_user_ids(db, teacher)
     target_identities = {("teacher", identity_id) for identity_id in teacher_ids}

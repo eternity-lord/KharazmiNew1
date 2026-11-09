@@ -64,7 +64,7 @@ class GradeSubmissionRequest(BaseModel):
 @router.post("/homework/create", response_model=HomeworkResponseModel)
 def create_homework(
     req: HomeworkCreateRequest,
-    authorization: Optional[str] = Header(None),
+    authorization: str | None = Header(None),
     db: Session = Depends(get_db),
     role: str = Depends(require_permission("homework.create"))
 ):
@@ -72,11 +72,11 @@ def create_homework(
     logged_teacher = get_logged_in_teacher(db, authorization)
     if not logged_teacher:
         raise HTTPException(status_code=403, detail="مربی لاگین شده یافت نشد")
-        
+
     course = db.query(Course).filter(Course.id == req.course_id, Course.teacher_id == logged_teacher.id).first()
     if not course:
         raise HTTPException(status_code=403, detail="شما مجاز به تعریف تکلیف برای این کلاس نیستید")
-        
+
     new_hw = Homework(
         course_id=req.course_id,
         teacher_id=logged_teacher.id,
@@ -89,7 +89,7 @@ def create_homework(
     db.add(new_hw)
     db.commit()
     db.refresh(new_hw)
-    
+
     # Automation: Homework Created -> Notify all enrolled students
     enrolls = db.query(Enrollment).filter(Enrollment.course_id == req.course_id,
                                          Enrollment.is_deleted == False).all()  # O-04: فقط ثبت‌نام‌های فعال — شاگرد حذف‌شده نباید اعلان بگیرد
@@ -107,7 +107,7 @@ def create_homework(
             title=f"📝 تکلیف جدید: {req.title}",
             body=f"تکلیف جدیدی در کلاس {course.title} برای شما ثبت شد. سررسید تحویل: {req.due_date}"
         )
-        
+
     return HomeworkResponseModel(
         id=new_hw.id,
         course_id=new_hw.course_id,
@@ -124,7 +124,7 @@ def create_homework(
 @router.delete("/homework/{id}")
 def delete_homework(
     id: int,
-    authorization: Optional[str] = Header(None),
+    authorization: str | None = Header(None),
     db: Session = Depends(get_db),
     role: str = Depends(require_permission("homework.delete"))
 ):
@@ -132,11 +132,11 @@ def delete_homework(
     logged_teacher = get_logged_in_teacher(db, authorization)
     if not logged_teacher:
         raise HTTPException(status_code=403, detail="دسترسی غیرمجاز")
-        
+
     hw = db.query(Homework).filter(Homework.id == id, Homework.teacher_id == logged_teacher.id).first()
     if not hw:
         raise HTTPException(status_code=404, detail="تکلیف یافت نشد")
-        
+
     # Delete submissions
     db.query(HomeworkSubmission).filter(HomeworkSubmission.homework_id == id).delete()
     db.delete(hw)
@@ -146,7 +146,7 @@ def delete_homework(
 # --- 3. Student: View Homework List ---
 @router.get("/homework/student/list")
 def get_student_homework_list(
-    authorization: Optional[str] = Header(None),
+    authorization: str | None = Header(None),
     db: Session = Depends(get_db),
     role: str = Depends(require_permission("homework.read"))
 ):
@@ -159,16 +159,16 @@ def get_student_homework_list(
     enrolls = db.query(Enrollment).filter(Enrollment.student_id == student_id,
                                          Enrollment.is_deleted == False).all()  # O-04: کلاس‌های ترک‌شده تکلیف/آزمون نشان داده نمی‌شوند
     course_ids = [en.course_id for en in enrolls if en.course]
-    
+
     hws = db.query(Homework).filter(Homework.course_id.in_(course_ids)).order_by(desc(Homework.id)).all()
-    
+
     result = []
     for hw in hws:
         course = db.query(Course).filter(Course.id == hw.course_id).first()
         # Find if student submitted this hw
         submission = db.query(HomeworkSubmission).filter(HomeworkSubmission.homework_id == hw.id, HomeworkSubmission.student_id == student_id).first()
         status_text = submission.status if submission else "pending"
-        
+
         result.append({
             "id": hw.id,
             "course_title": course.title if course else "کلاس حذف شده",
@@ -187,7 +187,7 @@ def get_student_homework_list(
 async def submit_homework_file(
     homework_id: int,
     file: UploadFile = File(...),
-    authorization: Optional[str] = Header(None),
+    authorization: str | None = Header(None),
     db: Session = Depends(get_db),
     role: str = Depends(require_permission("homework.update"))
 ):
@@ -201,36 +201,36 @@ async def submit_homework_file(
     hw = db.query(Homework).filter(Homework.id == homework_id).first()
     if not hw:
         raise HTTPException(status_code=404, detail="تکلیف یافت نشد")
-        
+
     enrolled = db.query(Enrollment).filter(Enrollment.student_id == student_id,
                                            Enrollment.course_id == hw.course_id,
                                            Enrollment.is_deleted == False).first()  # O-04: تحویل فایل فقط با ثبت‌نام فعال
     if not enrolled:
         raise HTTPException(status_code=403, detail="شما در این کلاس ثبت‌نام نکرده‌اید")
-        
+
     # File upload validation
     ext = validate_file(file)
     safe_name = sanitize_filename(file.filename)
     # در زمان نوشتن دوباره resolve می‌شود تا override محیطی/تست معتبر باشد
     file_path = os.path.join(storage_dir("homework"), safe_name)
-    
+
     # Save the file securely
     contents = await file.read()
     if len(contents) > MAX_FILE_SIZE:
         raise HTTPException(status_code=400, detail="سایز فایل بیش از حد مجاز (۱۰ مگابایت) است")
-        
+
     with open(file_path, "wb") as f:
         f.write(contents)
-        
+
     # Save or update submission
     submission = db.query(HomeworkSubmission).filter(HomeworkSubmission.homework_id == homework_id, HomeworkSubmission.student_id == student_id).first()
-    
+
     from today_summary import parse_project_date  # FIX H3-B3: due_date is free text (often Jalali); compare real dates (lazy import)
     today_date = datetime.datetime.now().date()
     _due = parse_project_date(hw.due_date)
     # No valid deadline → can't be late.
     status_val = "submitted" if (_due is None or _due >= today_date) else "late"
-    
+
     if submission:
         # Edit submission before grading
         if submission.status == "graded":
@@ -245,7 +245,7 @@ async def submit_homework_file(
             status=status_val
         )
         db.add(submission)
-        
+
     db.commit()
     return {"message": "تکلیف با موفقیت تحویل داده شد", "file_path": file_path}
 
@@ -254,7 +254,7 @@ async def submit_homework_file(
 def grade_homework_submission(
     sub_id: int,
     req: GradeSubmissionRequest,
-    authorization: Optional[str] = Header(None),
+    authorization: str | None = Header(None),
     db: Session = Depends(get_db),
     role: str = Depends(require_permission("homework.grade"))
 ):
@@ -262,15 +262,15 @@ def grade_homework_submission(
     logged_teacher = get_logged_in_teacher(db, authorization)
     if not logged_teacher:
         raise HTTPException(status_code=403, detail="دسترسی غیرمجاز")
-        
+
     sub = db.query(HomeworkSubmission).filter(HomeworkSubmission.id == sub_id).first()
     if not sub:
         raise HTTPException(status_code=404, detail="پاسخ تکلیف یافت نشد")
-        
+
     hw = db.query(Homework).filter(Homework.id == sub.homework_id, Homework.teacher_id == logged_teacher.id).first()
     if not hw:
         raise HTTPException(status_code=403, detail="شما مجاز به تصحیح این تکلیف نیستید")
-        
+
     # FIX: Bug 22 - the authoritative maximum is on the homework, not the grading request.
     if req.score > hw.max_score:
         raise HTTPException(status_code=400, detail="نمره نمی‌تواند بیشتر از نمرهٔ کل تکلیف باشد")
@@ -279,7 +279,7 @@ def grade_homework_submission(
     sub.feedback = req.feedback
     sub.status = "graded"
     db.commit()
-    
+
     # Automation: Homework Graded -> Notify student
     st = db.query(Student).filter(Student.id == sub.student_id).first()
     if st:
@@ -293,19 +293,19 @@ def grade_homework_submission(
             title=f"📝 تکلیف تصحیح شد: {hw.title}",
             body=f"نمره شما در تکلیف '{hw.title}' ثبت شد: {req.score} از {hw.max_score}. بازخورد: {req.feedback}"
         )
-        
+
     return {"message": "نمره و بازخورد با موفقیت ثبت شد"}
 
 # --- 6. Parent: View Child's Homework List ---
 @router.get("/homework/parent/child/{student_id}")
 def get_parent_child_homework(
     student_id: int,
-    authorization: Optional[str] = Header(None),
+    authorization: str | None = Header(None),
     db: Session = Depends(get_db),
     role: str = Depends(require_permission("homework.read"))
 ):
     session = db.query(models.UserSession).filter(models.UserSession.token == authorization.split()[1]).first()
-    
+
     # 🛡️ پیاده‌سازی لایه ضد نشت داده و ضد IDOR برای اولیا
     if session.sub_role == "parent":
         own = get_session_parent(db, session)
@@ -315,19 +315,19 @@ def get_parent_child_homework(
     # حالا صراحتاً فقط ادمین/منشی؛ شاگرد (و نقش ناشناخته) 403.
     elif session.sub_role not in ("admin", "secretary"):
         raise HTTPException(status_code=403, detail="شما مجاز به مشاهده تکالیف این دانش‌آموز نیستید")
-        
+
     enrolls = db.query(Enrollment).filter(Enrollment.student_id == student_id,
                                          Enrollment.is_deleted == False).all()  # O-04: کلاس‌های ترک‌شده تکلیف/آزمون نشان داده نمی‌شوند
     course_ids = [en.course_id for en in enrolls if en.course]
-    
+
     hws = db.query(Homework).filter(Homework.course_id.in_(course_ids)).all()
-    
+
     result = []
     for hw in hws:
         course = db.query(Course).filter(Course.id == hw.course_id).first()
         submission = db.query(HomeworkSubmission).filter(HomeworkSubmission.homework_id == hw.id, HomeworkSubmission.student_id == student_id).first()
         status_text = submission.status if submission else "pending"
-        
+
         result.append({
             "id": hw.id,
                 "course_title": course.title if course else "کلاس حذف شده",

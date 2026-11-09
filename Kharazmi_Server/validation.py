@@ -94,12 +94,12 @@ def validate_jalali_due_date(value) -> str:
     return value
 
 
-def normalize_installment_fields(amount, due_date) -> Tuple[int, str]:
+def normalize_installment_fields(amount, due_date) -> tuple[int, str]:
     """اعتبارسنجی مرکزی یک قسط ⇒ (مبلغ صحیح، تاریخ اعتبارسنجی‌شده)."""
     return validate_installment_amount(amount), validate_jalali_due_date(due_date)
 
 
-def normalize_installments(installments) -> List[Tuple[int, str]]:
+def normalize_installments(installments) -> list[tuple[int, str]]:
     """همه‌ی اقساط یک درخواست؛ اولین قسط نامعتبر ValueError با پیام فارسی می‌دهد."""
     return [normalize_installment_fields(inst.amount, inst.due_date) for inst in (installments or [])]
 

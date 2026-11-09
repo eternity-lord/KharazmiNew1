@@ -9,7 +9,7 @@ def run_tests():
     print("=========================================================================")
     print("🎓 SECTION 3: CLASS LIFECYCLE & SCHEDULING (E2E)")
     print("=========================================================================")
-    
+
     # Clean up any existing conflicting course MATH12 feshly
     from sqlalchemy import create_engine, text
     from sqlalchemy.orm import sessionmaker

@@ -50,21 +50,21 @@ class PublicRouteIsolationMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request, call_next):
         host = request.headers.get("host", "").lower()
         path = request.url.path.lower()
-        
+
         # Check if the request is coming via Cloudflare Quick Tunnel (*.trycloudflare.com)
         is_public_tunnel = ".trycloudflare.com" in host or "trycloudflare.com" == host
-        
+
         if is_public_tunnel:
             # Strictly allow ONLY routes starting with /parent/ or /uploads/ (for child profile photo)
             allowed = (
-                path.startswith("/parent") or 
+                path.startswith("/parent") or
                 path.startswith("/uploads") or
                 path == "/favicon.ico"
             )
             if not allowed:
                 # Return raw 404 to pretend these endpoints don't exist publicly!
                 return Response(content="Not Found", status_code=404)
-                
+
         return await call_next(request)
 
 app.add_middleware(PublicRouteIsolationMiddleware)
@@ -114,7 +114,7 @@ audit_trail.setup_audit_listeners()
 # پچر خودکار جداول دیتابیس
 def auto_patch_database():
     db = models.SessionLocal()
-    
+
     def column_exists(table_name, col_name):
         try:
             if "sqlite" in str(db.bind.url):
@@ -123,12 +123,11 @@ def auto_patch_database():
                     if row[1] == col_name:
                         return True
                 return False
-            else:
-                res = db.execute(text(
-                    f"SELECT column_name FROM information_schema.columns "
-                    f"WHERE table_name='{table_name}' AND column_name='{col_name}';"
-                )).first()
-                return res is not None
+            res = db.execute(text(
+                f"SELECT column_name FROM information_schema.columns "
+                f"WHERE table_name='{table_name}' AND column_name='{col_name}';"
+            )).first()
+            return res is not None
         except Exception as _exists_err:
             # FIX L12: خطای واقعی (نه «ستون نیست») بی‌صدا قورت داده نمی‌شود — هشدار چاپ می‌شود؛
             # رفتار fallback (False یعنی «پچ را بزن») نگه داشته شد تا خودترمیمی نشکند.
@@ -390,7 +389,7 @@ def auto_patch_database():
                     t.teacher_code = code
                 db.commit()
                 print(f"✅ کدهای ترتیبی برای {len(uncoded_teachers)} معلم قدیمی صادر شد (پسوردها دست‌نخورده باقی ماندند).")
-                
+
             # 2. دانش‌آموزان قدیمی
             uncoded_students = db.query(Student).filter(Student.student_code == None).order_by(Student.id.asc()).all()
             if uncoded_students:
@@ -399,7 +398,7 @@ def auto_patch_database():
                     s.student_code = get_next_sequence_value(db, "student", 100001)
                 db.commit()
                 print(f"✅ کدهای ترتیبی برای {len(uncoded_students)} دانش‌آموز قدیمی صادر شد.")
-                
+
             # 3. کلاس‌های قدیمی
             uncoded_courses = db.query(Course).filter((Course.code == None) | (Course.code == "")).order_by(Course.id.asc()).all()
             if uncoded_courses:
@@ -408,7 +407,7 @@ def auto_patch_database():
                     c.code = str(get_next_sequence_value(db, "class", 100001))
                 db.commit()
                 print(f"✅ کدهای ترتیبی برای {len(uncoded_courses)} کلاس قدیمی صادر شد.")
-                
+
             # 4. جلسات قدیمی
             uncoded_sessions = db.query(SessionLog).filter(SessionLog.session_code == None).order_by(SessionLog.id.asc()).all()
             if uncoded_sessions:
@@ -417,7 +416,7 @@ def auto_patch_database():
                     s.session_code = get_next_sequence_value(db, "session", 100001)
                 db.commit()
                 print(f"✅ کدهای ترتیبی برای {len(uncoded_sessions)} جلسه قدیمی صادر شد.")
-                
+
             # 5. تراکنش‌های قدیمی
             uncoded_trans = db.query(Transaction).filter(Transaction.remittance_number == None, Transaction.type == "deposit").order_by(Transaction.id.asc()).all()
             if uncoded_trans:
@@ -429,7 +428,7 @@ def auto_patch_database():
                         t.remittance_number = get_next_sequence_value(db, "remittance_institute", 100001)
                 db.commit()
                 print(f"✅ شماره حواله‌های ترتیبی برای {len(uncoded_trans)} تراکنش قدیمی صادر شد.")
-                
+
         except Exception as b_err:
             print(f"⚠️ Warning during sequence backfill: {b_err}")
             db.rollback()
@@ -481,7 +480,7 @@ def auto_patch_database():
                                     sent_count=1,
                                     date=datetime.datetime.now().strftime("%Y/%m/%d %H:%M")
                                 ))
-                                
+
                                 # Send In-App & Push Notifications
                                 try:
                                     # FIX (F-R2): recipient_user_id اعلان‌ها در فضای User.id است، نه Student.id.
@@ -558,11 +557,11 @@ def auto_patch_database():
         except Exception as hash_err:
             print(f"⚠️ Error backfilling hashed passwords on boot: {hash_err}")
             db.rollback()
-            
+
     except Exception as e:
         print("\n" + "🔥" * 30)
         print("🚨 DATABASE AUTO-PATCHING ERROR! CRITICAL FAILURE! 🚨")
-        print(f"Error details: {str(e)}")
+        print(f"Error details: {e!s}")
         print("The system might be running with an outdated or incomplete database schema!")
         print("Action required: Check database connection and schema integrity immediately!")
         print("🔥" * 30 + "\n")

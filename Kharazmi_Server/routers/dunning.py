@@ -34,7 +34,7 @@ class DunningDraft(BaseModel):
 
 
 class SendBatchRequest(BaseModel):
-    installment_ids: List[int]
+    installment_ids: list[int]
 
 
 def _jalali_now_str() -> str:
@@ -42,7 +42,7 @@ def _jalali_now_str() -> str:
     return jalali_date_string(_now.date()) + _now.strftime(" %H:%M")
 
 
-def _get_admin_username(db: Session, authorization: Optional[str]) -> str:
+def _get_admin_username(db: Session, authorization: str | None) -> str:
     try:
         if not authorization:
             return "admin"
@@ -60,34 +60,33 @@ def _get_admin_username(db: Session, authorization: Optional[str]) -> str:
     return "admin"
 
 
-def _categorize(due_date_str: Optional[str], today: datetime.date):
+def _categorize(due_date_str: str | None, today: datetime.date):
     d = parse_project_date(due_date_str)
     if not d:
         return None, None
     diff = (d - today).days  # due - today
     if 1 <= diff <= 3:
         return "upcoming", diff
-    elif -7 <= diff <= -1:
+    if -7 <= diff <= -1:
         return "overdue", diff
-    elif diff < -7:
+    if diff < -7:
         return "critical", diff
-    else:
-        return None, diff
+    return None, diff
 
 
 def _suggested_message(category: str, student_name: str, amount: int, due_date: str, diff: int) -> str:
     amt = f"{amount:,}"
     if category == "upcoming":
         return f"سلام ولی محترم {student_name}، یادآوری: قسط شهریه فرزند شما به مبلغ {amt} تومان سررسید {due_date} (تا {diff} روز آینده) می‌باشد. لطفاً نسبت به پرداخت اقدام فرمایید. با تشکر - آموزشگاه خوارزمی"
-    elif category == "overdue":
+    if category == "overdue":
         overdue = -diff
         return f"سلام ولی محترم {student_name}، قسط شهریه فرزند شما به مبلغ {amt} تومان سررسید {due_date} ({overdue} روز گذشته) معوق شده است. لطفاً در اسرع وقت پرداخت فرمایید. - خوارزمی"
-    else:  # critical
-        overdue = -diff
-        return f"⚠️ هشدار: قسط شهریه فرزند شما {student_name} به مبلغ {amt} تومان از تاریخ {due_date} ({overdue} روز گذشته) پرداخت نشده است. جهت جلوگیری از محدودیت ثبت‌نام، سریعاً اقدام فرمایید. - آموزشگاه خوارزمی"
+    # critical
+    overdue = -diff
+    return f"⚠️ هشدار: قسط شهریه فرزند شما {student_name} به مبلغ {amt} تومان از تاریخ {due_date} ({overdue} روز گذشته) پرداخت نشده است. جهت جلوگیری از محدودیت ثبت‌نام، سریعاً اقدام فرمایید. - آموزشگاه خوارزمی"
 
 
-def _collect_recent_ids(db: Session, candidate_ids: List[int], today: datetime.date) -> set:
+def _collect_recent_ids(db: Session, candidate_ids: list[int], today: datetime.date) -> set:
     """Idempotency helper: ActivityLog OR SmsLog within 48h."""
     if not candidate_ids:
         return set()
@@ -181,9 +180,9 @@ def _collect_recent_ids(db: Session, candidate_ids: List[int], today: datetime.d
     return recent
 
 
-@router.get("/dunning/drafts", response_model=List[DunningDraft])
+@router.get("/dunning/drafts", response_model=list[DunningDraft])
 def get_dunning_drafts(
-    authorization: Optional[str] = Header(None),
+    authorization: str | None = Header(None),
     db: Session = Depends(get_db),
     _: str = Depends(check_admin_access),
 ):
@@ -230,7 +229,7 @@ def get_dunning_drafts(
     candidate_ids = [c[0].id for c in candidates]
     recent_ids = _collect_recent_ids(db, candidate_ids, today)
 
-    drafts: List[DunningDraft] = []
+    drafts: list[DunningDraft] = []
     for inst, category, diff in candidates:
         if inst.id in recent_ids:
             continue
@@ -256,7 +255,7 @@ def get_dunning_drafts(
 @router.post("/dunning/send_batch")
 def send_dunning_batch(
     req: SendBatchRequest,
-    authorization: Optional[str] = Header(None),
+    authorization: str | None = Header(None),
     db: Session = Depends(get_db),
     _: str = Depends(check_admin_access),
 ):
@@ -270,7 +269,7 @@ def send_dunning_batch(
 
     # Deduplicate preserve order
     seen = set()
-    unique_ids: List[int] = []
+    unique_ids: list[int] = []
     for i in req.installment_ids:
         if i not in seen:
             seen.add(i)
@@ -296,8 +295,8 @@ def send_dunning_batch(
     recent_ids = _collect_recent_ids(db, unique_ids, today)
     admin_username = _get_admin_username(db, authorization)
 
-    sent_ids: List[int] = []
-    skipped_ids: List[int] = []
+    sent_ids: list[int] = []
+    skipped_ids: list[int] = []
     skipped_reasons = {}
 
     for iid in unique_ids:

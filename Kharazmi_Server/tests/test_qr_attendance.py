@@ -23,7 +23,7 @@ class TestKharazmiQRAttendance(unittest.TestCase):
         # Create Student A
         self.student_a = Student(first_name="الارا", last_name="صیامی", national_code="333", student_mobile="09111")
         self.db.add(self.student_a)
-        
+
         # Create Student B (unauthorized)
         self.student_b = Student(first_name="سارا", last_name="احمدی", national_code="444", student_mobile="09222")
         self.db.add(self.student_b)
@@ -47,14 +47,14 @@ class TestKharazmiQRAttendance(unittest.TestCase):
         """1. Verify expired QR is rejected with an error"""
         now_ts = datetime.datetime.utcnow().timestamp()
         expired_ts = now_ts - 100 # Expired 100 seconds ago
-        
+
         # We simulate the check-in endpoint logic
         if expired_ts < now_ts:
             # Rejection expected!
             has_error = True
         else:
             has_error = False
-            
+
         self.assertTrue(has_error)
 
     def test_qr_checkin_unauthorized_student(self):

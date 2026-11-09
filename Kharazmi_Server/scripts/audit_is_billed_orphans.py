@@ -18,7 +18,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from models import (  # noqa: E402
+from models import (
     SessionLocal,
     Attendance,
     Course,
@@ -39,8 +39,8 @@ def main() -> int:
             .join(SessionLog, Attendance.session_id == SessionLog.id)
             .join(Course, SessionLog.course_id == Course.id)
             .filter(
-                Attendance.is_billed == True,  # noqa: E712
-                SessionLog.is_deleted == False,  # noqa: E712
+                Attendance.is_billed == True,
+                SessionLog.is_deleted == False,
             )
             .order_by(Course.teacher_id, SessionLog.date, Attendance.id)
             .all()

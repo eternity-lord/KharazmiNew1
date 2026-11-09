@@ -26,7 +26,7 @@ class TestKharazmiPermissionLogic(unittest.TestCase):
         # Create Teacher A
         self.teacher_a = Teacher(first_name="معلم", last_name="الف", national_code="111", mobile="09111", teacher_code=101)
         self.db.add(self.teacher_a)
-        
+
         # Create Teacher B
         self.teacher_b = Teacher(first_name="معلم", last_name="ب", national_code="222", mobile="09222", teacher_code=102)
         self.db.add(self.teacher_b)

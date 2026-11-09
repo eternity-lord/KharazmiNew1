@@ -45,6 +45,12 @@ ignore = [
     "E402",   # bootstrap مسیر (sys.path.insert) پیش از import — الگوی مستند این ریپو
     "E501",   # خط بلند: متن فارسی و literalهای عریض؛ سخت‌گیری طول در فاز قالب‌بندی تصمیم می‌شود
     "E712",   # `== True/False` روی ستون‌های SQLAlchemy عمدی است (عبارت SQL می‌سازد)
+    # UP017 (`datetime.timezone.utc` → `datetime.UTC`) عمداً خاموش است: سوئیت
+    # tests/route_audit ساعت ماژول‌های سرور را با یک proxy از جنس SimpleNamespace فریز
+    # می‌کند که فقط `datetime/date/time/timedelta/timezone` را دارد. نوشتن `datetime.UTC`
+    # زیرِ آن proxy با AttributeError می‌شکند (۲ تست CRM convert را ۵۰۰ کرد و در همین
+    # فاز برگردانده شد). سودِ این قاعده صفر است — `timezone.utc` در ۳٫۱۱ کاملاً معتبر است.
+    "UP017",
     "E741",   # نام متغیر تک‌حرفی مبهم — در کد موجود فراوان و بی‌ضرر
     "RUF001", "RUF002", "RUF003",  # نویسهٔ فارسی/عربی = زبان محصول
     "RUF012", # کلاس‌attr تغییرپذیر در مدل‌های SQLAlchemy/Pydantic

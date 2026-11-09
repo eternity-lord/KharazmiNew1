@@ -15,28 +15,28 @@ router = APIRouter()
 # --- Pydantic Request Models ---
 class BranchCreateRequest(BaseModel):
     name: str
-    address: Optional[str] = None
-    phone: Optional[str] = None
-    manager: Optional[str] = None
+    address: str | None = None
+    phone: str | None = None
+    manager: str | None = None
 
 class BranchUpdateRequest(BaseModel):
     name: str
-    address: Optional[str] = None
-    phone: Optional[str] = None
-    manager: Optional[str] = None
+    address: str | None = None
+    phone: str | None = None
+    manager: str | None = None
     active: bool
 
 class ResourceCreateRequest(BaseModel):
     name: str
     type: str  # "projector", "computer", "board", "books", "equipment"
     serial_code: str
-    branch_id: Optional[int] = 1
+    branch_id: int | None = 1
 
 class ResourceUpdateRequest(BaseModel):
     name: str
     type: str
     serial_code: str
-    branch_id: Optional[int] = None
+    branch_id: int | None = None
     active: bool
 
 class BookingRequest(BaseModel):
@@ -59,7 +59,7 @@ def create_branch(
     existing = db.query(Branch).filter(Branch.name == req.name).first()
     if existing:
         raise HTTPException(status_code=400, detail="شعبه‌ای با این نام قبلاً ثبت شده است")
-        
+
     new_branch = Branch(
         name=req.name,
         address=req.address,
@@ -83,13 +83,13 @@ def update_branch(
     branch = db.query(Branch).filter(Branch.id == branch_id).first()
     if not branch:
         raise HTTPException(status_code=404, detail="شعبه یافت نشد")
-        
+
     branch.name = req.name
     branch.address = req.address
     branch.phone = req.phone
     branch.manager = req.manager
     branch.active = req.active
-    
+
     db.commit()
     return {"status": "success", "message": "اطلاعات شعبه با موفقیت بروزرسانی شد"}
 
@@ -103,10 +103,10 @@ def suspend_branch(
     branch = db.query(Branch).filter(Branch.id == branch_id).first()
     if not branch:
         raise HTTPException(status_code=404, detail="شعبه یافت نشد")
-        
+
     branch.active = not branch.active
     db.commit()
-    
+
     status_text = "غیرفعال (تعلیق)" if not branch.active else "فعال"
     return {"status": "success", "message": f"شعبه با موفقیت به وضعیت '{status_text}' تغییر یافت"}
 
@@ -133,7 +133,7 @@ def create_resource(
     existing = db.query(Resource).filter(Resource.serial_code == req.serial_code).first()
     if existing:
         raise HTTPException(status_code=400, detail="منبعی با این کد سریال قبلاً ثبت شده است")
-        
+
     new_resource = Resource(
         name=req.name,
         type=req.type,
@@ -165,13 +165,13 @@ def update_resource(
     ).first()
     if duplicate:
         raise HTTPException(status_code=400, detail="کد سریال واردشده متعلق به منبع دیگری است؛ کد یکتا وارد کنید")
-        
+
     res.name = req.name
     res.type = req.type
     res.serial_code = req.serial_code
     res.branch_id = req.branch_id
     res.active = req.active
-    
+
     try:
         db.commit()
     except IntegrityError:
@@ -182,7 +182,7 @@ def update_resource(
 
 @router.get("/resources")
 def list_resources(
-    branch_id: Optional[int] = None,
+    branch_id: int | None = None,
     db: Session = Depends(get_db),
     _: str = Depends(check_user_login)
 ):
@@ -203,11 +203,11 @@ def book_resource(
     res = db.query(Resource).filter(Resource.id == req.resource_id).first()
     if not res:
         raise HTTPException(status_code=404, detail="منبع یافت نشد")
-        
+
     course = db.query(Course).filter(Course.id == req.course_id).first()
     if not course:
         raise HTTPException(status_code=404, detail="کلاس یافت نشد")
-        
+
     # Duplicate bookings are an explicit product decision; preserve each submitted booking as a row.
     new_booking = ResourceBooking(
         resource_id=req.resource_id,
@@ -227,19 +227,19 @@ def book_resource(
 
 @router.get("/dashboard/branch_stats")
 def get_branch_stats(
-    branch_id: Optional[int] = None,
+    branch_id: int | None = None,
     db: Session = Depends(get_db),
-    authorization: Optional[str] = Header(None),
+    authorization: str | None = Header(None),
     role: str = Depends(check_user_login),
-    _ : Optional[str] = None  # Dummy parameter for direct backward compatibility unit tests!
+    _ : str | None = None  # Dummy parameter for direct backward compatibility unit tests!
 ):
     if isinstance(authorization, str):
         session = db.query(models.UserSession).filter(models.UserSession.token == authorization.split()[1]).first()
-        
+
         # 🛡️ پیاده‌سازی لایه ضد نشت داده و ضد IDOR در سطح شعب (Branch-Level IDOR Protection)
         if session.sub_role not in ["admin", "secretary"]:
             raise HTTPException(status_code=403, detail="شما مجاز به مشاهده آمار کلی شعب نیستید")
-            
+
         user = db.query(User).filter(User.id == session.user_id).first()
         if user and user.branch_id is not None:
             if branch_id is None:
@@ -252,18 +252,18 @@ def get_branch_stats(
         branch = db.query(Branch).filter(Branch.id == branch_id).first()
         if not branch:
             raise HTTPException(status_code=404, detail="شعبه مورد نظر یافت نشد")
-            
+
         student_count = db.query(Student).filter(Student.branch_id == branch_id, Student.is_deleted == False).count()
         teacher_count = db.query(Teacher).filter(Teacher.branch_id == branch_id, Teacher.is_deleted == False).count()
         class_count = db.query(Course).filter(Course.branch_id == branch_id, Course.is_deleted == False).count()
-        
+
         # درآمدهای موفق برای این شعبه
         revenue = db.query(func.sum(Transaction.amount)).filter(
             Transaction.branch_id == branch_id,
             Transaction.type == "deposit",
             Transaction.is_deleted == False
         ).scalar() or 0
-        
+
         # جلسات برگزار شده در اتاق‌های این شعبه
         room_ids = [r.id for r in db.query(models.Room).filter(models.Room.branch_id == branch_id).all()]
         attendance_count = 0
@@ -271,7 +271,7 @@ def get_branch_stats(
             course_ids = [c.id for c in db.query(Course).filter(Course.room_id.in_(room_ids)).all()]
             if course_ids:
                 attendance_count = db.query(SessionLog).filter(SessionLog.course_id.in_(course_ids)).count()
-                
+
         return {
             "branch_id": branch_id,
             "branch_name": branch.name,
@@ -283,7 +283,7 @@ def get_branch_stats(
                 "attendance_sessions_count": attendance_count
             }
         }
-    
+
     # در غیر این صورت، خلاصه کلی تمام شعب را برمی‌گردانیم (Branch Filter Dashboard)
     branches = db.query(Branch).all()
     revenue_by_branch = []
@@ -291,10 +291,10 @@ def get_branch_stats(
     teachers_by_branch = []
     classes_by_branch = []
     attendance_by_branch = []
-    
+
     for b in branches:
         bid = b.id
-        
+
         # ۱. درآمد به تفکیک شعبه
         rev = db.query(func.sum(Transaction.amount)).filter(
             Transaction.branch_id == bid,
@@ -302,19 +302,19 @@ def get_branch_stats(
             Transaction.is_deleted == False
         ).scalar() or 0
         revenue_by_branch.append({"branch_id": bid, "branch_name": b.name, "amount": rev})
-        
+
         # ۲. دانش‌آموزان به تفکیک شعبه
         st_cnt = db.query(Student).filter(Student.branch_id == bid, Student.is_deleted == False).count()
         students_by_branch.append({"branch_id": bid, "branch_name": b.name, "count": st_cnt})
-        
+
         # ۳. معلمان به تفکیک شعبه
         t_cnt = db.query(Teacher).filter(Teacher.branch_id == bid, Teacher.is_deleted == False).count()
         teachers_by_branch.append({"branch_id": bid, "branch_name": b.name, "count": t_cnt})
-        
+
         # ۴. کلاس‌ها به تفکیک شعبه
         cl_cnt = db.query(Course).filter(Course.branch_id == bid, Course.is_deleted == False).count()
         classes_by_branch.append({"branch_id": bid, "branch_name": b.name, "count": cl_cnt})
-        
+
         # ۵. حضور و غیاب / جلسات برگزار شده به تفکیک شعبه
         room_ids = [r.id for r in db.query(models.Room).filter(models.Room.branch_id == bid).all()]
         att_cnt = 0
@@ -323,7 +323,7 @@ def get_branch_stats(
             if course_ids:
                 att_cnt = db.query(SessionLog).filter(SessionLog.course_id.in_(course_ids)).count()
         attendance_by_branch.append({"branch_id": bid, "branch_name": b.name, "count": att_cnt})
-        
+
     return {
         "revenue_by_branch": revenue_by_branch,
         "students_by_branch": students_by_branch,

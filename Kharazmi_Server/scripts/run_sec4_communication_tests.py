@@ -38,17 +38,17 @@ def run_tests():
     db = Session()
     otp_row = db.execute(text("SELECT otp FROM parent_otps WHERE mobile = '09120000003' ORDER BY id DESC LIMIT 1;")).first()
     db.close()
-    
+
     if otp_row:
         otp_code = otp_row[0]
         print(f"   [DB Query] Retrieved active OTP code from DB: {otp_code}")
-        
+
         # Verify and login -> expect multiple_children=True and temp_token!
         res_login = httpx.post(f"{URL_BASE}/parent/login", json={"mobile": "09120000003", "otp": otp_code})
         print(f"   Status Code: {res_login.status_code}")
         print(f"   Response: {json.dumps(res_login.json(), indent=2, ensure_ascii=False)}")
         temp_token = res_login.json().get("temp_token")
-        
+
         # IDOR Check: Parent attempts to select Student 99 (not their child)
         print("\n   A) Parent tries to select Student 99 (IDOR check - expecting 403/404):")
         res_idor = httpx.post(f"{URL_BASE}/parent/select_child", json={"student_id": 99, "temp_token": temp_token})

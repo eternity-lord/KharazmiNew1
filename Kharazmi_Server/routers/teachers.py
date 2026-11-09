@@ -33,7 +33,7 @@ from validation import is_valid_iranian_national_code
 @router.post("/teachers/register")
 @limiter.limit("5/hour")
 def register_teacher(request: Request, teacher: TeacherCreate, db: Session = Depends(get_db),
-                     authorization: Optional[str] = Header(None)):
+                     authorization: str | None = Header(None)):
     if not is_valid_iranian_national_code(teacher.national_code):
         raise HTTPException(status_code=400, detail="کد ملی وارد شده معتبر نیست")
 
@@ -83,7 +83,7 @@ def register_teacher(request: Request, teacher: TeacherCreate, db: Session = Dep
             raise  # درخواست صریح نامعتبر باید خطا بدهد
         _resolved_branch_id = None  # بدون منبع قابل‌اعتماد ⇒ همان رفتار قبلی (بدون شعبه)
 
-    teacher_data = teacher.dict()
+    teacher_data = teacher.model_dump()
     teacher_data["teacher_code"] = next_code
     teacher_data["mobile"] = teacher_mobile
     teacher_data["password"] = hash_password(initial_password) # رمز عبور به صورت هش شده ذخیره می‌شود
@@ -100,15 +100,15 @@ def register_teacher(request: Request, teacher: TeacherCreate, db: Session = Dep
     }
 
 
-@router.get("/teachers/list", response_model=List[TeacherListItem])
+@router.get("/teachers/list", response_model=list[TeacherListItem])
 def get_all_teachers(
     db: Session = Depends(get_db),
-    authorization: Optional[str] = Header(None),
+    authorization: str | None = Header(None),
     sub_role: str = Depends(check_user_login),
     # FIX L8: پیجینیشن اختیاری (پاسخ همچنان آرایه‌ی خام است تا اپ قدیمی نشکند؛
     # پیش‌فرضِ بدون‌پارامتر = همه مثل قبل، برای مهاجرت تدریجی اپ به skip/limit).
     skip: int = Query(0, ge=0),
-    limit: Optional[int] = Query(None, ge=1, le=200),
+    limit: int | None = Query(None, ge=1, le=200),
 ):
     # FIX L14: موبایل در response_model هست (schemas.py) پس مشکل دسترسی است نه فیلد —
     # ادمین/منشی لیست کامل، معلم فقط خودش، بقیه (شاگرد/والد) 403.
@@ -152,7 +152,7 @@ def get_all_teachers(
 @router.get("/teachers/{teacher_id}/communication_history")
 def get_teacher_communication_history(
     teacher_id: int,
-    authorization: Optional[str] = Header(None),
+    authorization: str | None = Header(None),
     db: Session = Depends(get_db),
     sub_role: str = Depends(check_user_login),
 ):
@@ -185,7 +185,7 @@ def get_teacher_communication_history(
 @router.get("/teachers/{teacher_id}/collaboration_summary")
 def get_teacher_collaboration_summary(
     teacher_id: int,
-    authorization: Optional[str] = Header(None),
+    authorization: str | None = Header(None),
     db: Session = Depends(get_db),
     _: str = Depends(check_admin_access),
 ):
@@ -200,7 +200,7 @@ def get_teacher_collaboration_summary(
 @router.get("/teachers/{id}/today_summary")
 def get_teacher_today_summary(
     id: int,
-    authorization: Optional[str] = Header(None),
+    authorization: str | None = Header(None),
     db: Session = Depends(get_db),
     sub_role: str = Depends(check_user_login),
 ):
@@ -231,12 +231,12 @@ def get_teacher_today_summary(
 @router.get("/teachers/{teacher_id}/classes")
 def get_my_classes(
     teacher_id: int,
-    student_name: Optional[str] = None,
-    course_name: Optional[str] = None,
-    grade_level: Optional[str] = None,
-    start_year: Optional[str] = None,
-    authorization: Optional[str] = Header(None),
-    db: Session = Depends(get_db), 
+    student_name: str | None = None,
+    course_name: str | None = None,
+    grade_level: str | None = None,
+    start_year: str | None = None,
+    authorization: str | None = Header(None),
+    db: Session = Depends(get_db),
     sub_role: str = Depends(check_user_login)
 ):
     # FIX (L14/Y2): تکمیل تله‌ی گارد نصفه — شاگرد/ولی (و نقش ناشناخته) 403؛ فقط کارکنان عبور می‌کنند.
@@ -251,7 +251,7 @@ def get_my_classes(
 
     # Only non-deleted classes belonging to this teacher!
     q = db.query(Course).filter(Course.teacher_id == teacher_id, Course.is_deleted == False)
-    
+
     if student_name:
         search_s = f"%{student_name}%"
         q = q.join(Enrollment).join(Student).filter(
@@ -260,13 +260,13 @@ def get_my_classes(
                 Student.last_name.ilike(search_s)
             )
         )
-        
+
     if course_name:
         q = q.filter(Course.title.ilike(f"%{course_name}%"))
-        
+
     if grade_level:
         q = q.filter(Course.grade_level.ilike(f"%{grade_level}%"))
-        
+
     if start_year:
         q = q.join(Enrollment).filter(Enrollment.register_date.like(f"{start_year}%"))
 
@@ -348,9 +348,9 @@ def get_my_classes(
 
 @router.get("/teachers/{teacher_id}/incomplete_classes")
 def get_teacher_incomplete_classes(
-    teacher_id: int, 
-    authorization: Optional[str] = Header(None),
-    db: Session = Depends(get_db), 
+    teacher_id: int,
+    authorization: str | None = Header(None),
+    db: Session = Depends(get_db),
     sub_role: str = Depends(check_user_login)
 ):
     # FIX (L14/Y2): تکمیل تله‌ی گارد نصفه — شاگرد/ولی (و نقش ناشناخته) 403؛ فقط کارکنان عبور می‌کنند.
@@ -392,9 +392,9 @@ class ChangePasswordRequest(BaseModel):
 
 @router.get("/teachers/{id}/full_profile")
 def get_teacher_full_profile(
-    id: int, 
-    authorization: Optional[str] = Header(None),
-    db: Session = Depends(get_db), 
+    id: int,
+    authorization: str | None = Header(None),
+    db: Session = Depends(get_db),
     sub_role: str = Depends(check_user_login)
 ):
     # FIX (L14/Y2): تکمیل تله‌ی گارد نصفه — شاگرد/ولی (و نقش ناشناخته) 403؛ فقط کارکنان عبور می‌کنند.
@@ -471,7 +471,7 @@ def get_teacher_full_profile(
 
 
 @router.get("/teachers/{teacher_id}")
-def get_teacher_profile(teacher_id: int, db: Session = Depends(get_db), authorization: Optional[str] = Header(None), sub_role: str = Depends(check_user_login)):
+def get_teacher_profile(teacher_id: int, db: Session = Depends(get_db), authorization: str | None = Header(None), sub_role: str = Depends(check_user_login)):
     # FIX (L14/Y2): پروفایل کامل معلم (شامل شماره‌کارت!) — فقط ادمین/منشی + خودِ معلم. شاگرد/ولی 403.
     if sub_role not in ("admin", "secretary", "teacher"):
         raise HTTPException(status_code=403, detail="شما دسترسی لازم برای مشاهده‌ی اطلاعات معلمان را ندارید")
@@ -522,7 +522,7 @@ def update_teacher(teacher_id: int, data: TeacherUpdate, db: Session = Depends(g
         current_ver = teacher.version if teacher.version is not None else 1
         if data.version != current_ver:
             raise HTTPException(
-                status_code=409, 
+                status_code=409,
                 detail="این اطلاعات توسط شخص دیگری تغییر یافته است. لطفاً صفحه را مجدداً بارگذاری کنید."
             )
 
@@ -531,7 +531,7 @@ def update_teacher(teacher_id: int, data: TeacherUpdate, db: Session = Depends(g
         raise HTTPException(status_code=400, detail="نام نمی‌تواند خالی باشد")
     if data.last_name is not None and not data.last_name.strip():
         raise HTTPException(status_code=400, detail="نام خانوادگی نمی‌تواند خالی باشد")
-        
+
     if data.national_code is not None:
         nc = data.national_code.strip()
         # FIX: Bug 22 - edits must pass the checksum too, not just a length check.
@@ -540,7 +540,7 @@ def update_teacher(teacher_id: int, data: TeacherUpdate, db: Session = Depends(g
         exists = db.query(Teacher).filter(Teacher.national_code == nc, Teacher.id != teacher_id).first()
         if exists:
             raise HTTPException(status_code=400, detail="کد ملی وارد شده قبلاً ثبت شده است")
-            
+
     norm_teacher_mobile = None
     if data.mobile is not None:
         # FIX H20: نرمال‌سازی جایگزین رد خام H1؛ clash و ذخیره با مقدار canonical (خالی مثل قبل 400).
@@ -555,7 +555,7 @@ def update_teacher(teacher_id: int, data: TeacherUpdate, db: Session = Depends(g
     _old_mob = teacher.mobile  # FIX H20-B3: برای سینک سایه (قبل از بازنویسی حلقه)
 
     # Update only provided fields
-    update_data = data.dict(exclude_unset=True)
+    update_data = data.model_dump(exclude_unset=True)
     for key, value in update_data.items():
         if key == "version":
             continue
@@ -617,7 +617,7 @@ import uuid
 
 
 @router.post("/teachers/{id}/upload_photo")
-async def upload_teacher_photo(id: int, file: UploadFile = File(...), db: Session = Depends(get_db), authorization: Optional[str] = Header(None), sub_role: str = Depends(check_user_login)):
+async def upload_teacher_photo(id: int, file: UploadFile = File(...), db: Session = Depends(get_db), authorization: str | None = Header(None), sub_role: str = Depends(check_user_login)):
     teacher = db.query(Teacher).filter(Teacher.id == id, Teacher.is_deleted == False).first()
     if not teacher:
         raise HTTPException(status_code=404, detail="معلم یافت نشد")
@@ -629,24 +629,24 @@ async def upload_teacher_photo(id: int, file: UploadFile = File(...), db: Sessio
         _t = get_logged_in_teacher(db, authorization)
         if _t is None or _t.id != id:
             raise HTTPException(status_code=403, detail="شما مجاز به تغییر عکس این معلم نیستید")
-        
+
     # Read file and validate size
     MAX_SIZE = 5 * 1024 * 1024 # 5 MB
     contents = await file.read()
     if len(contents) > MAX_SIZE:
         raise HTTPException(status_code=400, detail="حجم فایل نباید بیشتر از ۵ مگابایت باشد")
-        
+
     # FIX M25: پسوند + magic bytes (فایل غیرعکس با پسوند جعلی رد می‌شود).
     file_ext = validate_image_upload(file.filename, contents)
-        
+
     # Generate unique filename
     unique_filename = f"{uuid.uuid4().hex}{file_ext}"
     filepath = os.path.join(storage_dir("profiles"), unique_filename)
-    
+
     # Write to disk
     with open(filepath, "wb") as f_out:
         f_out.write(contents)
-        
+
     # Delete old file
     if teacher.profile_image:
         # پاک‌کردن فایل قبلی — حتی اگر در مسیر قدیمی (نسبت به cwd) مانده باشد
@@ -656,10 +656,10 @@ async def upload_teacher_photo(id: int, file: UploadFile = File(...), db: Sessio
                 os.remove(old_path)
             except Exception:
                 pass
-                
+
     teacher.profile_image = unique_filename
     db.commit()
-    
+
     return {
         "message": "عکس پروفایل معلم با موفقیت آپلود شد",
         "profile_image": unique_filename,
@@ -675,15 +675,15 @@ async def upload_teacher_photo(id: int, file: UploadFile = File(...), db: Sessio
 @router.get("/teachers/list/excel")
 def get_teachers_excel(db: Session = Depends(get_db), _: str = Depends(check_admin_or_secretary_access)):
     teachers = db.query(Teacher).filter(Teacher.is_deleted == False).all()
-    
+
     wb = Workbook()
     ws = wb.active
     ws.title = "لیست معلمان"
     ws.views.sheetView[0].rightToLeft = True
-    
+
     headers = ["شناسه", "نام و نام خانوادگی", "کد ملی", "شماره همراه", "تلفن ثابت", "شماره کارت", "نوع استخدام", "کلاس‌های تدریسی", "کل درآمد (تومان)"]
     ws.append(headers)
-    
+
     header_fill = PatternFill(start_color="00695C", end_color="00695C", fill_type="solid")
     header_font = Font(name="Tahoma", size=11, bold=True, color="FFFFFF")
     for col_num in range(1, len(headers) + 1):
@@ -691,13 +691,13 @@ def get_teachers_excel(db: Session = Depends(get_db), _: str = Depends(check_adm
         cell.fill = header_fill
         cell.font = header_font
         cell.alignment = Alignment(horizontal="center", vertical="center")
-        
+
     row_num = 2
     for t in teachers:
         courses = db.query(Course).filter(Course.teacher_id == t.id).all()
         # FIX(null-data): عنوان legacy ممکن است NULL باشد — join روی None قبلاً TypeError/500 می‌داد.
         course_titles = ", ".join([(c.title or "کلاس بدون عنوان") for c in courses]) if courses else "ندارد"
-        
+
         course_ids = [c.id for c in courses]
         total_rev = 0
         if course_ids:
@@ -719,25 +719,25 @@ def get_teachers_excel(db: Session = Depends(get_db), _: str = Depends(check_adm
             total_rev
         ]
         ws.append(row_data)
-        
+
         ws.cell(row=row_num, column=9).number_format = '#,##0'
-        
+
         for col_num in range(1, len(headers) + 1):
             cell = ws.cell(row=row_num, column=col_num)
             cell.alignment = Alignment(horizontal="center", vertical="center")
             cell.font = Font(name="Tahoma", size=10)
-            
+
         row_num += 1
-        
+
     for col in ws.columns:
         max_len = max(len(str(cell.value or '')) for cell in col)
         col_letter = col[0].column_letter
         ws.column_dimensions[col_letter].width = max(max_len + 3, 12)
-        
+
     stream = io.BytesIO()
     wb.save(stream)
     stream.seek(0)
-    
+
     return StreamingResponse(
         stream,
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -747,11 +747,11 @@ def get_teachers_excel(db: Session = Depends(get_db), _: str = Depends(check_adm
 
 @router.get("/teachers/{teacher_id}/pending_settlement")
 def get_pending_settlement(
-    teacher_id: int, 
-    start_date: Optional[str] = None, 
-    end_date: Optional[str] = None, 
-    db: Session = Depends(get_db), 
-    authorization: Optional[str] = Header(None),
+    teacher_id: int,
+    start_date: str | None = None,
+    end_date: str | None = None,
+    db: Session = Depends(get_db),
+    authorization: str | None = Header(None),
     sub_role: str = Depends(check_user_login)
 ):
     # FIX (L14/Y2): طلب/تسویه‌ی معلم — فقط ادمین/منشی + خودِ معلم. شاگرد/ولی 403.
@@ -775,10 +775,10 @@ def get_pending_settlement(
     # 2. پیدا کردن تمام کلاس‌های این معلم
     courses = db.query(Course).filter(Course.teacher_id == teacher_id).all()
     course_ids = [c.id for c in courses]
-    
+
     if not course_ids:
         return {"teacher_id": teacher_id, "teacher_name": teacher_name, "total_amount": 0, "session_count": 0, "settled_total_amount": settled_total, "earned_total_amount": settled_total, "pending_sessions": []}
-        
+
     # 3. پیدا کردن تمام جلسات برگزار شده در این کلاس‌ها
     # FIX H3-B3: boundaries may be Jalali or Gregorian — parse and filter in Python
     # (identical behavior for Gregorian input, fixes Jalali input).
@@ -823,12 +823,12 @@ def get_pending_settlement(
     sessions = [s for s in q_sessions.all() if _in_range(s.date)]
     session_map = {s.id: s for s in sessions}
     session_ids = list(session_map.keys())
-    
+
     if not session_ids:
         # FIX(null-data): مثل شاخهٔ بالا از teacher_name امن استفاده می‌شود — قبلاً f-string خام
         # با نام NULL نتیجهٔ «None None» می‌داد (ناهم‌خوانی دو مسیر خروج زودهنگام).
         return {"teacher_id": teacher_id, "teacher_name": teacher_name, "total_amount": 0, "session_count": 0, "settled_total_amount": settled_total, "earned_total_amount": settled_total, "pending_sessions": []}
-        
+
     # 4. پیدا کردن تمام حضور و غیاب‌های تسویه نشده دانش‌آموزان حاضر/تاخیر در این جلسات
     attendances = (
         db.query(Attendance)
@@ -840,15 +840,15 @@ def get_pending_settlement(
         )
         .all()
     )
-    
+
     # 5. محاسبه سهم معلم برای هر حضور غیاب
     course_map = {c.id: c for c in courses}
     pending_sessions = {}  # session_id -> {"date", "class_title", "amount", "present_count"}
-    
+
     for att in attendances:
         sess = session_map[att.session_id]
         cls = course_map[sess.course_id]
-        
+
         if sess.id not in pending_sessions:
             pending_sessions[sess.id] = {
                 "session_id": sess.id,
@@ -879,10 +879,10 @@ def get_pending_settlement(
                 "present_count": 0,
                 "penalty_only": True,
             }
-        
+
     session_list = list(pending_sessions.values())
     total_amount = sum(item["amount"] for item in session_list)
-    
+
     return {
         "teacher_id": teacher_id,
         "teacher_name": teacher_name,
@@ -903,7 +903,7 @@ def settle_teacher_sessions(
     req: SettleRequest,
     db: Session = Depends(get_db),
     admin_sub_role: str = Depends(check_admin_access),
-    authorization: Optional[str] = Header(None)
+    authorization: str | None = Header(None)
 ):
     # این عملیات فقط برای ادمین مجاز است (dependency بررسی می‌کند)
     teacher = db.query(Teacher).filter(Teacher.id == teacher_id).first()
@@ -1041,7 +1041,7 @@ def settle_teacher_sessions(
     payout.settlement_id = new_settlement.id
     new_settlement.payout_transaction_id = payout.id
     db.commit()
-    
+
     return {
         "message": "تسویه‌حساب با موفقیت انجام و مبالغ پرداخت شد",
         "settlement_id": new_settlement.id,
@@ -1052,9 +1052,9 @@ def settle_teacher_sessions(
 
 @router.get("/teachers/{teacher_id}/settlement_history")
 def get_settlement_history(
-    teacher_id: int, 
-    db: Session = Depends(get_db), 
-    authorization: Optional[str] = Header(None),
+    teacher_id: int,
+    db: Session = Depends(get_db),
+    authorization: str | None = Header(None),
     sub_role: str = Depends(check_user_login)
 ):
     # FIX (L14/Y2): تاریخچه‌ی تسویه‌ی معلم — فقط ادمین/منشی + خودِ معلم. شاگرد/ولی 403.
@@ -1068,14 +1068,14 @@ def get_settlement_history(
     teacher = db.query(Teacher).filter(Teacher.id == teacher_id).first()
     if not teacher:
         raise HTTPException(status_code=404, detail="معلم یافت نشد")
-        
+
     history = (
         db.query(Settlement)
         .filter(Settlement.teacher_id == teacher_id)
         .order_by(desc(Settlement.id))
         .all()
     )
-    
+
     result = []
     for h in history:
         result.append({
@@ -1096,11 +1096,11 @@ def get_settlement_history(
 
 
 class SettlementEditRequest(BaseModel):
-    total_amount: Optional[int] = None
+    total_amount: int | None = None
     reason: str
 
 
-def _settlement_session_ids(settlement: Settlement) -> List[int]:
+def _settlement_session_ids(settlement: Settlement) -> list[int]:
     """Decode the immutable scope snapshot; malformed legacy rows have empty scope."""
     try:
         value = json.loads(settlement.session_ids_json or "[]")
@@ -1109,7 +1109,7 @@ def _settlement_session_ids(settlement: Settlement) -> List[int]:
         return []
 
 
-def _settlement_actor_id(db: Session, authorization: Optional[str]) -> int:
+def _settlement_actor_id(db: Session, authorization: str | None) -> int:
     from dependencies import get_session_from_token
     try:
         parts = (authorization or "").split()
@@ -1189,7 +1189,7 @@ def _get_settlement_for_teacher(db: Session, teacher_id: int, settlement_id: int
 @router.post("/teachers/{teacher_id}/settlements/{settlement_id}/reverse")
 def reverse_teacher_settlement(
     teacher_id: int, settlement_id: int, reason: str,
-    db: Session = Depends(get_db), authorization: Optional[str] = Header(None),
+    db: Session = Depends(get_db), authorization: str | None = Header(None),
     _: str = Depends(check_admin_access)
 ):
     settlement = _get_settlement_for_teacher(db, teacher_id, settlement_id)
@@ -1204,7 +1204,7 @@ def reverse_teacher_settlement(
 @router.put("/teachers/{teacher_id}/settlements/{settlement_id}/edit")
 def edit_teacher_settlement(
     teacher_id: int, settlement_id: int, req: SettlementEditRequest,
-    db: Session = Depends(get_db), authorization: Optional[str] = Header(None),
+    db: Session = Depends(get_db), authorization: str | None = Header(None),
     _: str = Depends(check_admin_access)
 ):
     settlement = _get_settlement_for_teacher(db, teacher_id, settlement_id)
@@ -1251,7 +1251,7 @@ def edit_teacher_settlement(
 @router.get("/teachers/{teacher_id}/pending_classes")
 def get_teacher_pending_classes(
     teacher_id: int, db: Session = Depends(get_db),
-    authorization: Optional[str] = Header(None), sub_role: str = Depends(check_user_login)
+    authorization: str | None = Header(None), sub_role: str = Depends(check_user_login)
 ):
     if sub_role not in ("admin", "secretary", "teacher"):
         raise HTTPException(status_code=403, detail="دسترسی به صف کلاس‌ها مجاز نیست")

@@ -42,7 +42,7 @@ def _row_date_in_range(value, start, end) -> bool:
 # =========================================================================
 # FIX (گروه۲/آیتم‌های ۶ و ۹): دامنهٔ شعبه برای ردیف‌های legacyِ بی‌شعبه
 # =========================================================================
-def branch_scope_clause(column, resolved_branch: Optional[int]):
+def branch_scope_clause(column, resolved_branch: int | None):
     """شرط SQL «این ستون در دامنهٔ شعبهٔ کاربر است» — ردیف بی‌شعبه شامل می‌شود.
 
     چرا: در دادهٔ واقعی آموزشگاه (سنجش روی کپی `/tmp` از `gaj_db.db`) ستون `branch_id`
@@ -69,7 +69,7 @@ INSTITUTE_CASH_TYPES = ("deposit", "enrollment_payment", "tuition")
 
 
 def institute_cash_rows(db: Session, start_date: str, end_date: str,
-                        branch_id: Optional[int] = None, include_undated: bool = False):
+                        branch_id: int | None = None, include_undated: bool = False):
     """ردیف‌های `(amount, date)` وصولی نقدی آموزشگاه در بازه — منبع یگانهٔ «پرداختی امروز».
 
     تفاوت با `collected_revenue_rows` (که عمداً برای KPI/نمودار O-07/O-08 دست‌نخورده ماند):
@@ -112,7 +112,7 @@ def institute_cash_rows(db: Session, start_date: str, end_date: str,
 
 
 def calculate_institute_cash_collected(db: Session, start_date: str, end_date: str,
-                                       branch_id: Optional[int] = None) -> int:
+                                       branch_id: int | None = None) -> int:
     """جمع وصولی نقدی آموزشگاه در بازه — همان ردیف‌های `institute_cash_rows`.
 
     مصرف‌کننده‌ها: `GET /admin/today_summary` («پرداخت امروز») و `GET /dashboard/kpis`
@@ -121,7 +121,7 @@ def calculate_institute_cash_collected(db: Session, start_date: str, end_date: s
     return sum(amount for amount, _ in institute_cash_rows(db, start_date, end_date, branch_id))
 
 
-def calculate_institute_session_revenue(db: Session, start_date: str, end_date: str, branch_id: Optional[int] = None) -> int:
+def calculate_institute_session_revenue(db: Session, start_date: str, end_date: str, branch_id: int | None = None) -> int:
     """
     سود نظری آموزشگاه: مجموع سهم آموزشگاه از جلسات کلاسی برگزار شده (session_charge)
     فیلتر استاندارد: is_deleted==False و is_reversed==False
@@ -143,7 +143,7 @@ def calculate_institute_session_revenue(db: Session, start_date: str, end_date: 
 
 
 def collected_revenue_rows(db: Session, start_date: str, end_date: str,
-                           branch_id: Optional[int] = None, course_id: Optional[int] = None,
+                           branch_id: int | None = None, course_id: int | None = None,
                            include_undated: bool = False):
     """ردیف‌های خام «وصولی نقدی آموزشگاه» در بازه — منبع یگانهٔ KPI/گزارش/نمودار (FIX O-07/O-08).
 
@@ -181,7 +181,7 @@ def collected_revenue_rows(db: Session, start_date: str, end_date: str,
             if _row_date_in_range(date_value, start, end)]
 
 
-def calculate_institute_collected_revenue(db: Session, start_date: str, end_date: str, branch_id: Optional[int] = None) -> int:
+def calculate_institute_collected_revenue(db: Session, start_date: str, end_date: str, branch_id: int | None = None) -> int:
     """
     سود وصول‌شده آموزشگاه: مجموع مبالغ واریزی واقعی دانش‌آموزان به حساب آموزشگاه (deposit)
     فیلتر استاندارد: is_deleted==False و is_reversed==False
@@ -192,8 +192,8 @@ def calculate_institute_collected_revenue(db: Session, start_date: str, end_date
     return sum(amount for amount, _ in collected_revenue_rows(db, start_date, end_date, branch_id))
 
 
-def count_undated_payments(db: Session, target_wallet: Optional[str] = None,
-                           branch_id: Optional[int] = None, course_ids: Optional[list] = None):
+def count_undated_payments(db: Session, target_wallet: str | None = None,
+                           branch_id: int | None = None, course_ids: list | None = None):
     """(تعداد، مبلغ) پرداخت‌های مثبتِ **بی‌تاریخ** — هشدار «پول بی‌تاریخ» در گزارش‌ها (FIX O-10).
 
     «بی‌تاریخ» = تاریخی که مبدل مرکزی نمی‌تواند پارس کند (خالی/NULL/نامعتبر). این ردیف‌ها به
@@ -222,8 +222,8 @@ def count_undated_payments(db: Session, target_wallet: Optional[str] = None,
 
 
 def report_period_diagnostics(db: Session, start_date: str, end_date: str, *,
-                              teacher_id: Optional[int] = None,
-                              branch_id: Optional[int] = None) -> dict:
+                              teacher_id: int | None = None,
+                              branch_id: int | None = None) -> dict:
     """توضیح «چرا این ماه صفر است؟» برای کارت آمار مالی — فقط خواندنی و افزودنی.
 
     هیچ‌کدام از اعداد `total/collected/uncollected` را تغییر نمی‌دهد؛ فقط می‌شمارد:
@@ -288,7 +288,7 @@ def report_period_diagnostics(db: Session, start_date: str, end_date: str, *,
     }
 
 
-def calculate_total_turnover(db: Session, start_date: str, end_date: str, branch_id: Optional[int] = None) -> int:
+def calculate_total_turnover(db: Session, start_date: str, end_date: str, branch_id: int | None = None) -> int:
     """
     گردش مالی کل مجموعه: مجموع کل مبالغ فیزیکی دریافتی از تمام دانش‌آموزان (کل واریزی‌ها)
     فیلتر استاندارد: is_deleted==False و is_reversed==False
@@ -635,7 +635,7 @@ def _distribute_remainder(base: int, remainder: int, count: int, seed: str, salt
         return []
     if not seed:
         return [base + (1 if idx < remainder else 0) for idx in range(count)]
-    start = int(hashlib.sha256(f"{seed}:{salt}".encode("utf-8")).hexdigest(), 16) % count
+    start = int(hashlib.sha256(f"{seed}:{salt}".encode()).hexdigest(), 16) % count
     return [base + (1 if (idx - start) % count < remainder else 0) for idx in range(count)]
 
 

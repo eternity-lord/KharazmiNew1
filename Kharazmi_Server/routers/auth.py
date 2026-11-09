@@ -80,7 +80,7 @@ def login_user(request: Request, req: LoginRequest, db: Session = Depends(get_db
                 "branch_id": admin.branch_id,
                 "message": "ورود مدیر موفقیت آمیز بود",
             }
-        elif req.password:
+        if req.password:
             db.add(LoginAttempt(mobile=_throttle_mobile, ip=(request.client.host if request.client else None)))  # FIX H14: ثبت تلاش ناموفق
             db.commit()
             raise HTTPException(status_code=400, detail="رمز عبور اشتباه است")
@@ -218,7 +218,7 @@ class FullTeacherProfile(BaseModel):
     total_students: int
     total_revenue: int
     active_classes_count: int
-    classes: List[str]
+    classes: list[str]
 
 
 class StudentCreate(BaseModel):
@@ -248,7 +248,7 @@ class TeacherCreate(BaseModel):
     gender: str
     employment_type: str
     card_number: str
-    profile_image: Optional[str] = None
+    profile_image: str | None = None
 
 
 class CourseCreate(BaseModel):
@@ -277,8 +277,8 @@ class EnrollmentCreate(BaseModel):
     paid_amount: int
     payment_method: str
     receiver: str
-    discount_type: Optional[str] = "none"
-    discount_value: Optional[int] = 0
+    discount_type: str | None = "none"
+    discount_value: int | None = 0
 
 
 # مدل‌های مربوط به نمره
@@ -306,7 +306,7 @@ class GradeItem(BaseModel):
 
 
 @router.post("/auth/change-password")
-def change_password(req: ChangePasswordRequest, authorization: Optional[str] = Header(None), db: Session = Depends(get_db), _: str = Depends(check_user_login)):
+def change_password(req: ChangePasswordRequest, authorization: str | None = Header(None), db: Session = Depends(get_db), _: str = Depends(check_user_login)):
     if not authorization:
         raise HTTPException(status_code=401, detail="توکن احراز هویت یافت نشد")
     parts = authorization.split()
@@ -316,7 +316,7 @@ def change_password(req: ChangePasswordRequest, authorization: Optional[str] = H
     session = db.query(UserSession).filter(UserSession.token == token).first()
     if not session:
         raise HTTPException(status_code=401, detail="نشست معتبر نیست یا منقضی شده است")
-    
+
     # FIX(security): تشخیص نقش از روی سشن؛ معلم روی رکورد Teacher، بقیه‌ی نقش‌ها روی User.
     role = session.sub_role or ""
     # FIX H20-B2: اثبات هویت با raw-OR-canonical (بدون lockout برای legacy؛ مهاجم سودی نمی‌برد چون پسورد/سشن هم لازم است). lookups بالا norm-only هستند چون باید یک کلید واحد داشته باشند.
@@ -366,7 +366,7 @@ def change_password(req: ChangePasswordRequest, authorization: Optional[str] = H
     raise HTTPException(status_code=400, detail="کاربر یافت نشد")
 
 @router.post("/auth/logout")
-def logout_user(authorization: Optional[str] = Header(None), db: Session = Depends(get_db), device_token: Optional[str] = None, _: str = Depends(check_user_login)):
+def logout_user(authorization: str | None = Header(None), db: Session = Depends(get_db), device_token: str | None = None, _: str = Depends(check_user_login)):
     if not authorization:
         raise HTTPException(status_code=400, detail="توکن یافت نشد")
     parts = authorization.split()
@@ -391,7 +391,7 @@ def logout_user(authorization: Optional[str] = Header(None), db: Session = Depen
     return {"message": "خروج با موفقیت انجام شد و نشست باطل گردید"}
 
 @router.get("/auth/me")
-def get_me(authorization: Optional[str] = Header(None), db: Session = Depends(get_db), _: str = Depends(check_user_login)):
+def get_me(authorization: str | None = Header(None), db: Session = Depends(get_db), _: str = Depends(check_user_login)):
     if not authorization:
         raise HTTPException(status_code=401, detail="توکن یافت نشد")
     parts = authorization.split()
@@ -401,16 +401,16 @@ def get_me(authorization: Optional[str] = Header(None), db: Session = Depends(ge
     session = db.query(UserSession).filter(UserSession.token == token).first()
     if not session:
         raise HTTPException(status_code=401, detail="نشست نامعتبر یا منقضی شده است")
-        
+
     role = session.sub_role or "student"
     if role.startswith("temp_parent:"):
         role = "parent"
-        
+
     permissions = ROLE_PERMISSIONS.get(role, [])
-    
+
     user_name = "کاربر سیستم"
     user_id = session.user_id
-    
+
     if role == "teacher":
         # FIX M19 (الگوی H1/H8): اول teacher_id مستقیم سشن (مقاوم به تغییر موبایل)،
         # بعد fallback به mobile==username برای سشن‌های قدیمیِ بدون teacher_id.
@@ -441,7 +441,7 @@ def get_me(authorization: Optional[str] = Header(None), db: Session = Depends(ge
             raise HTTPException(status_code=401, detail="نشست معتبر نیست؛ لطفاً دوباره وارد شوید")
         user_name = display_name(student, "نامشخص")
         user_id = student.id
-            
+
     return {
         "user_id": user_id,
         "name": user_name,
@@ -466,7 +466,7 @@ def request_student_otp(request: Request, req: StudentOtpRequest, db: Session = 
     mobile = normalize_mobile(_raw_mob)
     if not mobile:
         raise HTTPException(status_code=404, detail="شماره همراه دانش‌آموز در سیستم یافت نشد")
-        
+
     student = db.query(Student).filter(Student.student_mobile.in_([mobile, _raw_mob]), Student.is_deleted == False).first()  # FIX H20-ESC
     if not student:
         raise HTTPException(status_code=404, detail="شماره همراه دانش‌آموز در سیستم یافت نشد")
@@ -493,11 +493,11 @@ def request_student_otp(request: Request, req: StudentOtpRequest, db: Session = 
     ).first()
     if locked:
         raise HTTPException(status_code=429, detail="این شماره به دلیل تلاش‌های ناموفق قفل شده، لطفاً بعداً تلاش کنید")
-        
+
     # FIX: Generate 6-digit code
     otp_code = str(random.randint(100000, 999999))
     expires_at = datetime.datetime.utcnow() + datetime.timedelta(minutes=3)  # FIX: کوتاه‌تر 3 دقیقه
-    
+
     # FIX: هش کردن OTP – هرگز plaintext ذخیره نشود
     from dependencies import hash_password
     hashed_otp = hash_password(otp_code)
@@ -511,7 +511,7 @@ def request_student_otp(request: Request, req: StudentOtpRequest, db: Session = 
         is_locked=False
     )
     db.add(new_otp)
-    
+
     # Log sms – متن شامل کد اصلی است (فقط برای ارسال)
     db.add(SmsLog(
         target_group=f"student_otp_{mobile}",
@@ -520,7 +520,7 @@ def request_student_otp(request: Request, req: StudentOtpRequest, db: Session = 
         date=datetime.datetime.now().strftime("%Y/%m/%d %H:%M")
     ))
     db.commit()
-    
+
     return {
         "status": "success",
         "message": "کد یک‌بارمصرف ورود دانش‌آموز با موفقیت ارسال شد"
@@ -535,7 +535,7 @@ def student_login(request: Request, req: StudentLoginRequest, db: Session = Depe
     if not mobile:
         raise HTTPException(status_code=400, detail="کد تایید نامعتبر یا منقضی شده است")
     otp = req.otp.strip()
-    
+
     now = datetime.datetime.utcnow()
     # FIX: پیدا کردن آخرین OTP معتبر (is_used=False, not expired, not locked)
     otp_record = (
@@ -562,10 +562,10 @@ def student_login(request: Request, req: StudentLoginRequest, db: Session = Depe
             otp_record.locked_until = now + datetime.timedelta(minutes=15)  # قفل 15 دقیقه
         db.commit()
         raise HTTPException(status_code=400, detail="کد تایید نامعتبر است")
-        
+
     otp_record.is_used = True
     db.commit()
-    
+
     student = db.query(Student).filter(Student.student_mobile.in_([mobile, _raw_mob]), Student.is_deleted == False).first()  # FIX H20-ESC
     if not student:
         raise HTTPException(status_code=404, detail="دانش‌آموز یافت نشد")
@@ -584,7 +584,7 @@ def student_login(request: Request, req: StudentLoginRequest, db: Session = Depe
     )
     db.add(new_session)
     db.commit()
-    
+
     return {
         "status": "success",
         "token": token,
@@ -600,7 +600,7 @@ def register_device_token(req: DeviceTokenRequest, db: Session = Depends(get_db)
     role = current_user.sub_role or "student"
     if role.startswith("temp_parent:"):
         role = "parent"
-        
+
     existing = db.query(DeviceToken).filter(DeviceToken.token == req.token).first()
     if existing:
         # FIX: اگر توکن متعلق به کاربر دیگری است، reject
@@ -662,7 +662,7 @@ def get_unread_notifications_count(db: Session = Depends(get_db), current_user =
         Notification.recipient_role == role,
     )
     total = base.count()
-    unread = base.filter(or_(Notification.is_read.is_(None), Notification.is_read == False)).count()  # noqa: E712
+    unread = base.filter(or_(Notification.is_read.is_(None), Notification.is_read == False)).count()
     return {"unread": unread, "total": total}
 
 
@@ -702,18 +702,18 @@ def change_mobile(req: ChangeMobileRequest, db: Session = Depends(get_db), curre
     new_mobile = normalize_mobile(req.new_mobile)
     if not new_mobile:
         raise HTTPException(status_code=400, detail="فرمت شماره موبایل جدید صحیح نیست. باید ۱۰ یا ۱۱ رقم باشد")
-        
+
     # 2. Check if new mobile is already taken by anyone in the system
     exists_user = db.query(User).filter(User.username == new_mobile).first()
     exists_teacher = db.query(Teacher).filter(Teacher.mobile == new_mobile).first()
     exists_student = db.query(Student).filter(Student.student_mobile == new_mobile).first()
-    
+
     if exists_user or exists_teacher or exists_student:
         raise HTTPException(status_code=400, detail="این شماره موبایل قبلاً در سیستم ثبت شده و تکراری است")
-        
+
     # 3. Check current user's password and identity
     user = db.query(User).filter(User.id == current_user.id).first()
-    
+
     if user:
         # FIX H20-B2: اثبات هویت با raw-OR-canonical (همان استدلال change_password).
         _cur_mob = normalize_mobile(req.current_mobile)
@@ -721,7 +721,7 @@ def change_mobile(req: ChangeMobileRequest, db: Session = Depends(get_db), curre
             raise HTTPException(status_code=403, detail="شما مجاز به تغییر شماره کاربری دیگری نیستید")
         if not verify_password(req.password, user.password):
             raise HTTPException(status_code=400, detail="کلمه عبور وارد شده اشتباه است")
-            
+
         old_mobile = user.username
         user.username = new_mobile
 
@@ -761,9 +761,9 @@ def change_mobile(req: ChangeMobileRequest, db: Session = Depends(get_db), curre
             # backstop مسابقه‌ی هم‌زمان (race) بین چک‌های بالا و commit
             db.rollback()
             raise HTTPException(status_code=409, detail="این شماره موبایل قبلاً در سیستم ثبت شده است")
-        
+
         return {"message": "شماره‌ی شما با موفقیت تغییر کرد، لطفاً دوباره با شماره‌ی جدید وارد شوید"}
-        
+
     raise HTTPException(status_code=400, detail="کاربر سیستم یافت نشد")
 
 
@@ -781,8 +781,8 @@ class StudentProfileInfo(BaseModel):
 
 class FullStudentProfile(BaseModel):
     info: StudentProfileInfo
-    classes: List[str]
-    transactions: List[str]
+    classes: list[str]
+    transactions: list[str]
     total_debt: int
 
 

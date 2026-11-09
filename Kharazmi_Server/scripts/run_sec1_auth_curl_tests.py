@@ -49,11 +49,11 @@ def run_tests():
     db = Session()
     otp_row = db.execute(text("SELECT otp FROM parent_otps WHERE mobile = '09120000003' ORDER BY id DESC LIMIT 1;")).first()
     db.close()
-    
+
     if otp_row:
         otp_code = otp_row[0]
         print(f"   [DB Query] Retrieved active OTP code from DB: {otp_code}")
-        
+
         # Parent login
         res_parent_login = httpx.post(f"{URL_BASE}/parent/login", json={"mobile": "09120000003", "otp": otp_code})
         print(f"   Parent Login Status Code: {res_parent_login.status_code}")
@@ -63,7 +63,7 @@ def run_tests():
 
     # 5. Access Control Validation (Authorized vs Unauthorized)
     print("\n5. Access Control Validation (SaaS Scope):")
-    
+
     # Authorized: Admin calls POST /branches (manage branches)
     print("   A) Admin calls GET /branches (Authorized):")
     res_branches_admin = httpx.get(f"{URL_BASE}/branches", headers={"Authorization": f"Bearer {admin_token}"})

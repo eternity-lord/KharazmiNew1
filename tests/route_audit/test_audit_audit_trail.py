@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime, time, timedelta, timezone
+from datetime import datetime, time, timedelta, timezone, UTC
 
 import pytest
 from sqlalchemy import select
@@ -84,11 +84,11 @@ def _delete_probe_rows(db, *, log_ids=(), entity_ids=(), activity_ids=()):
 
 
 def _local_iso_for_utc(value):
-    return value.replace(tzinfo=timezone.utc).astimezone().replace(tzinfo=None).isoformat(sep=" ")
+    return value.replace(tzinfo=UTC).astimezone().replace(tzinfo=None).isoformat(sep=" ")
 
 
 def _utc_naive_for_local(value):
-    return value.astimezone(timezone.utc).replace(tzinfo=None)
+    return value.astimezone(UTC).replace(tzinfo=None)
 
 
 def test_audit_trail_route_inventory_is_explicit():

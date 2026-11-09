@@ -161,7 +161,7 @@ class TestEnrollment(ClassFlowWorld):
         again = self.enroll(self.course_id)
         self.assertIn(again.status_code, (400, 409), again.text)
         self.assertEqual(self.db.query(models.Enrollment).filter(
-            models.Enrollment.student_id == 41, models.Enrollment.is_deleted == False).count(), 1)  # noqa: E712
+            models.Enrollment.student_id == 41, models.Enrollment.is_deleted == False).count(), 1)
 
 
 class TestAttendanceAndFinancialEffect(ClassFlowWorld):
@@ -221,7 +221,7 @@ class TestAttendanceAndFinancialEffect(ClassFlowWorld):
         self.assertEqual(dup.status_code, 409, dup.text)
         self.assertEqual(self.db.query(models.SessionLog).filter(
             models.SessionLog.course_id == self.course_id,
-            models.SessionLog.is_deleted == False).count(), 1)  # noqa: E712
+            models.SessionLog.is_deleted == False).count(), 1)
 
     def test_8a_missing_institute_share_is_a_clear_4xx(self):
         """O-06 (رفع‌شده): نبودِ تعرفهٔ سهم آموزشگاه ⇒ **۴۰۰** با همان پیام راهنما (نه ۵۰۰).

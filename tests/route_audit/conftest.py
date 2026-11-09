@@ -13,8 +13,8 @@ SERVER = ROOT / "Kharazmi_Server"
 if str(SERVER) not in sys.path:
     sys.path.insert(0, str(SERVER))
 
-from .clock import FIXED_NOW, freeze_loaded_server_modules  # noqa: E402
-from .seed import restore_role_sessions, seed_database  # noqa: E402
+from .clock import FIXED_NOW, freeze_loaded_server_modules
+from .seed import restore_role_sessions, seed_database
 
 
 @pytest.fixture(scope="session")

@@ -26,9 +26,9 @@ class LeadCreateRequest(BaseModel):
     mobile: RequiredText
     interested_course: RequiredText
     source: str = "Web"
-    notes: Optional[RequiredText] = None
-    next_follow_up: Optional[str] = None
-    branch_id: Optional[int] = None
+    notes: RequiredText | None = None
+    next_follow_up: str | None = None
+    branch_id: int | None = None
 
 class LeadResponseModel(BaseModel):
     id: int
@@ -37,14 +37,14 @@ class LeadResponseModel(BaseModel):
     interested_course: str
     source: str
     status: str
-    notes: Optional[str] = None
-    next_follow_up: Optional[str] = None
+    notes: str | None = None
+    next_follow_up: str | None = None
     created_at: str
 
 class LeadNoteRequest(BaseModel):
     notes: RequiredText
-    next_follow_up: Optional[str] = None
-    status: Optional[str] = None
+    next_follow_up: str | None = None
+    status: str | None = None
 
 # FIX(crm): ردیف legacy ممکن است created_at/نام/موبایل/… برابر NULL باشد. هر رکورد به‌صورت
 # جدا null-safe می‌شود تا یک رکورد ناقص کل لیست را 500 نکند؛ برای created_at خالی مقدار
@@ -97,7 +97,7 @@ class OnlineRegisterRequest(NationalCodeRequest):
 @router.post("/crm/leads/create", response_model=LeadResponseModel)
 def create_crm_lead(
     req: LeadCreateRequest,
-    authorization: Optional[str] = Header(None),
+    authorization: str | None = Header(None),
     db: Session = Depends(get_db),
     role: str = Depends(require_permission("student.create")),
     _login_role: str = Depends(check_user_login)
@@ -135,7 +135,7 @@ def create_crm_lead(
     return _lead_to_response(new_lead)
 
 # --- 2. Admin/Secretary: View Leads Pipeline List ---
-@router.get("/crm/leads/list", response_model=List[LeadResponseModel])
+@router.get("/crm/leads/list", response_model=list[LeadResponseModel])
 def get_crm_leads_list(
     db: Session = Depends(get_db),
     role: str = Depends(require_permission("student.read")),
@@ -158,13 +158,13 @@ def add_lead_notes(
     lead = db.query(Lead).filter(Lead.id == id).first()
     if not lead:
         raise HTTPException(status_code=404, detail="سرنخ یافت نشد")
-        
+
     lead.notes = req.notes
     if req.next_follow_up:
         lead.next_follow_up = req.next_follow_up
     if req.status:
         lead.status = req.status
-        
+
     db.commit()
     return {"message": "یادداشت پیگیری با موفقیت ثبت شد"}
 
@@ -172,7 +172,7 @@ def add_lead_notes(
 @router.post("/crm/leads/{id}/convert")
 def convert_lead_to_student(
     id: int,
-    course_id: Optional[int] = None,
+    course_id: int | None = None,
     db: Session = Depends(get_db),
     role: str = Depends(require_permission("student.create")),
     _login_role: str = Depends(check_user_login)
@@ -279,7 +279,7 @@ def public_online_registration(req: OnlineRegisterRequest, db: Session = Depends
                 Student.national_code == req.national_code
             )
         ).first()
-        
+
         is_new_student = False
         if not student:
             is_new_student = True
@@ -301,16 +301,16 @@ def public_online_registration(req: OnlineRegisterRequest, db: Session = Depends
             )
             db.add(student)
             db.flush() # Generate student.id
-            
+
         course = db.query(Course).filter(Course.id == req.course_id).first()
         if not course:
             raise HTTPException(status_code=404, detail="کلاس انتخابی یافت نشد")
-            
+
         # Check if already enrolled in this course
         already_enrolled = db.query(Enrollment).filter(Enrollment.student_id == student.id, Enrollment.course_id == req.course_id).first()
         if already_enrolled:
             raise HTTPException(status_code=400, detail="شما قبلاً در این کلاس ثبت‌نام کرده‌اید")
-            
+
         # Create Enrollment
         today = datetime.datetime.now().strftime("%Y/%m/%d")
         enroll = Enrollment(
@@ -327,13 +327,13 @@ def public_online_registration(req: OnlineRegisterRequest, db: Session = Depends
         )
         db.add(enroll)
         db.flush() # Generate enrollment.id
-        
+
         # Finance integration: Create Transaction (deposit/payment)
         if req.paid_amount > 0:
             student.wallet_institute = (student.wallet_institute or 0) + req.paid_amount
             # FIX: Bug 18 - derive the total only through the shared wallet helper.
             student.sync_wallet_balance()
-            
+
             db.add(Transaction(
                 student_id=student.id,
                 course_id=req.course_id,
@@ -347,9 +347,9 @@ def public_online_registration(req: OnlineRegisterRequest, db: Session = Depends
                 target_wallet="institute",
                 description="ثبت‌نام آنلاین و پرداخت پیش‌پرداخت شهریه"
             ))
-            
+
         db.commit()
-        
+
         # Automation dispatches: SMS, In-App and Push notification
         try:
             # 1. SMS Log
@@ -361,7 +361,7 @@ def public_online_registration(req: OnlineRegisterRequest, db: Session = Depends
                 date=datetime.datetime.now().strftime("%Y/%m/%d %H:%M")
             ))
             db.commit()
-            
+
             # 2. Push/In-App Notification
             if student.user_id is None:
                 ensure_student_shadow_users(db, student)
@@ -375,7 +375,7 @@ def public_online_registration(req: OnlineRegisterRequest, db: Session = Depends
             )
         except Exception as notif_err:
             print(f"⚠️ Error dispatching online registration notification: {notif_err}")
-            
+
         return {
             "status": "success",
             "message": "ثبت‌نام آنلاین شما با موفقیت انجام شد",
@@ -387,4 +387,4 @@ def public_online_registration(req: OnlineRegisterRequest, db: Session = Depends
         db.rollback()
         if isinstance(e, HTTPException):
             raise e
-        raise HTTPException(status_code=500, detail=f"خطا در فرآیند ثبت‌نام تراکنشی: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"خطا در فرآیند ثبت‌نام تراکنشی: {e!s}")

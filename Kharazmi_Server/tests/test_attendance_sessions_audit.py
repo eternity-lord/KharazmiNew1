@@ -808,7 +808,7 @@ def test_s18_odd_amount_is_split_without_fractions_and_remainder_survives(world)
 
     for sid in (101, 102, 103):
         teacher, institute_, balance = wallets(world.db, sid)
-        assert balance == teacher + institute_, f"invariant شاگرد {sid}" 
+        assert balance == teacher + institute_, f"invariant شاگرد {sid}"
 
     assert_invariant(world.db, 101, "سناریو ۱۸")
     assert_invariant(world.db, 102, "سناریو ۱۸")
@@ -1294,7 +1294,7 @@ def _race_result(fn):
         return ("ok", fn())
     except HTTPException as error:
         return ("http", error.status_code)
-    except Exception as error:            # noqa: BLE001 — نوع خطای رقیب برای گزارش لازم است
+    except Exception as error:
         return ("error", type(error).__name__)
 
 

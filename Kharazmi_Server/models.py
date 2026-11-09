@@ -15,8 +15,9 @@ from sqlalchemy import (
     create_engine,
     text,
 )
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship, sessionmaker
+# FIX(SQLAlchemy 2.0): مسیر `sqlalchemy.ext.declarative` منسوخ است (MovedIn20Warning)؛
+# شکلِ معتبر در 2.0 همان `sqlalchemy.orm.declarative_base` است — رفتار یکسان.
+from sqlalchemy.orm import declarative_base, relationship, sessionmaker
 # FIX: Bug 17 - enforce one active financial session per course and date in both databases.
 from sqlalchemy import Index
 # FIX: H6(C2) - one attendance row per (session, student).

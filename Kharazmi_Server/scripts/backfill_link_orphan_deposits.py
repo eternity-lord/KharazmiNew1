@@ -21,7 +21,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from models import SessionLocal, Student, Enrollment, Transaction  # noqa: E402
+from models import SessionLocal, Student, Enrollment, Transaction
 
 MONEY_IN_TYPES = ("deposit", "enrollment_payment", "tuition")
 
@@ -37,9 +37,9 @@ def main() -> int:
             db.query(Transaction)
             .filter(
                 Transaction.type.in_(MONEY_IN_TYPES),
-                Transaction.enrollment_id == None,  # noqa: E711
-                Transaction.is_deleted == False,  # noqa: E712
-                Transaction.is_reversed == False,  # noqa: E712
+                Transaction.enrollment_id == None,
+                Transaction.is_deleted == False,
+                Transaction.is_reversed == False,
                 Transaction.amount > 0,
             )
             .order_by(Transaction.student_id, Transaction.id)

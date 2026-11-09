@@ -59,12 +59,12 @@ _PENDING_KEY = "_kharazmi_audit_pending"
 # چرا ContextVar و نه request.state: listener های SQLAlchemy به درخواست دسترسی ندارند و
 # میدل‌ور/اندپوینت در تسک‌های متفاوت اجرا می‌شوند؛ ContextVar در async و به‌صورت خودکار در
 # threadpool (اندپوینت‌های sync) کپی می‌شود ⇒ امن و بی‌نیاز از global mutable.
-_audit_context: "contextvars.ContextVar[Optional[Dict[str, Any]]]" = contextvars.ContextVar(
+_audit_context: "contextvars.ContextVar[dict[str, Any] | None]" = contextvars.ContextVar(
     "kharazmi_audit_context", default=None
 )
 
 
-def set_audit_context(user_id: Optional[int], username: Optional[str], ip_address: Optional[str]):
+def set_audit_context(user_id: int | None, username: str | None, ip_address: str | None):
     return _audit_context.set({"user_id": user_id, "username": username, "ip_address": ip_address})
 
 
@@ -76,11 +76,11 @@ def reset_audit_context(token) -> None:
         pass
 
 
-def current_audit_context() -> Dict[str, Any]:
+def current_audit_context() -> dict[str, Any]:
     return _audit_context.get() or {}
 
 
-def _client_ip(request) -> Optional[str]:
+def _client_ip(request) -> str | None:
     """IP کاربر: اولین مقدار X-Forwarded-For (پشت ریورس‌پروکسی) وگرنه هاست اتصال."""
     forwarded = (request.headers.get("x-forwarded-for") or "").split(",")[0].strip()
     if forwarded:
@@ -102,7 +102,7 @@ class AuditContextMiddleware(BaseHTTPMiddleware):
     _MUTATING = frozenset({"POST", "PUT", "PATCH", "DELETE"})
     _TTL_SECONDS = 30
     _MAX_CACHE = 256
-    _cache: Dict[str, Tuple[float, Optional[int], Optional[str]]] = {}
+    _cache: dict[str, tuple[float, int | None, str | None]] = {}
 
     async def dispatch(self, request, call_next):
         token = self._bearer_token(request) if request.method in self._MUTATING else None
@@ -119,14 +119,14 @@ class AuditContextMiddleware(BaseHTTPMiddleware):
                 reset_audit_context(context_token)
 
     @staticmethod
-    def _bearer_token(request) -> Optional[str]:
+    def _bearer_token(request) -> str | None:
         parts = (request.headers.get("authorization") or "").split()
         if len(parts) == 2 and parts[0].lower() == "bearer" and parts[1]:
             return parts[1]
         return None
 
     @classmethod
-    def _resolve_identity(cls, token: str) -> Optional[Tuple[Optional[int], Optional[str]]]:
+    def _resolve_identity(cls, token: str) -> tuple[int | None, str | None] | None:
         now = time.monotonic()
         cached = cls._cache.get(token)
         if cached is not None and cached[0] > now:
@@ -154,14 +154,14 @@ class AuditContextMiddleware(BaseHTTPMiddleware):
 # ==========================================
 # 2) اسنپ‌شات‌گیری و listener های SQLAlchemy
 # ==========================================
-def _column_keys(obj) -> List[str]:
+def _column_keys(obj) -> list[str]:
     try:
         return [attr.key for attr in inspect(obj).mapper.column_attrs]
     except Exception:
         return []
 
 
-def _db_snapshot(session: Session, obj) -> Optional[Dict[str, Any]]:
+def _db_snapshot(session: Session, obj) -> dict[str, Any] | None:
     """اسنپ‌شات ردیف فعلی دیتابیس (در before_flush = مقادیر قبلی) با یک SELECT."""
     pk = getattr(obj, "id", None)
     if pk is None:
@@ -180,9 +180,9 @@ def _db_snapshot(session: Session, obj) -> Optional[Dict[str, Any]]:
     return dict(row) if row is not None else None
 
 
-def _state_snapshot(obj) -> Dict[str, Any]:
+def _state_snapshot(obj) -> dict[str, Any]:
     """اسنپ‌شات state آبجکت (در after_flush_postexec = مقادیر نهایی، شامل defaultهای ستون)."""
-    snapshot: Dict[str, Any] = {}
+    snapshot: dict[str, Any] = {}
     for key in _column_keys(obj):
         try:
             snapshot[key] = getattr(obj, key)
@@ -192,7 +192,7 @@ def _state_snapshot(obj) -> Dict[str, Any]:
     return snapshot
 
 
-def _comparable(payload: Optional[Dict[str, Any]]) -> Any:
+def _comparable(payload: dict[str, Any] | None) -> Any:
     """نرمال‌سازی برای مقایسه (DateTime/Decimal → رشته) تا مقایسه‌ی قبلی/جدید معتبر باشد."""
     if payload is None:
         return None
@@ -202,10 +202,10 @@ def _comparable(payload: Optional[Dict[str, Any]]) -> Any:
         return str(payload)
 
 
-def _dump(payload: Optional[Dict[str, Any]]) -> Optional[str]:
+def _dump(payload: dict[str, Any] | None) -> str | None:
     if payload is None:
         return None
-    safe: Dict[str, Any] = {}
+    safe: dict[str, Any] = {}
     for key, value in payload.items():
         if isinstance(value, str) and len(value) > _MAX_CELL_CHARS:
             value = value[:_MAX_CELL_CHARS] + "…"
@@ -386,8 +386,8 @@ def _display_value(key: str, value: Any) -> str:
     return str(value)
 
 
-def _change_summary(action: str, changed: List[str], old: Optional[Dict[str, Any]],
-                    new: Optional[Dict[str, Any]]) -> str:
+def _change_summary(action: str, changed: list[str], old: dict[str, Any] | None,
+                    new: dict[str, Any] | None) -> str:
     """جملهٔ فارسی «چه چیزی عوض شد» — به‌جای لیست خام نام ستون‌ها."""
     verb = {"create": "ثبت شد", "update": "تغییر کرد", "delete": "حذف شد"}.get(action, action)
     if action == "create":
@@ -407,8 +407,8 @@ def _change_summary(action: str, changed: List[str], old: Optional[Dict[str, Any
     return f"{verb}: {summary}" if summary else verb
 
 
-def _change_type_meta(action: str, old: Optional[Dict[str, Any]],
-                      new: Optional[Dict[str, Any]]) -> Tuple[str, str, str]:
+def _change_type_meta(action: str, old: dict[str, Any] | None,
+                      new: dict[str, Any] | None) -> tuple[str, str, str]:
     """(نوع تغییر به زبان ساده, کلید نوع, رنگ) — کلاینت Android رنگ را مستقیم مصرف می‌کند
     (بدون نیاز به drawable جدید)؛ `icon_color` هم برای آیکون رنگی هر نوع تغییر است."""
     # `action_label` همیشه ترجمهٔ سادهٔ خود action است (ایجاد/ویرایش/حذف)؛
@@ -426,15 +426,15 @@ def _change_type_meta(action: str, old: Optional[Dict[str, Any]],
     return ACTION_LABELS.get(action, action), key, CHANGE_TYPE_COLORS.get(key, "#607D8B")
 
 
-def _collect_ref_ids(entity_type: str, old: Optional[Dict[str, Any]], new: Optional[Dict[str, Any]],
-                     wanted: Dict[str, set]) -> None:
+def _collect_ref_ids(entity_type: str, old: dict[str, Any] | None, new: dict[str, Any] | None,
+                     wanted: dict[str, set]) -> None:
     """شناسه‌های موردنیاز join یک ردیف لاگ را در `wanted` جمع می‌کند.
 
     کلیدها: student_id / course_id / branch_id / enrollment_id (هرکدام یک set با حداکثر یک عضو؛
     مقدار جدید اولویت دارد و در نبودش مقدار قبلی — مثلاً در delete فقط old_values هست).
     `enrollments`/`installment_enrollments` در سطح صفحه برای کوئری دسته‌ای جمع می‌شوند.
     """
-    def as_int(value: Any) -> Optional[int]:
+    def as_int(value: Any) -> int | None:
         try:
             return int(value) if value is not None else None
         except Exception:
@@ -452,8 +452,8 @@ def _collect_ref_ids(entity_type: str, old: Optional[Dict[str, Any]], new: Optio
                 bucket.add(value)
 
 
-def _entity_refs_batch(db: Session, collected: List[Tuple[int, str, Dict[str, set]]],
-                       page_ids: Dict[str, set]) -> Tuple[Dict[int, Dict[str, Any]], Dict[int, Optional[int]]]:
+def _entity_refs_batch(db: Session, collected: list[tuple[int, str, dict[str, set]]],
+                       page_ids: dict[str, set]) -> tuple[dict[int, dict[str, Any]], dict[int, int | None]]:
     """join دسته‌ای نام‌ها (یک کوئری به‌ازای هر نوع موجودیت برای کل صفحه ⇒ بدون N+1).
 
     برمی‌گرداند: (`refs_by_log`, `student_id_by_log`) — دومی برای «لینک صورت‌حساب» لازم است
@@ -461,10 +461,10 @@ def _entity_refs_batch(db: Session, collected: List[Tuple[int, str, Dict[str, se
     سیاست نام تهی: شناسه‌ای که موجودیتش پیدا نشود (رکورد یتیم/حذف فیزیکی) در خروجی
     **نمی‌آید** تا کلاینت «None» نشان ندهد.
     """
-    students: Dict[int, Any] = {}
-    courses: Dict[int, Any] = {}
-    branches: Dict[int, str] = {}
-    enrollments: Dict[int, Any] = {}
+    students: dict[int, Any] = {}
+    courses: dict[int, Any] = {}
+    branches: dict[int, str] = {}
+    enrollments: dict[int, Any] = {}
     enrollment_ids = set(page_ids.get("enrollment_ids") or ()) | set(
         page_ids.get("installment_enrollment_ids") or ())
     if enrollment_ids:
@@ -499,15 +499,15 @@ def _entity_refs_batch(db: Session, collected: List[Tuple[int, str, Dict[str, se
             if row.teacher_id:
                 teacher_ids.add(row.teacher_id)
     teacher_ids.discard(None)
-    teachers: Dict[int, Any] = {}
+    teachers: dict[int, Any] = {}
     if teacher_ids:
         teachers = {row.id: row for row in db.query(Teacher).filter(
             Teacher.id.in_(teacher_ids)).all()}
 
-    refs_by_log: Dict[int, Dict[str, Any]] = {}
-    student_by_log: Dict[int, Optional[int]] = {}
+    refs_by_log: dict[int, dict[str, Any]] = {}
+    student_by_log: dict[int, int | None] = {}
     for log_id, entity_type, wanted in collected:
-        refs: Dict[str, Any] = {}
+        refs: dict[str, Any] = {}
         student_id = next(iter(wanted.get("student_id") or ()), None)
         course_id = next(iter(wanted.get("course_id") or ()), None)
         branch_id = next(iter(wanted.get("branch_id") or ()), None)
@@ -543,8 +543,8 @@ def _entity_refs_batch(db: Session, collected: List[Tuple[int, str, Dict[str, se
     return refs_by_log, student_by_log
 
 
-def _activity_actor(db: Session, entity_type: str, entity_id: Optional[int],
-                    candidates: Tuple[Optional[datetime.datetime], ...]) -> Tuple[str, Optional[str]]:
+def _activity_actor(db: Session, entity_type: str, entity_id: int | None,
+                    candidates: tuple[datetime.datetime | None, ...]) -> tuple[str, str | None]:
     """کاربر تغییردهنده از `ActivityLog` موجود — فقط وقتی لاگ ممیزی کاربر ندارد.
 
     نوشتن‌های سیستمی/ورکری (پایان خودکار جلسه، تسویهٔ خودکار، …) در `FinancialAuditLog`
@@ -589,7 +589,7 @@ def _activity_actor(db: Session, entity_type: str, entity_id: Optional[int],
     return row.admin_username, row.action
 
 
-def _resolve_search(db: Session, term: str) -> Tuple[set, set]:
+def _resolve_search(db: Session, term: str) -> tuple[set, set]:
     """جست‌وجوی نام ⇒ (شناسهٔ تراکنش‌ها, شناسهٔ قسط‌ها) — «پیشنهاد من» آیتم ۸.
 
     منابع تطبیق: نام دانش‌آموز · نام معلم (از کلاسِ تراکنش/قسط) · عنوان کلاس · نام شعبه ·
@@ -637,41 +637,41 @@ def _resolve_search(db: Session, term: str) -> Tuple[set, set]:
 class AuditLogEntry(BaseModel):
     id: int
     timestamp: str
-    username: Optional[str] = None
+    username: str | None = None
     action: str
     entity_type: str
-    entity_id: Optional[int] = None
-    old_values: Optional[Dict[str, Any]] = None
-    new_values: Optional[Dict[str, Any]] = None
-    ip_address: Optional[str] = None
-    changed_fields: List[str] = []
+    entity_id: int | None = None
+    old_values: dict[str, Any] | None = None
+    new_values: dict[str, Any] | None = None
+    ip_address: str | None = None
+    changed_fields: list[str] = []
     # FIX (گروه۲/آیتم ۸): فیلدهای نمایشی جدید — همه افزودنی‌اند (کلیدهای بالا دست‌نخورده)
-    labels: Dict[str, str] = {}                 # نام ستون → برچسب فارسی
-    changed_labels: List[str] = []              # برچسب فارسی ستون‌های تغییریافته
+    labels: dict[str, str] = {}                 # نام ستون → برچسب فارسی
+    changed_labels: list[str] = []              # برچسب فارسی ستون‌های تغییریافته
     change_summary: str = ""                    # جملهٔ خوانا: «مبلغ: 100,000 ← 250,000»
     action_label: str = ""                      # ایجاد/ویرایش/حذف/باطل‌شده/برگشت‌خورده
     change_type: str = ""                       # کلید ماشین‌خوان نوع تغییر
     action_color: str = ""                      # رنگ پیشنهادی ردیف (Material)
     icon_color: str = ""                        # رنگ آیکون همان نوع تغییر
-    entity_refs: Dict[str, Any] = {}            # نام‌ها به‌جای شناسهٔ خام (کلاس/شعبه/دانش‌آموز/معلم)
-    student_id: Optional[int] = None
+    entity_refs: dict[str, Any] = {}            # نام‌ها به‌جای شناسهٔ خام (کلاس/شعبه/دانش‌آموز/معلم)
+    student_id: int | None = None
     student_name: str = ""
     student_statement_path: str = ""            # لینک مستقیم به صورت‌حساب دانش‌آموز
     actor_username: str = ""                    # کاربر تغییردهنده (با fallback روی ActivityLog)
     actor_source: str = ""                      # audit_context | activity_log | none
-    actor_action: Optional[str] = None          # برچسب فارسیِ عملیاتِ ActivityLog (در حالت fallback)
-    actor_action_key: Optional[str] = None      # همان action خام (برای فیلتر/دیباگ)
+    actor_action: str | None = None          # برچسب فارسیِ عملیاتِ ActivityLog (در حالت fallback)
+    actor_action_key: str | None = None      # همان action خام (برای فیلتر/دیباگ)
 
 
 class AuditTrailResponse(BaseModel):
-    logs: List[AuditLogEntry]
+    logs: list[AuditLogEntry]
     total: int
     page: int
     limit: int
     pages: int
 
 
-def _load_json(raw: Optional[str]) -> Optional[Dict[str, Any]]:
+def _load_json(raw: str | None) -> dict[str, Any] | None:
     """JSON خراب ⇒ هرگز ۵۰۰ نمی‌دهد."""
     if not raw:
         return None
@@ -682,7 +682,7 @@ def _load_json(raw: Optional[str]) -> Optional[Dict[str, Any]]:
     return value if isinstance(value, dict) else {"value": value}
 
 
-def _changed_fields(action: str, old: Optional[Dict[str, Any]], new: Optional[Dict[str, Any]]) -> List[str]:
+def _changed_fields(action: str, old: dict[str, Any] | None, new: dict[str, Any] | None) -> list[str]:
     # کلید مصنوعی «raw» (JSON خراب که قابل تفسیر نبود) ستون واقعی نیست ⇒ نویز گزارش نشود.
     old = {key: value for key, value in (old or {}).items() if key != "raw"}
     new = {key: value for key, value in (new or {}).items() if key != "raw"}
@@ -713,7 +713,7 @@ def _to_utc_naive(value: datetime.datetime) -> datetime.datetime:
 _JALALI_DATE_RE = re.compile(r"^(\d{4})[/-](\d{1,2})[/-](\d{1,2})$")
 
 
-def _parse_bound(value: Optional[str], *, is_end: bool) -> Tuple[Optional[datetime.datetime], bool]:
+def _parse_bound(value: str | None, *, is_end: bool) -> tuple[datetime.datetime | None, bool]:
     """پارامتر تاریخ/ساعت را به UTC تبدیل می‌کند.
 
     پذیرش: ISO (`2026-09-16` یا `2026-09-16T14:30[:00]`)، Jalali (`1405/06/25` — سال < 1700).
@@ -753,13 +753,13 @@ def _parse_bound(value: Optional[str], *, is_end: bool) -> Tuple[Optional[dateti
 
 @router.get("/audit-trail/logs", response_model=AuditTrailResponse)
 def list_audit_logs(
-    entity_type: Optional[str] = Query(None, description="transaction | installment"),
-    entity_id: Optional[int] = Query(None, ge=1, description="شناسه‌ی رکورد مالی"),
-    action: Optional[str] = Query(None, description="create | update | delete"),
-    user_id: Optional[int] = Query(None, ge=1, description="فیلتر بر اساس کاربر"),
-    start_date: Optional[str] = Query(None, description="از تاریخ (ISO یا جلالی)"),
-    end_date: Optional[str] = Query(None, description="تا تاریخ (ISO یا جلالی، شامل کل روز)"),
-    search: Optional[str] = Query(None, description="جست‌وجوی نام دانش‌آموز/معلم/کلاس/شعبه/گیرنده"),
+    entity_type: str | None = Query(None, description="transaction | installment"),
+    entity_id: int | None = Query(None, ge=1, description="شناسه‌ی رکورد مالی"),
+    action: str | None = Query(None, description="create | update | delete"),
+    user_id: int | None = Query(None, ge=1, description="فیلتر بر اساس کاربر"),
+    start_date: str | None = Query(None, description="از تاریخ (ISO یا جلالی)"),
+    end_date: str | None = Query(None, description="تا تاریخ (ISO یا جلالی، شامل کل روز)"),
+    search: str | None = Query(None, description="جست‌وجوی نام دانش‌آموز/معلم/کلاس/شعبه/گیرنده"),
     page: int = Query(1, ge=1),
     limit: int = Query(DEFAULT_LIMIT, ge=1, le=MAX_LIMIT),
     _: str = Depends(check_admin_access),
@@ -823,13 +823,13 @@ def list_audit_logs(
 
     # FIX (گروه۲/آیتم ۸): دو پاس روی همان ردیف‌های صفحه — پاس اول فقط شناسه‌ها را جمع
     # می‌کند تا join نام‌ها **دسته‌ای** انجام شود (بدون N+1؛ limit صفحه حداکثر 200 است).
-    parsed: List[Tuple[Any, Optional[Dict[str, Any]], Optional[Dict[str, Any]], List[str], Dict[str, set]]] = []
-    page_ids: Dict[str, set] = {"student_ids": set(), "course_ids": set(), "branch_ids": set(),
+    parsed: list[tuple[Any, dict[str, Any] | None, dict[str, Any] | None, list[str], dict[str, set]]] = []
+    page_ids: dict[str, set] = {"student_ids": set(), "course_ids": set(), "branch_ids": set(),
                                 "enrollment_ids": set(), "installment_enrollment_ids": set()}
     for row in rows:
         old_values = _load_json(row.old_values)
         new_values = _load_json(row.new_values)
-        wanted: Dict[str, set] = {}
+        wanted: dict[str, set] = {}
         _collect_ref_ids(row.entity_type, old_values, new_values, wanted)
         for key in ("student_id", "course_id", "branch_id", "enrollment_id"):
             page_ids[f"{key}s"] |= wanted.get(key, set())
@@ -842,7 +842,7 @@ def list_audit_logs(
     refs_by_log, student_id_by_log = _entity_refs_batch(
         db, [(row.id, row.entity_type, wanted) for row, _o, _n, _c, wanted in parsed], page_ids)
 
-    logs: List[AuditLogEntry] = []
+    logs: list[AuditLogEntry] = []
     for row, old_values, new_values, changed, wanted in parsed:
         action_label, change_type, icon_color = _change_type_meta(row.action, old_values, new_values)
         refs = refs_by_log.get(row.id, {})

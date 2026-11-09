@@ -18,8 +18,8 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from models import Installment, SessionLocal, SessionLog, Transaction  # noqa: E402
-from today_summary import parse_project_date  # noqa: E402
+from models import Installment, SessionLocal, SessionLog, Transaction
+from today_summary import parse_project_date
 
 SAMPLE_CAP = 20
 JALALI_LIKE = re.compile(r"^\d{4}/\d{1,2}/\d{1,2}$")
@@ -60,11 +60,11 @@ def main() -> int:
     try:
         total = 0
         total += audit_column(db, Transaction, "date", "transactions.date",
-                              Transaction.is_deleted == False)  # noqa: E712
+                              Transaction.is_deleted == False)
         total += audit_column(db, SessionLog, "date", "session_logs.date",
-                              SessionLog.is_deleted == False)  # noqa: E712
+                              SessionLog.is_deleted == False)
         total += audit_column(db, Installment, "due_date", "installments.due_date",
-                              Installment.is_deleted == False)  # noqa: E712
+                              Installment.is_deleted == False)
         print(f"\nجمع نامعتبرها: {total} {'(نیاز به بررسی دستی ⚠️)' if total else '✅'}")
         return 2 if total else 0
     finally:

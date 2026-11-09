@@ -30,7 +30,7 @@ def _format_amount(amount: int) -> str:
     except:
         return str(amount)
 
-def _normalize_timestamp(raw: Optional[str], fallback_id: int = 0) -> str:
+def _normalize_timestamp(raw: str | None, fallback_id: int = 0) -> str:
     """Return sortable timestamp string; tries to parse Jalali/Gregorian via today_summary."""
     if not raw or not str(raw).strip():
         # fallback to epoch + id to keep stable sorting
@@ -82,10 +82,10 @@ def _sort_key(event: TimelineEvent):
     # Fallback lexical
     return event.timestamp
 
-@router.get("/students/{student_id}/timeline", response_model=List[TimelineEvent])
+@router.get("/students/{student_id}/timeline", response_model=list[TimelineEvent])
 def get_student_timeline(
     student_id: int,
-    authorization: Optional[str] = Header(None),
+    authorization: str | None = Header(None),
     db: Session = Depends(get_db),
     sub_role: str = Depends(check_user_login),
 ):
@@ -101,7 +101,7 @@ def get_student_timeline(
     if not student:
         raise HTTPException(status_code=404, detail="دانش‌آموز یافت نشد")
 
-    events: List[TimelineEvent] = []
+    events: list[TimelineEvent] = []
     # We will use fallback id for timestamp when date missing, to keep sorting stable
     # 1. Transactions - optimized with joinedload(course) to avoid N+1 per row for course title
     try:
@@ -170,7 +170,7 @@ def get_student_timeline(
                     course_title = sess.course.title
                 date_str = sess.date or ""
                 time_str = sess.time or sess.start_time or ""
-            ts_raw = f"{date_str} {time_str}".strip() if date_str else f"1970/01/01"
+            ts_raw = f"{date_str} {time_str}".strip() if date_str else "1970/01/01"
             ts = _normalize_timestamp(ts_raw, att.id)
             title = "غیبت در جلسه"
             if att.excused:

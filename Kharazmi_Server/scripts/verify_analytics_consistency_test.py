@@ -6,12 +6,12 @@ import unittest
 # پوشهٔ سرور به sys.path اضافه می‌شود تا اجرا از هر پوشه‌ای کار کند (قرارداد بقیهٔ اسکریپت‌ها).
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from sqlalchemy import create_engine, func, or_  # noqa: E402
-from sqlalchemy.orm import sessionmaker  # noqa: E402
+from sqlalchemy import create_engine, func, or_
+from sqlalchemy.orm import sessionmaker
 
-import models  # noqa: E402
-from dependencies import get_db, hash_password  # noqa: E402
-from models import (  # noqa: E402
+import models
+from dependencies import get_db, hash_password
+from models import (
     Attendance,
     Course,
     Enrollment,
@@ -22,8 +22,8 @@ from models import (  # noqa: E402
     User,
     UserSession,
 )
-from routers.analytics import get_analytics_dashboard  # noqa: E402
-from routers.reports import (  # noqa: E402
+from routers.analytics import get_analytics_dashboard
+from routers.reports import (
     get_debtors_report,
     get_financial_report,
     get_financial_summary,
@@ -97,7 +97,7 @@ class TestAnalyticsConsistencyE2E(unittest.TestCase):
         # Outstanding Tuition Debt is: 900,000 - 400,000 = 500,000.
         self.student.wallet_institute = 400000
         self.student.wallet_balance = 400000
-        
+
         self.trans = Transaction(
             id=101,
             student_id=self.student.id,
@@ -120,7 +120,7 @@ class TestAnalyticsConsistencyE2E(unittest.TestCase):
         # New Wallet balance: 400,000 - 150,000 = 250,000 (institute credit).
         self.student.wallet_institute -= 150000
         self.student.wallet_balance = self.student.wallet_institute
-        
+
         self.session_log = SessionLog(
             id=10,
             course_id=self.course.id,
@@ -163,7 +163,7 @@ class TestAnalyticsConsistencyE2E(unittest.TestCase):
         print("\n" + "="*80)
         print("📊 EXECUTING ANALYTICS VS LEGACY REPORTS MATHEMATICAL CONSISTENCY TEST")
         print("="*80)
-        
+
         # --- A) CALCULATING REVENUE ---
         # 1. From Legacy reports:
         # In reports.py, the total monthly revenue collected for institute (excluding session charges to prevent double counting) is:
@@ -175,12 +175,12 @@ class TestAnalyticsConsistencyE2E(unittest.TestCase):
             Transaction.date.like(month_prefix),
             Transaction.is_deleted == False
         ).scalar() or 0
-        
+
         # 2. From New Analytics dashboard:
         # In analytics.py, monthly_revenue is:
         start_str = datetime.date.today().replace(day=1).strftime("%Y/%m/%d")
         end_str = datetime.date.today().strftime("%Y/%m/%d")
-        
+
         analytics_revenue = self.db.query(func.sum(Transaction.amount)).filter(
             Transaction.type == "deposit",
             Transaction.date >= start_str,
@@ -190,7 +190,7 @@ class TestAnalyticsConsistencyE2E(unittest.TestCase):
 
         print(f"💰 Legacy Monthly Revenue Collected: {legacy_revenue:,} Toman")
         print(f"📈 Analytics Dashboard Revenue:      {analytics_revenue:,} Toman")
-        
+
         # Assert they are mathematically identical (Both are 400,000!)
         self.assertEqual(legacy_revenue, analytics_revenue)
         self.assertEqual(legacy_revenue, 400000)

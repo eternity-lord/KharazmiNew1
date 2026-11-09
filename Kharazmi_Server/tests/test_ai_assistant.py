@@ -55,20 +55,20 @@ class TestKharazmiAIAssistant(unittest.TestCase):
         """1. Verify that admin chat correctly calls financial tools and proposes confirmatory actions"""
         # Admin query about revenue
         req = AIChatRequest(message="چرا این ماه درآمد ما کم شده؟")
-        
+
         # Invoke chat endpoint as Admin
         res = chat_with_ai_assistant(req, self.db, "Bearer tok_admin", "admin")
         self.assertEqual(res["status"], "success")
         self.assertEqual(res["role"], "admin")
         self.assertIn("درآمد وصول‌شده", res["response"])
-        
+
         # Verify it proposes a confirmatory action instead of executing automatically (Human-in-the-loop)
         self.assertEqual(res["suggested_action"], "SEND_DEBT_REMINDERS")
 
     def test_student_ai_self_query_success(self):
         """2. Verify that student chat successfully retrieves their own data and gives study advice"""
         req = AIChatRequest(message="لطفاً برای آزمون به من برنامه بده", student_id=10)
-        
+
         res = chat_with_ai_assistant(req, self.db, "Bearer tok_student", "student")
         self.assertEqual(res["status"], "success")
         self.assertIn("میانگین نمرات", res["response"])
@@ -77,10 +77,10 @@ class TestKharazmiAIAssistant(unittest.TestCase):
         """3. Verify strict IDOR blocks on student/parent sessions querying other users' details"""
         # Student 99 tries to query Student 10's financial/academic data
         req = AIChatRequest(message="وضعیت من چطوره؟", student_id=10)
-        
+
         with self.assertRaises(HTTPException) as ctx:
             chat_with_ai_assistant(req, self.db, "Bearer tok_other", "student")
-            
+
         self.assertEqual(ctx.exception.status_code, 403)
         self.assertIn("IDOR", ctx.exception.detail)
 
