@@ -1,5 +1,27 @@
-
 # Python generated files
 __pycache__/
 *.py[cod]
 .pytest_cache/
+
+# REFAC(P1): محیط‌های مجازی و حافظهٔ نهان ابزارها — دادهٔ ماشین توسعه‌دهنده‌اند، نه کد.
+.venv/
+venv/
+env/
+.ruff_cache/
+.mypy_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# artefacts اجرای پایتون/SQLite (خودِ gaj_db.db ردیابی‌شده می‌ماند — دیتابیس واقعی آموزشگاه است)
+*.db-journal
+*.db-wal
+*.db-shm
+*.sqlite3-journal
+
+# سیستم‌عامل/ویرایشگر
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/

@@ -4,10 +4,26 @@ import datetime
 from sqlalchemy import create_engine, text, func
 from sqlalchemy.orm import sessionmaker
 
-sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
+# REFAC(P1): منتقل‌شده از ریشهٔ Kharazmi_Server/ به scripts/ ⇒ bootstrap یک سطح بالاتر.
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-import models
-from models import Student, Teacher, Course, Enrollment, Transaction, SessionLog, Attendance, Installment, PricingTable, Branch, User, UserSession, Settlement, ActivityLog
+import models  # noqa: E402
+from models import (  # noqa: E402
+    ActivityLog,
+    Attendance,
+    Branch,
+    Course,
+    Enrollment,
+    Installment,
+    PricingTable,
+    SessionLog,
+    Settlement,
+    Student,
+    Teacher,
+    Transaction,
+    User,
+    UserSession,
+)
 
 def run_audit():
     # Use a fresh in-memory SQLite database to run E2E scenarios E2E and retrieve exact SELECT outputs

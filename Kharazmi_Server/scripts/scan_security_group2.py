@@ -2,10 +2,11 @@ import sys
 import os
 import inspect
 
-sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+# REFAC(P1): این اسکریپت از ریشهٔ Kharazmi_Server/ به scripts/ منتقل شد؛
+# پس مسیر bootstrap یک سطح بالاتر است (همان قرارداد بقیهٔ اسکریپت‌های همین پوشه).
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from fastapi import Depends
+from fastapi import Depends  # noqa: E402
 from fastapi.params import Depends as DependsClass
 from main import app
 from dependencies import check_user_login, check_admin_access, require_permission
