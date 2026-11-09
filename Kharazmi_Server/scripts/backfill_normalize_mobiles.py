@@ -17,19 +17,24 @@ Policy (per H20 design):
   - teacher username==mobile pairs still divergent after final values -> REVIEW.
 
 Usage (DO NOT run without reviewing the conflict report first):
-  cd Kharazmi_Server && python3 backfill_normalize_mobiles.py            # report only
-  cd Kharazmi_Server && python3 backfill_normalize_mobiles.py --apply    # report + write
+  python3 Kharazmi_Server/scripts/backfill_normalize_mobiles.py            # report only
+  python3 Kharazmi_Server/scripts/backfill_normalize_mobiles.py --apply    # report + write
 """
 
 import os
 import sys
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+# REFAC(P1): منتقل‌شده از ریشهٔ Kharazmi_Server/ به scripts/.
+# همهٔ مسیرها به SERVER_DIR (یک سطح بالاتر از همین فایل) گره خورده‌اند تا رفتار
+# اسکریپت دقیقاً مثل قبل بماند: همان .env خوانده می‌شود و همان گزارش در
+# Kharazmi_Server/mobile_backfill_report.txt نوشته می‌شود.
+SERVER_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, SERVER_DIR)
 
 try:
     from dotenv import load_dotenv
 
-    load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"))
+    load_dotenv(os.path.join(SERVER_DIR, ".env"))
 except Exception:
     pass
 
@@ -41,7 +46,7 @@ except RuntimeError as e:
     sys.exit(2)
 
 APPLY = "--apply" in sys.argv
-REPORT_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "mobile_backfill_report.txt")
+REPORT_PATH = os.path.join(SERVER_DIR, "mobile_backfill_report.txt")
 PRINT_CAP = 200  # rows printed per section on stdout; full lists go to the report file
 
 # (scope_name, unique_scope?)

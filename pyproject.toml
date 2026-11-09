@@ -1,0 +1,132 @@
+# pyproject.toml — پیکربندی ابزارهای کیفیت کد (ریفکتور فاز‌بندی‌شدهٔ ۲۰۲۶-۱۱-۰۹)
+#
+# چرا این فایل: تا پیش از این هیچ lint/type-check پیکربندی‌شده‌ای در ریپو نبود؛ یعنی سبک کد
+# فقط با سلیقهٔ لحظه‌ای نویسنده ثابت می‌ماند و انحراف‌ها (import مرده، مقایسه‌های مبهم،
+# الگوهای تکراری) بی‌سروصدا جمع می‌شدند. اینجا «قانون‌ها» یک‌جا و قابل بازبینی تعریف شده‌اند.
+#
+# دو نکتهٔ مهم دربارهٔ ignoreها (هر کدام دلیل رفتاری دارند، نه تنبلی):
+#   * E712 خاموش است چون `Column == True` در SQLAlchemy یک **عبارت SQL** می‌سازد؛
+#     جایگزین پیشنهادی راف (`if Column:`) معنای کوئری را عوض می‌کند ⇒ باگ واقعی.
+#   * RUF001/002/003 خاموش‌اند چون نویسه‌های فارسی/عربی در رشته‌ها و کامنت‌ها
+#     زبانِ خودِ محصول‌اند (پیام‌های کاربر، متن گزارش‌ها)، نه نویسهٔ مبهمِ تصادفی.
+#   * B008 با فهرست «فراخوانی‌های مجاز در مقدار پیش‌فرض» حل شده (الگوی FastAPI Depends)،
+#     نه با خاموش‌کردن کلی قاعده.
+#
+# اجرا:
+#   .venv/bin/ruff check .                 # گزارش
+#   .venv/bin/ruff check . --fix           # اصلاح خودکارِ امن
+#   .venv/bin/mypy                         # بررسی تایپ (پیکربندی تدریجی)
+
+[tool.ruff]
+target-version = "py311"
+line-length = 120
+# مستندات و درخت اندروید کد پایتون نیستند؛ از lint بیرون می‌مانند.
+extend-exclude = [
+    ".venv",
+    "KharazmiAdmin",
+    "checkpoints",
+    "docs",
+]
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes (import/نام مرده، تعریف دوباره)
+    "I",    # isort — ترتیب import
+    "UP",   # pyupgrade — نحو مدرن پایتون ۳.۱۱
+    "B",    # flake8-bugbear — باگ‌های واقعی
+    "C4",   # flake8-comprehensions
+    "SIM",  # flake8-simplify
+    "RET",  # flake8-return
+    "RUF",  # قواعد خودِ راف
+]
+ignore = [
+    "E402",   # bootstrap مسیر (sys.path.insert) پیش از import — الگوی مستند این ریپو
+    "E501",   # خط بلند: متن فارسی و literalهای عریض؛ سخت‌گیری طول در فاز قالب‌بندی تصمیم می‌شود
+    "E712",   # `== True/False` روی ستون‌های SQLAlchemy عمدی است (عبارت SQL می‌سازد)
+    "E741",   # نام متغیر تک‌حرفی مبهم — در کد موجود فراوان و بی‌ضرر
+    "RUF001", "RUF002", "RUF003",  # نویسهٔ فارسی/عربی = زبان محصول
+    "RUF012", # کلاس‌attr تغییرپذیر در مدل‌های SQLAlchemy/Pydantic
+    "SIM105", # بازنویسی try/except/pass به contextlib.suppress — صرفاً زیبایی
+    "B904",   # `raise ... from err` — در فاز اختصاصی مدیریت خطا انجام می‌شود
+    "RET504", # assignment بلافاصله پیش از return — خوانایی فارسی/دامنه‌ای دارد
+]
+
+[tool.ruff.lint.per-file-ignores]
+# re-export عمدی در package init
+"__init__.py" = ["F401"]
+# main.py چند نام را عمداً re-export می‌کند (تست‌ها `main.resolve_existing` و
+# `main.auto_patch_database` را صدا می‌زنند) ⇒ حذف import «بی‌استفاده» آن‌ها رفتار را می‌شکند.
+"Kharazmi_Server/main.py" = ["F401"]
+# تست‌ها گاهی ماژول را برای side-effect یا برای خوانایی قرارداد import می‌کنند.
+"Kharazmi_Server/tests/*" = ["B011"]
+"tests/*" = ["B011"]
+
+[tool.ruff.lint.flake8-bugbear]
+# الگوی استاندارد FastAPI: فراخوانی در مقدار پیش‌فرضِ پارامتر
+extend-immutable-calls = [
+    "fastapi.Body",
+    "fastapi.Depends",
+    "fastapi.File",
+    "fastapi.Form",
+    "fastapi.Header",
+    "fastapi.Path",
+    "fastapi.Query",
+    "fastapi.Security",
+    "Body",
+    "Depends",
+    "File",
+    "Form",
+    "Header",
+    "Path",
+    "Query",
+    "Security",
+]
+
+[tool.ruff.lint.isort]
+# ماژول‌های سرور با نام کوتاه import می‌شوند (`import models`) چون conftest پوشهٔ
+# Kharazmi_Server را به sys.path اضافه می‌کند ⇒ آن‌ها first-party هستند، نه third-party.
+known-first-party = [
+    "models",
+    "schemas",
+    "main",
+    "dependencies",
+    "storage",
+    "validation",
+    "financial_calculations",
+    "today_summary",
+    "collaboration_summary",
+    "communication_history",
+    "portal_data",
+    "push_service",
+    "payment_gateways",
+    "backfill_branch_ids",
+    "routers",
+]
+
+[tool.mypy]
+# پیکربندی تدریجی (progressive typing): فعلاً فقط خطاهای واقعیِ تایپ روی ماژول‌های
+# هسته گزارش می‌شوند؛ سخت‌گیری در هر فاز برای همان ماژول‌هایی که بازنویسی می‌شوند بالا می‌رود.
+python_version = "3.11"
+files = ["Kharazmi_Server"]
+exclude = [
+    "Kharazmi_Server/tests/",
+    "Kharazmi_Server/scripts/",
+]
+ignore_missing_imports = true
+follow_imports = "silent"
+check_untyped_defs = false
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+warn_redundant_casts = true
+warn_unused_ignores = false
+warn_unreachable = false
+no_implicit_optional = true
+strict_equality = false
+
+# هستهٔ محاسبات مالی و اعتبارسنجی‌ها: از همین حالا سخت‌گیرانه بررسی می‌شوند.
+[[tool.mypy.overrides]]
+module = ["financial_calculations", "validation"]
+disallow_untyped_defs = true
+check_untyped_defs = true

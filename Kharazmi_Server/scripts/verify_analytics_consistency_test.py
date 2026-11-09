@@ -1,13 +1,33 @@
+import os
+import sys
 import unittest
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy import func, or_
 
-import models
-from models import Student, Course, Enrollment, Transaction, SessionLog, Attendance, Installment, UserSession, User
-from dependencies import get_db, hash_password
-from routers.reports import get_financial_report, get_debtors_report, get_financial_summary
-from routers.analytics import get_analytics_dashboard
+# REFAC(P1): منتقل‌شده از ریشهٔ Kharazmi_Server/ به scripts/ ⇒ پیش از import ماژول‌های سرور،
+# پوشهٔ سرور به sys.path اضافه می‌شود تا اجرا از هر پوشه‌ای کار کند (قرارداد بقیهٔ اسکریپت‌ها).
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from sqlalchemy import create_engine, func, or_  # noqa: E402
+from sqlalchemy.orm import sessionmaker  # noqa: E402
+
+import models  # noqa: E402
+from dependencies import get_db, hash_password  # noqa: E402
+from models import (  # noqa: E402
+    Attendance,
+    Course,
+    Enrollment,
+    Installment,
+    SessionLog,
+    Student,
+    Transaction,
+    User,
+    UserSession,
+)
+from routers.analytics import get_analytics_dashboard  # noqa: E402
+from routers.reports import (  # noqa: E402
+    get_debtors_report,
+    get_financial_report,
+    get_financial_summary,
+)
 
 class TestAnalyticsConsistencyE2E(unittest.TestCase):
 

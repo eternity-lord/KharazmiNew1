@@ -1,0 +1,12 @@
+# وابستگی‌های توسعه/کیفیت کد — جدا از requirements.txt (که فقط runtime است)
+#
+# نصب:
+#   python3 -m venv .venv
+#   .venv/bin/pip install -r Kharazmi_Server/requirements.txt -r Kharazmi_Server/requirements-dev.txt
+#
+# نکته: pytest عمداً با نسخهٔ آزاد (بدون pin) می‌ماند تا با سوئیت موجود و CI سازگار بماند؛
+# نسخه‌های راف/mypy pin شده‌اند چون قواعد lint باید بین توسعه‌دهنده و CI یکسان بمانند
+# (وگرنه ارتقای ناخواستهٔ راف می‌تواند صدها خطای جدید بسازد).
+pytest>=8.0
+ruff==0.17.4
+mypy==2.4.1
