@@ -1,10 +1,8 @@
 <resources>
     <!-- Core Backgrounds and Surfaces - OLD AMOLED (kept as fallback) -->
-    <color name="black">#000000</color>
     <color name="white">#FFFFFF</color>
     <color name="gaj_background">#121212</color>
     <color name="gaj_surface">#1E1E1E</color>
-    <color name="gaj_surface_variant">#2C2C2C</color>
     <color name="gaj_surface_dark">#3C3C3C</color>
 
     <!-- Brand Colors (Slightly softer for Dark Mode) -->
@@ -14,8 +12,6 @@
     <color name="gaj_primary_variant">#00897B</color>
 
     <color name="gaj_accent">#FFC107</color>
-    <color name="gaj_accent_dark">#C79100</color>
-    <color name="gaj_accent_light">#5D4037</color>
 
     <!-- Text Colors in Dark Mode -->
     <color name="gaj_text_primary">#E0E0E0</color>
@@ -27,7 +23,6 @@
     <!-- Borders and Lines -->
     <color name="gaj_border">#2C2C2C</color>
     <color name="gaj_divider">#242424</color>
-    <color name="gaj_outline">#424242</color>
 
     <!-- Semantic Deep/Soft Colors for Dark Mode Background Tints -->
     <color name="gaj_success">#81C784</color>
@@ -37,23 +32,13 @@
     <color name="gaj_error">#E57373</color>
     <color name="gaj_error_light">#3D1B1B</color>
     <color name="gaj_info">#64B5F6</color>
-    <color name="gaj_info_light">#1A2E40</color>
 
     <!-- Status Tints -->
-    <color name="gaj_active">#81C784</color>
-    <color name="gaj_pending">#FFB74D</color>
-    <color name="gaj_suspended">#E57373</color>
-    <color name="gaj_completed">#64B5F6</color>
 
     <!-- Legacy -->
     <color name="gaj_red_error">#E57373</color>
     <color name="gaj_green_dark">#00796B</color>
-    <color name="gaj_green_text">#81C784</color>
-    <color name="gaj_red_text">#E57373</color>
-    <color name="gaj_gray_bg">#121212</color>
     <color name="gaj_gray_light">#1E1E1E</color>
-    <color name="gaj_gray_hint">#757575</color>
-    <color name="gaj_orange">#FFB74D</color>
 
     <!-- ==================== GOLD/DARK REDESIGN TOKENS (NEW - SAME AS LIGHT, DARK IS DEFAULT) ==================== -->
     <color name="gold_bg_base">#0D0F13</color>
@@ -63,7 +48,6 @@
     <color name="gold_primary">#D4A94C</color>
     <color name="gold_primary_light">#F0C572</color>
     <color name="gold_primary_dark">#A9812F</color>
-    <color name="gold_glow">#33D4A94C</color>
     <color name="gold_ripple">#66F0C572</color>
     <color name="text_primary">#F5F3EE</color>
     <!-- FIX: Readable secondary/disabled Gold text on elevated and disabled surfaces. -->
@@ -80,11 +64,6 @@
     <color name="status_neutral_deep">#3A4150</color>
     <color name="gold_button_disabled_bg">#2A2F3A</color>
     <color name="gold_button_disabled_text">@color/text_disabled</color>
-    <color name="gold_input_focused">#D4A94C</color>
-    <color name="gold_input_error">#E0615A</color>
-    <color name="gold_card_border_default">#2A2F3A</color>
-    <color name="gold_card_border_focused">#D4A94C</color>
-    <color name="gold_card_border_error">#E0615A</color>
 
     <color name="gold_bg_elevated_variant">#1F232C</color>
     <color name="status_success_light">#1F2A24</color>

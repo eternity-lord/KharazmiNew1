@@ -1,5 +1,4 @@
 <resources>
-    <color name="black">#121212</color>
     <color name="white">#FFFFFFFF</color>
 
     <!-- Primary Colors - OLD (kept as fallback) -->
@@ -10,13 +9,10 @@
 
     <!-- Secondary/Accent Colors -->
     <color name="gaj_accent">#FFC107</color>
-    <color name="gaj_accent_dark">#FF8F00</color>
-    <color name="gaj_accent_light">#FFECB3</color>
 
     <!-- Surface Colors -->
     <color name="gaj_background">#F8F9FA</color>
     <color name="gaj_surface">#FFFFFF</color>
-    <color name="gaj_surface_variant">#F5F5F5</color>
     <color name="gaj_surface_dark">#E0E0E0</color>
 
     <!-- Text Colors -->
@@ -34,51 +30,26 @@
     <color name="gaj_error">#B00020</color>
     <color name="gaj_error_light">#FFCDD2</color>
     <color name="gaj_info">#2196F3</color>
-    <color name="gaj_info_light">#BBDEFB</color>
 
     <!-- Status Colors -->
-    <color name="gaj_active">#4CAF50</color>
-    <color name="gaj_pending">#FF9800</color>
-    <color name="gaj_suspended">#F44336</color>
-    <color name="gaj_completed">#2196F3</color>
 
     <!-- Chart Colors -->
-    <color name="gaj_chart_1">#00695C</color>
-    <color name="gaj_chart_2">#4DB6AC</color>
-    <color name="gaj_chart_3">#FFC107</color>
-    <color name="gaj_chart_4">#FF8F00</color>
-    <color name="gaj_chart_5">#2196F3</color>
-    <color name="gaj_chart_6">#4CAF50</color>
 
     <!-- Interactive States -->
     <color name="gaj_ripple_primary">#1A00695C</color>
-    <color name="gaj_ripple_accent">#1AFFC107</color>
-    <color name="gaj_pressed_overlay">#0A000000</color>
-    <color name="gaj_focused_overlay">#14000000</color>
-    <color name="gaj_hovered_overlay">#08000000</color>
 
     <!-- Border & Divider -->
     <color name="gaj_border">#E0E0E0</color>
     <color name="gaj_divider">#EEEEEE</color>
-    <color name="gaj_outline">#BDBDBD</color>
 
     <!-- Legacy Colors (for backward compatibility) -->
     <color name="gaj_red_error">#B00020</color>
     <color name="gaj_green_dark">#00695C</color>
-    <color name="gaj_green_text">#004D40</color>
-    <color name="gaj_red_text">#B00020</color>
-    <color name="gaj_gray_bg">#F8F9FA</color>
     <color name="gaj_gray_light">#F5F5F5</color>
-    <color name="gaj_gray_hint">#9E9E9E</color>
-    <color name="gaj_orange">#EF6C00</color>
 
     <!-- Bottom Navigation -->
-    <color name="bottom_nav_icon_tint">@drawable/bottom_nav_tint_selector</color>
-    <color name="bottom_nav_text_tint">@drawable/bottom_nav_tint_selector</color>
 
     <!-- Selection Colors -->
-    <color name="gaj_selected_background">#E3F2FD</color>
-    <color name="gaj_highlight">#FFF9C4</color>
 
     <!-- ==================== GOLD/DARK REDESIGN TOKENS (NEW) ==================== -->
     <!-- Backgrounds - extracted from ED Academy map -->
@@ -91,7 +62,6 @@
     <color name="gold_primary">#A66B0A</color>           <!-- طلایی اصلی -->
     <color name="gold_primary_light">#C8922C</color>     <!-- برای گرادینت بالای دکمه -->
     <color name="gold_primary_dark">#7E4F00</color>       <!-- برای گرادینت پایین دکمه / حالت pressed -->
-    <color name="gold_glow">#33A66B0A</color>              <!-- سایه/گلوی نیمه‌شفاف دور دکمه -->
     <color name="gold_ripple">#668A5A00</color>           <!-- ripple طلایی روشن‌تر alpha 40% -->
 
     <!-- Text - new palette -->
@@ -114,13 +84,8 @@
     <!-- Gold button states -->
     <color name="gold_button_disabled_bg">#E2E6EC</color>
     <color name="gold_button_disabled_text">@color/text_disabled</color>
-    <color name="gold_input_focused">#A66B0A</color>
-    <color name="gold_input_error">#B3261E</color>
 
     <!-- Card states -->
-    <color name="gold_card_border_default">#D5DBE5</color>
-    <color name="gold_card_border_focused">#A66B0A</color>
-    <color name="gold_card_border_error">#B3261E</color>
 
     <!-- Missing light variants for backward compat -->
     <color name="gold_bg_elevated_variant">#EEF1F5</color>
@@ -152,7 +117,6 @@
 
     <!-- اکسنت برند (طلایی) — محدود و هدفمند -->
     <color name="ds_accent">@color/gold_primary</color>
-    <color name="ds_accent_soft">@color/gold_primary_light</color>
     <color name="ds_accent_strong">@color/gold_primary_dark</color>
     <color name="ds_on_accent">@color/text_on_gold</color>
 
@@ -185,16 +149,11 @@
     <color name="ds_info_on_container">#0B4A83</color>
 
     <!-- خنثی (برای چیپ/پیل‌های بی‌وضعیت) -->
-    <color name="ds_neutral">@color/text_secondary</color>
     <color name="ds_neutral_container">@color/ds_bg_surface_3</color>
 
     <!-- مالی: بدهی/اعتبار — هرگز فقط با رنگ نمایش داده نشوند (متن/آیکون الزامی است) -->
-    <color name="ds_debt">@color/status_danger</color>
     <color name="ds_debt_container">@color/status_danger_light</color>
-    <color name="ds_debt_on_container">@color/ds_danger_on_container</color>
-    <color name="ds_credit">@color/status_success</color>
     <color name="ds_credit_container">@color/status_success_light</color>
-    <color name="ds_credit_on_container">@color/ds_success_on_container</color>
 
     <!-- گروه‌بندی بصری کارت‌های داشبورد (اولویت، نه تزئین) -->
     <color name="ds_group_ops">@color/gold_primary</color>
@@ -207,7 +166,6 @@
     <!-- حالت‌های تعاملی -->
     <color name="ds_ripple">@color/gold_ripple</color>
     <color name="ds_ripple_neutral">#22FFFFFF</color>
-    <color name="ds_scrim">#99000000</color>
 
 
     <!-- آرشیو کلاس‌های حذف‌شده: سرصفحهٔ تیره‌ی ثابت در هر دو تم (متن سفید/طلایی همیشه خوانا) -->
