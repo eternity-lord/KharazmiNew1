@@ -78,25 +78,8 @@
     </style>
 
     <!-- Telegram Bottom Sheet Style Dialog -->
-    <style name="Widget.Kharazmi.Dialog" parent="Theme.Design.Light.BottomSheetDialog">
-        <item name="android:windowIsTranslucent">true</item>
-        <item name="android:windowContentOverlay">@null</item>
-        <item name="android:windowNoTitle">true</item>
-        <item name="android:windowIsFloating">false</item>
-        <item name="android:backgroundDimEnabled">true</item>
-        <item name="bottomSheetStyle">@style/GajBottomSheetStyle</item>
-    </style>
 
-    <style name="GajBottomSheetStyle" parent="Widget.Design.BottomSheet.Modal">
-        <item name="backgroundTint">?attr/colorSurface</item>
-        <item name="shapeAppearance">@style/ShapeAppearance.Kharazmi.BottomSheet</item>
-    </style>
 
-    <style name="ShapeAppearance.Kharazmi.BottomSheet" parent="ShapeAppearance.MaterialComponents.LargeComponent">
-        <item name="cornerFamily">rounded</item>
-        <item name="cornerSizeTopLeft">24dp</item>
-        <item name="cornerSizeTopRight">24dp</item>
-    </style>
 
     <!-- Legacy / Compatibility styles -->
     <style name="GajWindowAnimations">
@@ -106,18 +89,8 @@
         <item name="android:activityCloseExitAnimation">@anim/slide_out_right</item>
     </style>
 
-    <style name="GajButtonStyle" parent="Widget.Kharazmi.Button" />
-    <style name="GajOutlineBoxStyleStyle" parent="GajOutlineBoxStyle" />
     <style name="GajCardViewStyle" parent="Widget.Kharazmi.Card" />
 
-    <style name="ShareInputStyle">
-        <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_marginBottom">10dp</item>
-        <item name="android:background">@drawable/border_bg</item>
-        <item name="android:padding">12dp</item>
-        <item name="android:textColor">?attr/colorOnSurface</item>
-    </style>
 
     <!-- Kharazmi Central Typography TextAppearances -->
     <style name="TextAppearance.Kharazmi.PageTitle" parent="TextAppearance.MaterialComponents.Headline6">
@@ -145,18 +118,12 @@
     </style>
 
     <!-- Backward compatibility aliases for GajAdmin TextAppearances -->
-    <style name="TextAppearance.GajAdmin.Headline1" parent="TextAppearance.Kharazmi.PageTitle"/>
-    <style name="TextAppearance.GajAdmin.Headline2" parent="TextAppearance.Kharazmi.PageTitle"/>
-    <style name="TextAppearance.GajAdmin.Headline3" parent="TextAppearance.Kharazmi.PageTitle"/>
-    <style name="TextAppearance.GajAdmin.Headline4" parent="TextAppearance.Kharazmi.PageTitle"/>
-    <style name="TextAppearance.GajAdmin.Headline5" parent="TextAppearance.Kharazmi.SectionTitle"/>
     <style name="TextAppearance.GajAdmin.Headline6" parent="TextAppearance.Kharazmi.SectionTitle"/>
     <style name="TextAppearance.GajAdmin.Subtitle1" parent="TextAppearance.Kharazmi.SectionTitle"/>
     <style name="TextAppearance.GajAdmin.Subtitle2" parent="TextAppearance.Kharazmi.Body"/>
     <style name="TextAppearance.GajAdmin.Body1" parent="TextAppearance.Kharazmi.Body"/>
     <style name="TextAppearance.GajAdmin.Body2" parent="TextAppearance.Kharazmi.Body"/>
     <style name="TextAppearance.GajAdmin.Caption" parent="TextAppearance.Kharazmi.Caption"/>
-    <style name="TextAppearance.GajAdmin.Overline" parent="TextAppearance.Kharazmi.Caption"/>
     <style name="TextAppearance.GajAdmin.Button" parent="TextAppearance.Kharazmi.Body"/>
 
     <!-- Chip Style -->
@@ -178,33 +145,6 @@
     </style>
 
     <!-- ==================== GOLD/DARK REDESIGN STYLES (NEW) - NIGHT VARIANT ==================== -->
-    <style name="Theme.Kharazmi.Gold" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <item name="colorPrimary">@color/gold_primary</item>
-        <item name="colorPrimaryVariant">@color/gold_primary_dark</item>
-        <item name="colorOnPrimary">@color/text_on_gold</item>
-        <item name="colorSecondary">@color/gold_primary</item>
-        <item name="colorOnSecondary">@color/text_on_gold</item>
-        <item name="android:windowBackground">@color/gold_bg_base</item>
-        <item name="android:statusBarColor">@color/gold_bg_base</item>
-        <item name="colorSurface">@color/gold_bg_elevated</item>
-        <item name="colorOnSurface">@color/text_primary</item>
-        <item name="android:textColorPrimary">@color/text_primary</item>
-        <!-- FIX: Gold secondary and hint text must use the readable Gold tokens, not inherited light-theme defaults. -->
-        <item name="android:textColorSecondary">@color/text_secondary</item>
-        <item name="android:textColorTertiary">@color/text_disabled</item>
-        <item name="android:textColorHint">@color/text_disabled</item>
-        <item name="colorBackground">@color/gold_bg_base</item>
-        <item name="colorOnBackground">@color/text_primary</item>
-        <item name="colorError">@color/status_danger</item>
-        <item name="colorOnError">@color/text_on_gold</item>
-        <item name="colorOutline">@color/gold_border_subtle</item>
-        <item name="fontFamily">@font/app_font</item>
-        <item name="android:fontFamily">@font/app_font</item>
-        <item name="materialButtonStyle">@style/Widget.Kharazmi.Button.Gold</item>
-        <item name="materialCardViewStyle">@style/Widget.Kharazmi.Card.Gold</item>
-        <item name="textInputStyle">@style/Widget.Kharazmi.Input.Gold</item>
-        <item name="android:windowAnimationStyle">@style/GajWindowAnimations</item>
-    </style>
 
     <style name="Widget.Kharazmi.Button.Gold" parent="Widget.MaterialComponents.Button">
         <item name="cornerRadius">14dp</item>
