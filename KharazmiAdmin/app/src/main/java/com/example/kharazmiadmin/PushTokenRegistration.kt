@@ -27,9 +27,17 @@ object PushTokenRegistration {
     /** Called after a successful login; the request is best-effort and never blocks sign-in. */
     fun refreshAndRegister(context: Context) {
         val appContext = context.applicationContext
-        val firebaseApp = firebaseAppOrNull(appContext) ?: return
+        // FIX(build): `FirebaseMessaging.getInstance(FirebaseApp)` is package-private inside the
+        // firebase-messaging artifact, so calling it from this package is a compile error — this
+        // line is why the app did not build. The public accessor is the no-arg one, and it is not
+        // a compromise: `firebaseAppOrNull` only ever yields the DEFAULT app, either by finding the
+        // one named `FirebaseApp.DEFAULT_APP_NAME` or by calling the two-argument
+        // `FirebaseApp.initializeApp(context, options)`, which creates `[DEFAULT]`.
+        // `FirebaseMessaging.getInstance()` returns the instance for that same default app, so the
+        // gate below still means exactly what it did: "is Firebase configured at all?".
+        if (firebaseAppOrNull(appContext) == null) return
         try {
-            FirebaseMessaging.getInstance(firebaseApp).token
+            FirebaseMessaging.getInstance().token
                 .addOnSuccessListener { token -> rememberAndRegister(appContext, token) }
                 .addOnFailureListener { error ->
                     Log.w(TAG, "FCM token refresh failed; login remains available", error)

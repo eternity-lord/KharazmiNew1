@@ -424,7 +424,18 @@ class TestAndroidClientGaps(AuthFlowWorld):
         self.assertRegex(login_api, r'@Query\("device_token"\)')
 
         push = texts.get("PushTokenRegistration.kt", "")
-        self.assertIn("FirebaseMessaging.getInstance(firebaseApp).token", push)
+        # FIX(P4): این assertion پیش‌تر متنِ `getInstance(firebaseApp).token` را قفل کرده بود،
+        # ولی آن overload در firebase-messaging **package-private** است و صدا زدنش از این پکیج
+        # خطای کامپایل است ⇒ تست سبز بود در حالی که اپ از روزی که آن خط نوشته شد هرگز build
+        # نمی‌شد. دلیلش در docstringِ خودِ همین تست هست: «Gradle/device اجرا نمی‌شود» — یعنی
+        # قراردادِ متنی جای buildِ واقعی را گرفته بود. از این فاز، `.github/workflows/android.yml`
+        # اپ را واقعاً کامپایل می‌کند، پس این گیت دیگر تنها گیتِ این کد نیست.
+        # `getInstance()` بدون آرگومان نمونهٔ اپِ **پیش‌فرض** را برمی‌گرداند و
+        # `firebaseAppOrNull` هم در هر دو شاخه‌اش فقط اپِ پیش‌فرض را تولید می‌کند، پس قصدِ تست
+        # دست‌نخورده مانده. assertion دوم همان گیتِ رفتاریِ واقعی را (پیکربندی‌نشده ⇒ رد شدنِ
+        # best-effort) محکم‌تر از قبل قفل می‌کند.
+        self.assertIn("FirebaseMessaging.getInstance().token", push)
+        self.assertIn("if (firebaseAppOrNull(appContext) == null) return", push)
         self.assertIn('@POST("auth/device_token")', push)
         self.assertIn("DeviceTokenRequest(token)", push)
         self.assertIn("override fun onNewToken(token: String)", push)
