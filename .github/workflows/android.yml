@@ -1,0 +1,121 @@
+# CI — ساخت و تستِ واحدِ اپلیکیشن اندروید (`KharazmiAdmin/`)
+#
+# چرا این فایل اضافه شد (فاز P4):
+#   تا ۲۰۲۶-۱۱-۰۹ هیچ workflow ای اپ اندروید را **هرگز** build نکرده بود؛ تنها CI ریپو
+#   `tests.yml` است که pytest سمت سرور را می‌دواند. یعنی ۸۷ فایل Kotlin (۲۴٬۲۸۱ خط) بدونِ
+#   هیچ گیتِ خودکاری تغییر می‌کردند و «آیا main امروز اصلاً کامپایل می‌شود؟» یک سؤالِ
+#   **بی‌پاسخ** بود. بدونِ پاسخ به آن سؤال، ریفکتورِ رفتارمحافظ روی اپ معنایی ندارد —
+#   چون در محیطِ کاریِ ما نه JVM هست، نه Gradle، نه دسترسی به Maven Central؛ پس هیچ تغییرِ
+#   Kotlin را نمی‌توان محلی کامپایل یا تست کرد. این job همان گیتِ گم‌شده است.
+#
+# چه چیزی اجرا می‌شود:
+#   ۱) `:app:assembleDebug`  — کامپایلِ Kotlin + **لینک شدنِ منابع** با AAPT2 + بسته‌بندی.
+#      عمداً assemble و نه فقط compile: بخشِ بعدیِ P4 حذفِ منابعِ مرده است (۱۰۴ layout،
+#      ۷۳ drawable، ۶ فایل values) و چیزی که «drawable حذف‌شده هنوز جایی ارجاع شده» را
+#      می‌گیرد لینکِ منابع است، نه کامپایلرِ Kotlin.
+#   ۲) `:app:testDebugUnitTest` — تست‌های واحدِ JVM (بدون امولاتور): `CachePolicy`،
+#      `InputValidation` و `DebouncedRequest` با ساعتِ مجازیِ coroutines-test.
+#
+# چه چیزی عمداً اجرا **نمی‌شود**:
+#   • `androidTest` (Espresso) — به امولاتور/دستگاه نیاز دارد؛ `AllActivitiesClickableTest.kt`
+#     و `ExampleInstrumentedTest.kt` در این job دَویده نمی‌شوند.
+#   • `lint` — فعلاً نه: هدفِ این job دانستنِ وضعیتِ build است، نه اضافه کردنِ یک منبعِ
+#     خطای جدید که هنوز baseline ندارد.
+#   • `assembleRelease` — minify خاموش است و امضای release در ریپو نیست.
+#
+# تریگر عمداً فقط push است (بدون pull_request) — هم‌راستا با `tests.yml`: ساخت/بررسی/مرجِ
+# PR فقط با دستورِ صریح کاربر. هر شاخهٔ `arena/**` هم پوشش دارد تا هر فازِ P4 **پیش از
+# مرج** سنجیده شود.
+
+name: android
+
+on:
+  push:
+    branches:
+      - main
+      - "arena/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    name: Android (assembleDebug + JVM unit tests)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    defaults:
+      run:
+        working-directory: KharazmiAdmin
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # AGP 8.13.1 به JDK 17 یا بالاتر نیاز دارد؛ رانر چند JDK دارد، پس صریح پین می‌کنیم.
+      - name: Set up JDK 17 (required by AGP 8.13)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      # کشِ وابستگی‌ها و wrapper: build سردِ Gradle چند دقیقه است، با کش به حدود یک دقیقه می‌رسد.
+      - name: Set up Gradle (dependency cache)
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+
+      # `local.properties` عمداً در ریپو نیست (مسیرِ SDK ماشین‌به‌ماشین فرق می‌کند)، پس AGP
+      # باید `sdk.dir` را از SDKِ از‌پیش‌نصب‌شدهٔ رانر بخواند. اگر رانر روزی بدون ANDROID_HOME
+      # باشد، این step با پیامِ روشن شکست می‌خورد به‌جای اینکه AGP خطای گمراه‌کننده بدهد.
+      - name: Point the build at the runner's Android SDK
+        run: |
+          if [ -z "${ANDROID_HOME:-}" ]; then
+            echo "::error::ANDROID_HOME روی رانر ست نیست — SDK اندروید پیدا نشد."
+            exit 1
+          fi
+          echo "sdk.dir=$ANDROID_HOME" > local.properties
+          echo "SDK:  $ANDROID_HOME"
+          java -version 2>&1 | head -1
+          ./gradlew --version | sed -n '1,12p'
+
+      # compileSdk = 34 است؛ تصویرِ رانر ممکن است platform دیگری داشته باشد.
+      # پذیرش license هم این‌جا انجام می‌شود تا AGP بتواند هر جزءِ دیگری را که لازم دارد
+      # خودش دانلود کند.
+      - name: Ensure the required Android SDK packages are present
+        run: |
+          sdkm="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          if [ ! -x "$sdkm" ]; then
+            sdkm="$(find "$ANDROID_HOME" -name sdkmanager -type f 2>/dev/null | head -1)"
+          fi
+          if [ -z "$sdkm" ]; then
+            echo "::error::sdkmanager پیدا نشد."
+            exit 1
+          fi
+          yes | "$sdkm" --licenses > /dev/null 2>&1 || true
+          if [ ! -d "$ANDROID_HOME/platforms/android-34" ]; then
+            echo "platforms;android-34 نصب نیست — نصب می‌شود…"
+            "$sdkm" "platforms;android-34"
+          fi
+          ls "$ANDROID_HOME/platforms" | sed 's/^/  platform: /'
+          echo "✅ SDK موردنیاز حاضر است."
+
+      - name: Compile Kotlin and link resources (debug variant)
+        run: ./gradlew --stacktrace :app:assembleDebug
+
+      - name: Run JVM unit tests
+        run: ./gradlew --stacktrace :app:testDebugUnitTest
+
+      # اگر چیزی شکست، گزارش‌ها را نگه دار تا بدونِ اجرای دوباره بتوان تشخیص داد چه شد
+      # (خروجیِ Gradle در لاگ همهٔ جزئیاتِ تست را نمی‌آورد).
+      - name: Upload build and test reports on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-reports-${{ github.run_id }}
+          path: |
+            KharazmiAdmin/app/build/reports/
+            KharazmiAdmin/app/build/test-results/
+          if-no-files-found: ignore
+          retention-days: 14
