@@ -199,11 +199,48 @@ jobs:
           ls "$ANDROID_HOME/platforms" | sed 's/^/  platform: /'
           echo "✅ SDK موردنیاز حاضر است."
 
+      # خروجیِ Gradle هم‌زمان در فایل ثبت می‌شود تا step «Report» بتواند خلاصهٔ خطا را
+      # منتشر کند. `pipefail` لازم است وگرنه `tee` کدِ خروجِ Gradle را می‌پوشاند.
       - name: Compile Kotlin and link resources (debug variant)
-        run: gradle --stacktrace :app:assembleDebug
+        run: |
+          set -o pipefail
+          gradle --stacktrace :app:assembleDebug 2>&1 | tee /tmp/gradle-assemble.log
 
       - name: Run JVM unit tests
-        run: gradle --stacktrace :app:testDebugUnitTest
+        run: |
+          set -o pipefail
+          gradle --stacktrace :app:testDebugUnitTest 2>&1 | tee /tmp/gradle-test.log
+
+      # ── چرا این step وجود دارد ────────────────────────────────────────────────
+      # لاگِ خامِ job از هاستِ `results-receiver.actions.githubusercontent.com` سرو می‌شود
+      # که در هر محیطی در دسترس نیست (مثلاً در محیطِ کاریِ این فاز کاملاً بسته است)، ولی
+      # **annotationها** از `api.github.com` خواندنی‌اند. پس خلاصهٔ شکست به‌صورتِ یک
+      # annotationِ چندخطی منتشر می‌شود تا علتِ خطا بدونِ بازکردنِ وب‌UI قابلِ خواندن باشد.
+      # این یک ترفندِ موقت نیست: برای هر اجرای ناموفقِ آینده هم همین کار را می‌کند.
+      - name: Report the failure inline as an annotation
+        if: failure()
+        run: |
+          set -uo pipefail
+          log=$(ls -t /tmp/gradle-*.log 2>/dev/null | head -1 || true)
+          if [ -z "$log" ]; then
+            echo "هیچ لاگِ Gradle ثبت نشده — شکست پیش از اجرای build بوده است."
+            exit 0
+          fi
+          {
+            echo "GRADLE FAILURE (from $(basename "$log"))"
+            grep -E "^e: |^w: |error:|FAILURE:|What went wrong|^> Task .* FAILED|Execution failed for task|Caused by:|A problem occurred|Could not resolve|Could not find|Unresolved reference|is not abstract|overrides nothing" "$log" | head -45
+            echo "----- last 25 lines -----"
+            tail -n 25 "$log"
+          } > /tmp/failure_summary.txt
+          # در workflow command باید `%` و newline فرار شوند
+          msg=$(sed -e 's/%/%25/g' -e 's/$/%0A/' /tmp/failure_summary.txt | tr -d '\n')
+          echo "::error title=Gradle build failed::${msg}"
+          {
+            echo "### Gradle failure summary"
+            echo '```'
+            cat /tmp/failure_summary.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
 
       # اگر چیزی شکست، گزارش‌ها را نگه دار تا بدونِ اجرای دوباره بتوان تشخیص داد چه شد
       # (خروجیِ Gradle در لاگ همهٔ جزئیاتِ تست را نمی‌آورد).
