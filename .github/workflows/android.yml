@@ -1,0 +1,256 @@
+# CI — ساخت و تستِ واحدِ اپلیکیشن اندروید (`KharazmiAdmin/`)
+#
+# چرا این فایل اضافه شد (فاز P4):
+#   تا ۲۰۲۶-۱۱-۰۹ هیچ workflow ای اپ اندروید را **هرگز** build نکرده بود؛ تنها CI ریپو
+#   `tests.yml` است که pytest سمت سرور را می‌دواند. یعنی ۸۷ فایل Kotlin (۲۴٬۲۸۱ خط) بدونِ
+#   هیچ گیتِ خودکاری تغییر می‌کردند و «آیا main امروز اصلاً کامپایل می‌شود؟» یک سؤالِ
+#   **بی‌پاسخ** بود. بدونِ پاسخ به آن سؤال، ریفکتورِ رفتارمحافظ روی اپ معنایی ندارد —
+#   چون در محیطِ کاریِ ما نه JVM هست، نه Gradle، نه دسترسی به Maven Central؛ پس هیچ تغییرِ
+#   Kotlin را نمی‌توان محلی کامپایل یا تست کرد. این job همان گیتِ گم‌شده است.
+#
+# چه چیزی اجرا می‌شود:
+#   ۱) `:app:assembleDebug`  — کامپایلِ Kotlin + **لینک شدنِ منابع** با AAPT2 + بسته‌بندی.
+#      عمداً assemble و نه فقط compile: بخشِ بعدیِ P4 حذفِ منابعِ مرده است (۱۰۴ layout،
+#      ۷۳ drawable، ۶ فایل values) و چیزی که «drawableِ حذف‌شده هنوز جایی ارجاع شده» را
+#      می‌گیرد لینکِ منابع است، نه کامپایلرِ Kotlin.
+#   ۲) `:app:testDebugUnitTest` — تست‌های واحدِ JVM (بدون امولاتور): `CachePolicy`،
+#      `InputValidation` و `DebouncedRequest` با ساعتِ مجازیِ coroutines-test.
+#
+# چه چیزی عمداً اجرا **نمی‌شود**:
+#   • `androidTest` (Espresso) — به امولاتور/دستگاه نیاز دارد؛ `AllActivitiesClickableTest.kt`
+#     و `ExampleInstrumentedTest.kt` در این job دَویده نمی‌شوند.
+#   • `lint` — فعلاً نه: هدفِ این job دانستنِ وضعیتِ build است، نه افزودنِ یک منبعِ خطای جدید
+#     که هنوز baseline ندارد.
+#   • `assembleRelease` — minify خاموش است و امضای release در ریپو نیست.
+#
+# ─────────────────────────────────────────────────────────────────────────────
+# یافتهٔ امنیتیِ مهم: `KharazmiAdmin/gradle/wrapper/gradle-wrapper.jar` اصیل نیست
+# ─────────────────────────────────────────────────────────────────────────────
+#   اولین اجرای همین workflow با پیامِ زیر شکست خورد:
+#       Error: At least one Gradle Wrapper Jar failed validation!
+#       ✗ Found unknown Gradle Wrapper JAR files:
+#         ccb27f2587513f0aac87b1587174aeaa167fe67643dea3fae4fce73d4d11594a
+#   یعنی SHA-256 این jar با هیچ‌کدام از انتشارهای رسمیِ Gradle نمی‌خواند. چون این فایل
+#   «یک blob باینری از کدِ اجرایی است که در ریپو commit شده» (و دقیقاً همان چیزی است که
+#   حملهٔ زنجیرهٔ تأمین با PRِ «Update to Gradle xxx» انجام می‌شود)، قبل از هر کاری
+#   کالبدشکافی‌اش کردیم. نتیجه در برابرِ jarِ رسمیِ `gradle/gradle` tag `v8.13.0`:
+#
+#       • ۳۳ entry در هر دو؛ نام‌ها کاملاً یکسان؛ هیچ class/بستهٔ اضافی یا ناشناس نیست
+#       • ۳۲ entry از ۳۳ → **CRC-32 یکسان**، یعنی بایت‌های decompressedِ همهٔ کلاس‌ها
+#         (`org/gradle/cli/*`، `org/gradle/wrapper/*`، `org/gradle/internal/file/*`،
+#         `WrapperDistributionUrlConverter`) با Gradle 8.13 رسمی مو‌به‌مو یکی است
+#       • تنها تفاوت: `META-INF/MANIFEST.MF` (۱۱۳ بایت در برابر ۶۳). نسخهٔ ما `Main-Class:
+#         org.gradle.wrapper.GradleWrapperMain` دارد و نسخهٔ ریپوِ gradle/gradle ندارد —
+#         یعنی jarِ ما همان flavorِ داخلِ **distribution** است (که runnable است)، نه کپیِ
+#         داخلِ سورسِ Gradle. این تفاوت موردِ انتظار است، نه نشانهٔ دست‌کاری.
+#       • ظرفِ ZIP بازنویسی شده: timestamp رسمیِ همهٔ entryها `1980-01-01` است (buildِ
+#         reproducible)، ولی مالِ ما `2026-09-10` برای همهٔ entryهاست و اندازهٔ فشرده
+#         ۴۲۶۱۳ در برابر ۴۳۷۰۵ بایت.
+#
+#   جمع‌بندی: **کدِ داخلِ jar همان Gradle 8.13 رسمی است**، ولی خودِ ظرف یک بار باز و دوباره
+#   فشرده شده (به‌احتمالِ زیاد همان چرخهٔ zip/unzip که کل ریپو از آن آمده — ریپو در ابتدا
+#   یک فایلِ zip بود) و همین، بایت‌ها و در نتیجه SHA-256 را عوض کرده است.
+#
+#   راه‌حلِ دائمی که خودِ Gradle توصیه می‌کند: اجرای `./gradlew wrapper` با یک
+#   distribution رسمی تا jarِ قابل‌اعتبار **بازتولید** شود. این کار JVM و شبکه به
+#   services.gradle.org می‌خواهد و در محیطِ کاریِ ما ممکن نیست.
+#
+#   پس تا آن زمان، دو تصمیمِ محافظه‌کارانه گرفته شد:
+#     ۱) این job **هرگز jarِ ریپو را اجرا نمی‌کند**. با ورودیِ `gradle-version` اکشنِ
+#        setup-gradle خودِ Gradle 8.13 را از منبعِ رسمی دانلود و به PATH اضافه می‌کند و ما
+#        `gradle` را صدا می‌زنیم نه `./gradlew` را. یعنی کدِ آن blobِ بازبسته‌بندی‌شده در CI
+#        هرگز اجرا نمی‌شود.
+#     ۲) چون اعتبارسنجیِ رسمی نمی‌تواند این jar را تأیید کند، `validate-wrappers: false` شد
+#        و **جای آن را یک گیتِ دقیق‌تر گرفت**: step «Guard» زیر SHA-256 همان jar را pin
+#        می‌کند و در صورتِ هر تغییر hard fail می‌دهد، پس تعویضِ بی‌صدایِ این باینری در CI
+#        غیرممکن است (کاری که اعتبارسنجیِ عمومی برای *آینده* انجام می‌دهد، این pin برای
+#        *همین* فایل انجام می‌دهد). همان step نگهبان است که نسخهٔ Gradle در
+#        `gradle-wrapper.properties` را با نسخهٔ pin‌شدهٔ CI مطابقت می‌دهد تا این دو از هم
+#        واگرا نشوند.
+#
+#   ⚠️ وقتی jar با `./gradlew wrapper` بازتولید شد: `validate-wrappers: false` را بردارید،
+#      `gradle-version` را حذف کنید تا build از wrapper اجرا شود، step «Guard» را پاک کنید و
+#      فراخوانی‌ها را به `./gradlew` برگردانید — یعنی به حالتِ استاندارد و امن‌تر برگردید.
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# تریگر عمداً فقط push است (بدون pull_request) — هم‌راستا با `tests.yml`: ساخت/بررسی/مرجِ
+# PR فقط با دستورِ صریح کاربر. هر شاخهٔ `arena/**` هم پوشش دارد تا هر فازِ P4 **پیش از
+# مرج** سنجیده شود.
+
+name: android
+
+on:
+  push:
+    branches:
+      - main
+      - "arena/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    name: Android (assembleDebug + JVM unit tests)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    defaults:
+      run:
+        working-directory: KharazmiAdmin
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # AGP 8.13.1 به JDK 17 یا بالاتر نیاز دارد؛ رانر چند JDK دارد، پس صریح پین می‌کنیم.
+      - name: Set up JDK 17 (required by AGP 8.13)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      # `gradle-version` ⇒ خودِ اکشن Gradle 8.13 را دانلود و به PATH اضافه می‌کند و ما
+      # `gradle` را صدا می‌زنیم؛ به همین دلیل wrapper jarِ ریپو هرگز اجرا نمی‌شود (توضیحِ
+      # کامل در سرِ همین فایل). `validate-wrappers: false` هم فقط به همین دلیل است و گیتِ
+      # جایگزینش step «Guard» زیر است.
+      # کشِ وابستگی‌ها: build سردِ Gradle چند دقیقه است، با کش به حدود یک دقیقه می‌رسد.
+      - name: Set up Gradle 8.13 (downloaded by the action, dependency cache)
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.13"
+          validate-wrappers: false
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+
+      # ── گیتِ جایگزینِ اعتبارسنجیِ wrapper ──────────────────────────────────────
+      # اگر کسی این باینری را عوض کند، CI همین‌جا با پیامِ روشن می‌شکند. اگر عمدی باشد
+      # (بازتولید با `./gradlew wrapper`)، دستورِ بازگشت به حالتِ استاندارد در پیام آمده.
+      - name: Guard - wrapper jar pinned, CI Gradle version matches the wrapper
+        env:
+          EXPECTED_WRAPPER_SHA256: ccb27f2587513f0aac87b1587174aeaa167fe67643dea3fae4fce73d4d11594a
+          PINNED_GRADLE_VERSION: "8.13"
+        run: |
+          set -euo pipefail
+          jar="gradle/wrapper/gradle-wrapper.jar"
+          props="gradle/wrapper/gradle-wrapper.properties"
+
+          actual=$(sha256sum "$jar" | cut -d' ' -f1)
+          if [ "$actual" != "$EXPECTED_WRAPPER_SHA256" ]; then
+            echo "::error::SHA-256 فایل $jar تغییر کرده است."
+            echo "  انتظار (pin‌شده): $EXPECTED_WRAPPER_SHA256"
+            echo "  فعلی            : $actual"
+            echo "این فایل یک باینریِ اجراییِ commit‌شده است و اعتبارسنجیِ رسمیِ Gradle آن را"
+            echo "نمی‌شناسد (توضیح کامل در سرِ .github/workflows/android.yml)، پس تغییرش نباید"
+            echo "بی‌صدا رد شود."
+            echo "اگر عمداً با './gradlew wrapper' از یک distribution رسمی بازتولیدش کرده‌اید:"
+            echo "  ۱) validate-wrappers: false را بردارید تا اعتبارسنجیِ رسمی دوباره فعال شود،"
+            echo "  ۲) gradle-version را حذف کنید و فراخوانی‌ها را به ./gradlew برگردانید،"
+            echo "  ۳) همین step «Guard» را پاک کنید."
+            exit 1
+          fi
+          echo "✅ wrapper jar با pin مطابقت دارد (و در این job اجرا نمی‌شود)."
+
+          url=$(sed -n 's/^distributionUrl=//p' "$props" | tr -d '\\')
+          case "$url" in
+            *"gradle-$PINNED_GRADLE_VERSION"*)
+              echo "✅ wrapper همان Gradle $PINNED_GRADLE_VERSION را می‌خواهد: $url"
+              ;;
+            *)
+              echo "::error::واگراییِ نسخه: CI با Gradle $PINNED_GRADLE_VERSION پین شده ولی $props می‌گوید: $url"
+              echo "یا gradle-version را در همین workflow به‌روز کنید یا wrapper را به همان نسخه برگردانید."
+              exit 1
+              ;;
+          esac
+
+      # `local.properties` عمداً در ریپو نیست (مسیرِ SDK ماشین‌به‌ماشین فرق می‌کند)، پس AGP
+      # باید `sdk.dir` را از SDKِ از‌پیش‌نصب‌شدهٔ رانر بخواند. اگر رانر روزی بدون
+      # ANDROID_HOME باشد، این step با پیامِ روشن شکست می‌خورد به‌جای اینکه AGP خطای
+      # گمراه‌کننده بدهد.
+      - name: Point the build at the runner's Android SDK
+        run: |
+          set -euo pipefail
+          if [ -z "${ANDROID_HOME:-}" ]; then
+            echo "::error::ANDROID_HOME روی رانر ست نیست — SDK اندروید پیدا نشد."
+            exit 1
+          fi
+          echo "sdk.dir=$ANDROID_HOME" > local.properties
+          echo "SDK:    $ANDROID_HOME"
+          java -version 2>&1 | head -1
+          gradle --version | sed -n '1,12p'
+
+      # compileSdk = 34 است؛ تصویرِ رانر ممکن است platform دیگری داشته باشد. پذیرشِ license
+      # هم این‌جا انجام می‌شود تا AGP بتواند هر جزءِ دیگری را که لازم دارد خودش دانلود کند.
+      - name: Ensure the required Android SDK packages are present
+        run: |
+          set -euo pipefail
+          sdkm="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          if [ ! -x "$sdkm" ]; then
+            sdkm="$(find "$ANDROID_HOME" -name sdkmanager -type f 2>/dev/null | head -1)"
+          fi
+          if [ -z "$sdkm" ]; then
+            echo "::error::sdkmanager پیدا نشد."
+            exit 1
+          fi
+          yes | "$sdkm" --licenses > /dev/null 2>&1 || true
+          if [ ! -d "$ANDROID_HOME/platforms/android-34" ]; then
+            echo "platforms;android-34 نصب نیست — نصب می‌شود…"
+            "$sdkm" "platforms;android-34"
+          fi
+          ls "$ANDROID_HOME/platforms" | sed 's/^/  platform: /'
+          echo "✅ SDK موردنیاز حاضر است."
+
+      # خروجیِ Gradle هم‌زمان در فایل ثبت می‌شود تا step «Report» بتواند خلاصهٔ خطا را
+      # منتشر کند. `pipefail` لازم است وگرنه `tee` کدِ خروجِ Gradle را می‌پوشاند.
+      - name: Compile Kotlin and link resources (debug variant)
+        run: |
+          set -o pipefail
+          gradle --stacktrace :app:assembleDebug 2>&1 | tee /tmp/gradle-assemble.log
+
+      - name: Run JVM unit tests
+        run: |
+          set -o pipefail
+          gradle --stacktrace :app:testDebugUnitTest 2>&1 | tee /tmp/gradle-test.log
+
+      # ── چرا این step وجود دارد ────────────────────────────────────────────────
+      # لاگِ خامِ job از هاستِ `results-receiver.actions.githubusercontent.com` سرو می‌شود
+      # که در هر محیطی در دسترس نیست (مثلاً در محیطِ کاریِ این فاز کاملاً بسته است)، ولی
+      # **annotationها** از `api.github.com` خواندنی‌اند. پس خلاصهٔ شکست به‌صورتِ یک
+      # annotationِ چندخطی منتشر می‌شود تا علتِ خطا بدونِ بازکردنِ وب‌UI قابلِ خواندن باشد.
+      # این یک ترفندِ موقت نیست: برای هر اجرای ناموفقِ آینده هم همین کار را می‌کند.
+      - name: Report the failure inline as an annotation
+        if: failure()
+        run: |
+          set -uo pipefail
+          log=$(ls -t /tmp/gradle-*.log 2>/dev/null | head -1 || true)
+          if [ -z "$log" ]; then
+            echo "هیچ لاگِ Gradle ثبت نشده — شکست پیش از اجرای build بوده است."
+            exit 0
+          fi
+          {
+            echo "GRADLE FAILURE (from $(basename "$log"))"
+            grep -E "^e: |^w: |error:|FAILURE:|What went wrong|^> Task .* FAILED|Execution failed for task|Caused by:|A problem occurred|Could not resolve|Could not find|Unresolved reference|is not abstract|overrides nothing" "$log" | head -45
+            echo "----- last 25 lines -----"
+            tail -n 25 "$log"
+          } > /tmp/failure_summary.txt
+          # در workflow command باید `%` و newline فرار شوند
+          msg=$(sed -e 's/%/%25/g' -e 's/$/%0A/' /tmp/failure_summary.txt | tr -d '\n')
+          echo "::error title=Gradle build failed::${msg}"
+          {
+            echo "### Gradle failure summary"
+            echo '```'
+            cat /tmp/failure_summary.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      # اگر چیزی شکست، گزارش‌ها را نگه دار تا بدونِ اجرای دوباره بتوان تشخیص داد چه شد
+      # (خروجیِ Gradle در لاگ همهٔ جزئیاتِ تست را نمی‌آورد).
+      - name: Upload build and test reports on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-reports-${{ github.run_id }}
+          path: |
+            KharazmiAdmin/app/build/reports/
+            KharazmiAdmin/app/build/test-results/
+          if-no-files-found: ignore
+          retention-days: 14
