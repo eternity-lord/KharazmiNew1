@@ -28,16 +28,6 @@ import retrofit2.http.GET
 import retrofit2.HttpException
 import java.util.Locale
 
-// ==========================================
-// API Interfaces
-// ==========================================
-interface RegisterApi {
-    @POST("students/register_and_enroll")
-    suspend fun registerAndEnrollStudent(@Body data: StudentRegisterAndEnrollRequest): RegisterResponse
-
-    @GET("classes/list")
-    suspend fun getClassesList(): List<ClassListItem>
-}
 
 class StudentRegisterActivity : BaseActivity() {
 

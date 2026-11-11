@@ -4,6 +4,8 @@
 **branch:** [`arena/01a0c9b8-kharazmiapp`](https://github.com/eternity-lord/KharazmiApp/tree/arena/01a0c9b8-kharazmiapp)  
 **دامنه:** فقط مستندسازی و اسکریپت extractor؛ هیچ خط Kotlin، کد server موجود، تست موجود یا manual test list تغییر نکرده است.
 
+> **یادداشتِ به‌روزرسانی (2026-11-11 — فاز P4d):** داده‌های این نقشه عمداً دست‌نخورده مانده‌اند؛ خودِ `scripts/validate_app_map.py` هم می‌گوید «`docs/app-map` inputs remain untouched as historical map artifacts». پس از تاریخِ snapshot بالا، ۳۸ اینترفیسِ Retrofit از فایل‌های `*Activity.kt` به فایل‌های هم‌بستهٔ اختصاصیِ `<Name>Api.kt` منتقل شدند (فاز P4d). نتیجه: ستونِ `file:line` در `android-api-calls.csv` و شمارهٔ خط‌های `screens/*.md` دیگر محلِ *اعلامِ* آن اینترفیس‌ها را نشان نمی‌دهند، ولی ستون‌های `interface/method`، `method`، `path`، `parameters`، `request body`، `response class` و `response fields/types` همچنان معتبرند. FQCN هیچ اینترفیسی عوض نشده (`com.example.kharazmiadmin.<Name>`)، هیچ call site ای تغییر نکرده و اوراکلِ `validate_app_map.py` (که فقط `Counter((method, path))` را مقایسه می‌کند) خروجی‌اش بایت‌به‌بایت یکسان مانده است. شش اینترفیس که تست‌ها متن‌شان را به فایلِ میزبان پین کرده‌اند عمداً جابه‌جا **نشدند**.
+
 ## وضعیت تحویل فازها
 
 | فاز | خروجی | شمارش/نتیجه | commit |

@@ -16,17 +16,6 @@ import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
 
-// API
-interface AddClassApi {
-    @GET("teachers/list")
-    suspend fun getTeachers(): List<TeacherSimple>
-
-    @POST("classes/create")
-    suspend fun createClass(
-        @Body data: ClassSubmitData,
-        @retrofit2.http.Query("override") override: Boolean = false
-    ): ClassResponse
-}
 
 class AddClassActivity : BaseActivity() {
 

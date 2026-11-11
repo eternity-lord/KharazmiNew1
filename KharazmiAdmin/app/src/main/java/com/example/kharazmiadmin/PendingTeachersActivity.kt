@@ -39,17 +39,6 @@ data class TeacherPending(
 
 data class ApproveResponse(val message: String)
 
-interface PendingApi {
-    @GET("teachers/pending")
-    suspend fun getPendingTeachers(): List<TeacherPending>
-
-    @POST("teachers/approve/{id}")
-    suspend fun approveTeacher(@Path("id") id: Int): ApproveResponse
-
-    // ❌ متد جدید برای رد کردن (حذف) معلم
-    @DELETE("teachers/reject/{id}")
-    suspend fun rejectTeacher(@Path("id") id: Int): ApproveResponse
-}
 
 class PendingTeachersActivity : BaseActivity() {
 

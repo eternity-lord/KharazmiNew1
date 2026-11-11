@@ -76,10 +76,6 @@ data class DebtorsGroupedResponse(
     val rows: List<DebtorRow>? = null
 )
 
-interface DebtorsApi {
-    @GET("finance/reports/debtors_grouped")
-    suspend fun getGrouped(@Query("search") search: String? = null): DebtorsGroupedResponse
-}
 
 class DebtorsActivity : BaseActivity() {
     private lateinit var etSearch: EditText

@@ -19,13 +19,6 @@ import kotlinx.coroutines.*
 import retrofit2.http.GET
 import retrofit2.http.Query
 
-interface AdminListApi {
-    @GET("admin/students/search")
-    suspend fun getStudents(@Query("query") q: String?): List<PersonListItem>
-
-    @GET("admin/teachers/search")
-    suspend fun getTeachers(@Query("query") q: String?): List<PersonListItem>
-}
 
 class PersonListActivity : BaseActivity() {
 

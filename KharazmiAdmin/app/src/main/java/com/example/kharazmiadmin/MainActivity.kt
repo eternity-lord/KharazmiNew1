@@ -26,13 +26,6 @@ import retrofit2.http.POST
 import retrofit2.http.Path
 import retrofit2.http.Query
 
-// ==========================================
-// API Definitions
-// ==========================================
-interface DashboardSettingsApi {
-    @GET("admin/institute_settings")
-    suspend fun getSettings(): SettingsResponse
-}
 
 interface DeletedClassesApi {
     // FIX(archive): مدل درست آرشیو (ArchivedClassItem) + جست‌وجو + جزئیات کنترول‌شده.
@@ -57,10 +50,6 @@ interface DeletedClassesApi {
     ): ClassRestoreResponse
 }
 
-interface MeApi {
-    @GET("auth/me")
-    suspend fun getMe(): MeResponse
-}
 
 data class MeResponse(
     val user_id: Int,

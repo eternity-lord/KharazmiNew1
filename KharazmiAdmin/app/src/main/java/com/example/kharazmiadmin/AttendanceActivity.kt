@@ -30,20 +30,6 @@ import retrofit2.http.PUT
 import java.io.IOException
 import kotlin.math.abs
 
-// API داخلی برای ثبت جلسه (بقیه از فایل ApiInterfaces خوانده می‌شوند)
-interface AttendanceSubmitApi {
-    @POST("attendance/submit_session")
-    suspend fun submitSession(@Body data: SessionSubmitData): SessionResponse
-
-    @GET("attendance/session/{session_code}")
-    suspend fun getSessionDetails(@retrofit2.http.Path("session_code") sessionCode: Int): SessionDetailsResponse
-
-    @PUT("attendance/session/{session_code}")
-    suspend fun editSession(
-        @retrofit2.http.Path("session_code") sessionCode: Int,
-        @Body data: SessionSubmitData
-    ): SessionResponse
-}
 
 data class SessionDetailsResponse(
     val session_id: Int,

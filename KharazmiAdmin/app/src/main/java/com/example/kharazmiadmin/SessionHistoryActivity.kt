@@ -26,11 +26,6 @@ data class SessionHistoryItem(
     val end_time: String? = null
 )
 
-// API
-interface HistoryApi {
-    @POST("attendance/get_history")
-    suspend fun getHistory(@Body req: HistoryRequest): List<SessionHistoryItem>
-}
 
 class SessionHistoryActivity : BaseActivity() {
 

@@ -154,28 +154,6 @@ interface ClassDetailApi {
 
 data class DeleteClassRequest(val forgive_session_charges: Boolean)
 
-interface ClassDetailActionsApi {
-    @DELETE("classes/{course_id}")
-    suspend fun deleteClass(
-        @Path("course_id") courseId: Int,
-        @Query("forgive_session_charges") forgive: Boolean
-    ): SimpleResponse
-
-    @POST("classes/{course_id}/request_delete")
-    suspend fun requestDeleteClass(
-        @Path("course_id") courseId: Int,
-        @Body req: DeleteClassRequest
-    ): SimpleResponse
-
-    @POST("classes/{course_id}/suspend")
-    suspend fun suspendClass(@Path("course_id") courseId: Int): SuspendResponse
-
-    @PUT("classes/update_info/{course_id}")
-    suspend fun updateClassInfo(@Path("course_id") courseId: Int, @Body data: ClassUpdateInfo): SimpleResponse
-
-    @PUT("classes/update")
-    suspend fun updateClass(@Query("course_id") courseId: Int, @Body data: AdminClassUpdateRequest): SimpleResponse
-}
 
 data class ClassUpdateInfo(val title: String, val grade_level: String? = null)
 

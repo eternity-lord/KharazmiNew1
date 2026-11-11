@@ -17,10 +17,6 @@ import java.util.Locale
 
 // ❌ کلاس GradeSubmitData از اینجا حذف شد (چون در AppModels.kt وجود دارد)
 
-interface GradeApi {
-    @POST("grades/submit")
-    suspend fun submitGrade(@Body data: GradeSubmitData): SimpleResponse
-}
 
 class SubmitGradeActivity : BaseActivity() {
 

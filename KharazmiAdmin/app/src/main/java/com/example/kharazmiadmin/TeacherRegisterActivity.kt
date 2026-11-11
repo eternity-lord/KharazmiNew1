@@ -20,13 +20,6 @@ import kotlinx.coroutines.withContext
 import retrofit2.http.Body
 import retrofit2.http.POST
 
-// ==========================================
-// API Interface
-// ==========================================
-interface TeacherApi {
-    @POST("teachers/register")
-    suspend fun registerTeacher(@Body data: TeacherRegisterData): RegisterResponse
-}
 
 class TeacherRegisterActivity : BaseActivity() {
 

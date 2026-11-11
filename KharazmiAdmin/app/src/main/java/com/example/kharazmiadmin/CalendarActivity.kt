@@ -58,19 +58,6 @@ data class ConflictCheckResponse(
     val details: List<String>
 )
 
-interface CalendarApi {
-    @POST("rooms/create")
-    suspend fun createRoom(@Body req: RoomCreateRequest): RoomItem
-
-    @GET("rooms/list")
-    suspend fun getRoomsList(): List<RoomItem>
-
-    @POST("calendar/check_conflicts")
-    suspend fun checkConflicts(@Body req: ConflictCheckRequest): ConflictCheckResponse
-
-    @GET("calendar/events")
-    suspend fun getCalendarEvents(): List<CalendarEventItem>
-}
 
 class CalendarActivity : BaseActivity() {
 

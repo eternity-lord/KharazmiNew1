@@ -52,14 +52,6 @@ data class PdfReceiptResponse(
     val receipt_data: Map<String, Any>? = null
 )
 
-// Remittance Print API Interface
-interface RemittancePrintApi {
-    @POST("/finance/receipt/print")
-    suspend fun printReceipt(@Body req: PrintReceiptRequest): PrintReceiptResponse
-
-    @POST("/finance/receipt/pdf")
-    suspend fun generatePdfReceipt(@Body req: PrintReceiptRequest): PdfReceiptResponse
-}
 
 // FIX H16: جزئیات رسیدِ سرور-محور برای چاپ مجدد (به‌جای اعتماد به Intent extras).
 data class ReceiptDetailsResponse(
@@ -86,10 +78,6 @@ data class ReceiptDetailsResponse(
     val class_remaining_institute: Long? = null
 )
 
-interface ReceiptDetailsApi {
-    @GET("/finance/receipt/{transaction_id}")
-    suspend fun getReceiptDetails(@Path("transaction_id") id: Long): ReceiptDetailsResponse
-}
 
 class InvoiceActivity : BaseActivity() {
 

@@ -31,16 +31,6 @@ data class StudentLoginResponse(
     val student_name: String? = null
 )
 
-interface StudentPortalApi {
-    @POST("auth/student/request_otp")
-    suspend fun requestOtp(@Body req: StudentOtpRequest): SimpleResponse
-
-    @POST("auth/student/login")
-    suspend fun studentLogin(@Body req: StudentLoginRequest): StudentLoginResponse
-
-    @GET("students/my_profile")
-    suspend fun getStudentProfile(): ParentProfileResponse
-}
 
 class StudentPortalActivity : BaseActivity() {
 

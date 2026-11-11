@@ -27,13 +27,6 @@ data class ChangeMobileRequest(
     val new_mobile: String
 )
 
-interface SettingsApi {
-    @POST("auth/change-password")
-    suspend fun changePassword(@Body req: ChangePasswordRequest): SimpleResponse
-
-    @POST("auth/change-mobile")
-    suspend fun changeMobile(@Body req: ChangeMobileRequest): SimpleResponse
-}
 
 // ==========================================
 // 2. کلاس اصلی اکتیویتی
