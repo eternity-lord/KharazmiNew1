@@ -24,17 +24,6 @@ import retrofit2.http.PUT
 import retrofit2.http.Path
 import retrofit2.http.Query
 
-// 1. تعریف API داخلی همین صفحه
-interface TransactionApi {
-    @GET("admin/transactions/list")
-    suspend fun getTransactions(@Query("search") search: String?): List<TransactionFullItem>
-
-    @DELETE("admin/transactions/{id}")
-    suspend fun deleteTransaction(@Path("id") id: Int): SimpleResponse
-
-    @PUT("admin/transactions/{id}")
-    suspend fun updateTransaction(@Path("id") id: Int, @Body data: TransactionUpdateData): SimpleResponse
-}
 
 class TransactionManageActivity : BaseActivity() {
 

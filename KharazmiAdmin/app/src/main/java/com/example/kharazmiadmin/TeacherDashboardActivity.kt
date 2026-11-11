@@ -54,10 +54,6 @@ interface TeacherPanelApi {
     suspend fun getPendingClasses(@Path("teacher_id") teacherId: Int): List<TeacherPendingClassItem>
 }
 
-interface TeacherMeApi {
-    @GET("auth/me")
-    suspend fun getMe(): MeResponse
-}
 
 class TeacherDashboardActivity : BaseActivity() {
 

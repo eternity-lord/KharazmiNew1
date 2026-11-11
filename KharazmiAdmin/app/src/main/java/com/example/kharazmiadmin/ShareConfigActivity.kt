@@ -19,14 +19,6 @@ data class ShareConfigData(
     val count_11: Long, val count_12: Long, val count_13: Long, val count_14: Long, val count_15: Long
 )
 
-// API
-interface ShareApi {
-    @GET("config/share")
-    suspend fun getShares(): ShareConfigData
-
-    @POST("config/share/update")
-    suspend fun updateShares(@Body data: ShareConfigData): SimpleResponse
-}
 
 class ShareConfigActivity : BaseActivity() {
 

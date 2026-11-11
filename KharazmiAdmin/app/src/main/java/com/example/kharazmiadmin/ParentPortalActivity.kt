@@ -67,19 +67,6 @@ data class ParentExamItem(val course_title: String, val title: String, val date:
 data class ParentUpcomingSessionItem(val course_title: String, val date: String, val time: String)
 data class ParentNotificationItem(val title: String, val body: String, val date: String)
 
-interface ParentPortalApi {
-    @POST("parent/request_otp")
-    suspend fun requestOtp(@Body req: ParentOtpRequest): SimpleResponse
-
-    @POST("parent/login")
-    suspend fun parentLogin(@Body req: ParentLoginRequest): ParentLoginResponse
-
-    @POST("parent/select_child")
-    suspend fun selectChild(@Body req: ChildSelectRequest): ParentLoginResponse
-
-    @GET("parent/child_profile")
-    suspend fun getChildProfile(): ParentProfileResponse
-}
 
 class ParentPortalActivity : BaseActivity() {
 

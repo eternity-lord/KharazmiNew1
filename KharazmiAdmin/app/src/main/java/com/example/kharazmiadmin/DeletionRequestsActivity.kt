@@ -20,17 +20,6 @@ import retrofit2.http.POST
 import retrofit2.http.Path
 import retrofit2.http.Query
 
-// API
-interface DeletionRequestApi {
-    @GET("classes/deletion_requests")
-    suspend fun getRequests(@Query("status") status: String? = null): List<DeletionRequestItem>
-
-    @POST("classes/deletion_requests/{id}/approve")
-    suspend fun approve(@Path("id") id: Int): SimpleResponse
-
-    @POST("classes/deletion_requests/{id}/reject")
-    suspend fun reject(@Path("id") id: Int, @Body req: DeletionRejectRequest): SimpleResponse
-}
 
 data class DeletionRejectRequest(val admin_note: String? = null)
 

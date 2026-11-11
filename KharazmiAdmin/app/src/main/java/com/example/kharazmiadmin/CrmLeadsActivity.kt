@@ -49,19 +49,6 @@ data class LeadNoteRequest(
     val status: String? = null
 )
 
-interface CrmNetworkApi {
-    @POST("crm/leads/create")
-    suspend fun createLead(@Body req: LeadCreateRequest): LeadResponseModel
-
-    @GET("crm/leads/list")
-    suspend fun getLeadsList(): List<LeadResponseModel>
-
-    @POST("crm/leads/{id}/notes")
-    suspend fun addNotes(@Path("id") id: Int, @Body req: LeadNoteRequest): SimpleResponse
-
-    @POST("crm/leads/{id}/convert")
-    suspend fun convertLead(@Path("id") id: Int): SimpleResponse
-}
 
 class CrmLeadsActivity : BaseActivity() {
 

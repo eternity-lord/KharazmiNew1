@@ -23,17 +23,6 @@ import retrofit2.http.POST
 import retrofit2.http.Path
 import retrofit2.http.Query
 
-// صف تایید ادمین: قرارداد قدیمی حفظ شده، اما پاسخ جدید conflict/capacity/audit را هم نمایش می‌دهد.
-interface AdminClassApi {
-    @GET("admin/pending_classes")
-    suspend fun getPendingClasses(): List<PendingClassItem>
-
-    @POST("admin/approve_class/{id}")
-    suspend fun approveClass(@Path("id") id: Int): SimpleResponse
-
-    @DELETE("admin/reject_class/{id}")
-    suspend fun rejectClass(@Path("id") id: Int, @Query("reason") reason: String? = null): SimpleResponse
-}
 
 class PendingClassesActivity : BaseActivity() {
 

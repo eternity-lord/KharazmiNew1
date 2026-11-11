@@ -27,13 +27,6 @@ data class SmsRequest(val target_group: String, val message_text: String)
 data class SmsResponse(val message: String, val count: Int)
 data class SmsLogItem(val target_group: String, val message_text: String, val sent_count: Int, val date: String)
 
-interface SmsApi {
-    @POST("sms/send")
-    suspend fun sendSms(@Body req: SmsRequest): SmsResponse
-
-    @GET("sms/history")
-    suspend fun getHistory(): List<SmsLogItem>
-}
 
 class SmsActivity : BaseActivity() {
 

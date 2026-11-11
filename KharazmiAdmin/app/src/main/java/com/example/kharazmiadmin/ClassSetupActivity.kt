@@ -52,10 +52,6 @@ interface ClassSetupNetworkApi {
     suspend fun getClassReport(@Path("id") id: Int): FullClassReport
 }
 
-interface ClassListApi {
-    @GET("classes/{id}/details")
-    suspend fun getClassDetails(@Path("id") id: Int): ClassDetailsResponse
-}
 
 
 class ClassSetupActivity : BaseActivity() {

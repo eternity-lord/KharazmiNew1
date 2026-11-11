@@ -70,21 +70,6 @@ data class EnrollmentFunnelResponse(
     val timed_conversions: Int
 )
 
-interface ChartApi {
-    @GET("reports/chart-data")
-    suspend fun getChartData(
-        @Query("class_id") classId: Int?,
-        @Query("start_date") startDate: String?,
-        @Query("end_date") endDate: String?
-    ): ChartDataResponse
-
-    @GET("analytics/enrollment_funnel")
-    suspend fun getEnrollmentFunnel(
-        @Query("start_date") startDate: String,
-        @Query("end_date") endDate: String,
-        @Query("branch_id") branchId: Int
-    ): EnrollmentFunnelResponse
-}
 
 class ChartActivity : BaseActivity() {
 

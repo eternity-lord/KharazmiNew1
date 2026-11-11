@@ -19,13 +19,6 @@ import kotlinx.coroutines.*
 import retrofit2.http.GET
 import retrofit2.http.Query
 
-interface ParentContactsApi {
-    @GET("admin/parent_contacts")
-    suspend fun getParentContacts(
-        @Query("class_id") classId: Int?,
-        @Query("search") search: String?
-    ): List<ParentContactItem>
-}
 
 class ParentContactsActivity : BaseActivity() {
 

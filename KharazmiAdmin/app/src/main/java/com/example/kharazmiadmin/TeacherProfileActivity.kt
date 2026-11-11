@@ -31,21 +31,8 @@ import retrofit2.http.Query
 import retrofit2.http.Path
 import java.util.Locale
 
-interface TeacherManagementApi {
-    @POST("/admin/teachers/{teacher_id}/suspend")
-    suspend fun suspendTeacher(@Path("teacher_id") teacherId: Int): SuspendResponse
-
-    @DELETE("/admin/teachers/{teacher_id}")
-    suspend fun deleteTeacher(@Path("teacher_id") teacherId: Int): SimpleResponse
-}
 
 data class SettlementEditRequest(val total_amount: Long? = null, val reason: String)
-interface SettlementSafetyApi {
-    @POST("teachers/{teacher_id}/settlements/{settlement_id}/reverse")
-    suspend fun reverseSettlement(@Path("teacher_id") teacherId: Int, @Path("settlement_id") settlementId: Int, @Query("reason") reason: String): SimpleResponse
-    @PUT("teachers/{teacher_id}/settlements/{settlement_id}/edit")
-    suspend fun editSettlement(@Path("teacher_id") teacherId: Int, @Path("settlement_id") settlementId: Int, @Body request: SettlementEditRequest): SimpleResponse
-}
 
 class TeacherProfileActivity : BaseActivity() {
 

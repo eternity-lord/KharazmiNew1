@@ -42,20 +42,6 @@ data class UnreadCountResponse(
     val total: Int? = null
 )
 
-interface NotificationCenterApi {
-    @GET("notifications")
-    suspend fun getNotifications(): List<NotificationItem>
-
-    // FIX(admin-notifications): endpoint شمارش خوانده‌نشده‌ها (قبلاً وجود نداشت)
-    @GET("notifications/unread_count")
-    suspend fun getUnreadCount(): UnreadCountResponse
-
-    @POST("notifications/{id}/read")
-    suspend fun markRead(@Path("id") id: Int): SimpleResponse
-
-    @POST("notifications/read_all")
-    suspend fun markAllRead(): SimpleResponse
-}
 
 class NotificationCenterActivity : BaseActivity() {
 
