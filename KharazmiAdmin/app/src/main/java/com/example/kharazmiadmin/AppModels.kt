@@ -82,7 +82,6 @@ data class StudentRegisterData(
 data class RegisterResponse(val message: String, val id: Int, val teacher_code: Int? = null, val initial_password: String? = null)
 
 data class StudentSearchItem(val id: Int, val name: String)
-data class SearchItem(val id: Int, val name: String)
 
 data class StudentItem(
     val student_id: Int,
@@ -116,13 +115,6 @@ data class ClassSubmitData(
 )
 
 data class ClassResponse(val message: String, val id: Int, val status: String? = "success")
-
-data class ClassItem(val id: Int, val title: String, val code: String)
-
-data class ClassItemFull(
-    val id: Int, val title: String, val code: String,
-    val days_of_week: String, val class_time: String
-)
 
 data class PendingClassItem(
     val id: Int,
@@ -296,8 +288,6 @@ data class InvoiceSubmitData(
     val receiver: String
 )
 
-data class SubmitResponse(val message: String, val enrollment_id: Int)
-
 data class InstallmentCreate(
     val amount: Int,
     val due_date: String
@@ -349,11 +339,6 @@ data class BulkEnrollmentResponse(
 // ==========================================
 // 7. حضور و غیاب (Attendance)
 // ==========================================
-data class AttendanceLogRequest(val course_id: Int, val date: String)
-data class AttendanceRecord(val student_id: Int, val name: String, val status: String)
-data class AttendanceSubmitItem(val student_id: Int, val status: String, val excused: Boolean = false)
-data class AttendanceSubmitData(val course_id: Int, val date: String, val items: List<AttendanceSubmitItem>)
-data class AttResponse(val message: String, val present_count: Int)
 
 data class SessionSubmitData(val course_id: Int, val date: String, val items: List<SessionItem>)
 data class SessionItem(val student_id: Int, val status: String, val excused: Boolean = false)
@@ -777,7 +762,6 @@ data class SettlementHistoryItem(
         get() = settlement_id ?: id
 }
 
-data class BulkSmsRequest(val student_ids: List<Int>)
 data class BulkSuspendRequest(val course_ids: List<Int>)
 
 data class StudentInstallmentItem(
