@@ -262,25 +262,49 @@ jobs:
           fi
           python3 lint_gate.py --report "$report" --baseline lint-baseline.json --check
 
-      # مکانِ دقیقِ مسئله‌ها، فقط وقتی دستی خواسته شود.
-      # ⚠️ شرط عمداً `github.event_name == 'workflow_dispatch'` را هم دارد: در رویدادِ push
-      # مقدارِ `inputs` **null** است و در عبارت‌های GitHub `null != ''` **true** می‌شود، یعنی
-      # بدونِ این محافظ step در هر push اجرا می‌شد و با `--ids ""` همهٔ ۱۳۸۵ مکان را
-      # منتشر می‌کرد. ورودی‌ها هم از طریقِ env پاس می‌شوند نه درون‌خطی در shell، تا
-      # تزریقِ دستور ممکن نباشد.
-      - name: Publish lint locations for the requested ids (on demand)
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.lint_ids != '' }}
+      # ── مکانِ دقیقِ مسئله‌ها ──────────────────────────────────────────────────
+      # baseline عمداً فقط **شمارِ** مسئله‌ها را دارد (باید در یک annotation جا شود)، ولی
+      # برای رفعِ باگ به `file:line` نیاز است و گزارشِ XML فقط روی رانر وجود دارد. پس این
+      # step مکان‌ها را از همان کانالِ annotation بیرون می‌دهد.
+      #
+      # منبعِ درخواست، به این ترتیب:
+      #   ۱) ورودیِ `lint_ids` در workflow_dispatch (اگر کسی حقِ `actions:write` داشته باشد؛
+      #      توکنِ فعلیِ این محیط ۴۰۳ می‌گیرد، پس این مسیر امروز در دسترس نیست)
+      #   ۲) فایلِ commit‌شدهٔ `KharazmiAdmin/lint-locations-request.txt` — خطِ اول شناسه‌ها
+      #      با کاما، خطِ دوم سقفِ تعداد برای هر شناسه. این مسیر روی **push** هم کار می‌کند
+      #      و یعنی برای هر تشخیصِ جدید لازم نیست workflow را عوض کرد و بعد برگرداند.
+      #   ۳) هیچ‌کدام ⇒ step بی‌صدا رد می‌شود. عمداً `--ids ""` زده **نمی‌شود**، چون
+      #      «لیستِ خالی» در ابزار یعنی «همهٔ شناسه‌ها» و آن یعنی ۱۳۸۵ مکان در هر اجرا.
+      #      (در رویدادِ push مقدارِ `inputs` هم null است و `null != ''` در عبارت‌های
+      #      GitHub **true** می‌شود، پس شرط‌گذاری روی خودِ ورودی هم کافی نبود.)
+      # ورودی‌ها از env پاس می‌شوند نه درون‌خطی در shell، تا تزریقِ دستور ممکن نباشد.
+      - name: Publish lint locations for the requested ids
         env:
           LINT_IDS: ${{ inputs.lint_ids }}
           LINT_MAX: ${{ inputs.lint_max_per_id }}
+          REQ_FILE: lint-locations-request.txt
         run: |
           set -uo pipefail
+          ids="${LINT_IDS:-}"
+          max="${LINT_MAX:-}"
+          # مقدارِ پیش‌فرض عمداً این‌جا هم هست: با `set -u` اگر `env:` این متغیر را نرساند
+          # step بی‌دلیل می‌میرد، و اسکریپتِ step نباید به سیم‌کشیِ env وابسته باشد.
+          req="${REQ_FILE:-lint-locations-request.txt}"
+          if [ -z "$ids" ] && [ -s "$req" ]; then
+            ids=$(sed -n 1p "$req" | tr -d '\r' | tr -d ' ')
+            max=$(sed -n 2p "$req" | tr -d '\r' | tr -d ' ')
+          fi
+          if [ -z "$ids" ]; then
+            echo "no lint-location request (neither input nor $req) - skipping"
+            exit 0
+          fi
           report=$(find app/build/reports -name 'lint-results*.xml' -type f 2>/dev/null | head -1 || true)
           if [ -z "$report" ]; then
             echo "::error title=lint locations could not run::گزارشِ XML لینت پیدا نشد."
             exit 2
           fi
-          python3 lint_gate.py --report "$report" --locations --ids "$LINT_IDS" --max-per-id "${LINT_MAX:-20}"
+          echo "requesting locations for: $ids (max per id: ${max:-20})"
+          python3 lint_gate.py --report "$report" --locations --ids "$ids" --max-per-id "${max:-20}"
 
       # ── چرا این step وجود دارد ────────────────────────────────────────────────
       # لاگِ خامِ job از هاستِ `results-receiver.actions.githubusercontent.com` سرو می‌شود

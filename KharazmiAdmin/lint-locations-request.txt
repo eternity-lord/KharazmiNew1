@@ -1,0 +1,2 @@
+NewApi,SuspiciousIndentation,ResourceType,PermissionImpliesUnsupportedChromeOsHardware,StringFormatMatches
+20
