@@ -243,7 +243,11 @@ def cmd_check(stats: dict, path: str) -> int:
         print(f"::error title=lint gate: must not get worse::{escape(msg)}")
         return 1
 
-    print(f"::notice title=lint gate: {stats['total']} issues, not worse than baseline::{escape(report)}")
+    # ⚠️ عنوانِ workflow command **کاما نمی‌پذیرد**: بخشِ propertyها با کاما جدا می‌شود
+    # (`::notice title=X,file=Y::msg`)، پس هر کامای داخلِ عنوان آن را بی‌صدا کوتاه می‌کند.
+    # نسخهٔ اولِ این خط «lint gate: N issues, not worse than baseline» بود و GitHub فقط
+    # «lint gate: N issues» را نگه داشت. عنوان‌های این فایل عمداً بدونِ کاما هستند.
+    print(f"::notice title=lint gate OK: {stats['total']} issues / no regression::{escape(report)}")
 
     # بهبود داشتیم ⇒ baseline باید تازه شود وگرنه دستاورد قفل نمی‌شود و بعداً می‌تواند
     # بی‌صدا پس برود. ولی ما در این محیط JVM نداریم، پس «اجرای محلیِ --write-baseline»
