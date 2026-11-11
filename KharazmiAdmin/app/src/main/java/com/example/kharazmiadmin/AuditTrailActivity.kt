@@ -27,7 +27,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
-import java.io.FileOutputStream
 import java.util.Locale
 
 /**
@@ -58,7 +57,7 @@ class AuditTrailActivity : BaseActivity() {
     private lateinit var btnFromDate: MaterialButton
     private lateinit var btnToDate: MaterialButton
 
-    private lateinit var api: AuditTrailApi
+    private lateinit var repository: AuditTrailRepository
 
     private val logs = mutableListOf<AuditTrailLog>()
     private var adapter: AuditLogAdapter? = null
@@ -105,7 +104,7 @@ class AuditTrailActivity : BaseActivity() {
     }
 
     private fun setupApi() {
-        api = RetrofitClient.getInstance(this).create(AuditTrailApi::class.java)
+        repository = AuditTrailRepository.from(this)
     }
 
     private fun setupSpinners() {
@@ -227,9 +226,15 @@ class AuditTrailActivity : BaseActivity() {
     /** FIX (گروه۲/آیتم۸): عبارت جست‌وجوی نام (خالی ⇒ null تا فیلتر اعمال نشود). */
     private fun selectedSearch(): String? = etSearch.text?.toString()?.trim()?.takeIf { it.isNotEmpty() }
 
-    private fun hasActiveFilters(): Boolean =
-        selectedEntityType() != null || selectedAction() != null || selectedEntityId() != null ||
-            selectedSearch() != null || fromDate != null || toDate != null
+    /** همهٔ فیلترهای جاری در یک شیء — تا صفحه‌بندی و خروجی CSV دقیقاً یک چیز بفرستند. */
+    private fun currentFilter() = AuditTrailFilter(
+        entityType = selectedEntityType(),
+        entityId = selectedEntityId(),
+        action = selectedAction(),
+        startDate = fromDate,
+        endDate = toDate,
+        search = selectedSearch()
+    )
 
     // ------------------------------------------------------------------
     // بارگذاری (صفحه‌بندی)
@@ -249,16 +254,7 @@ class AuditTrailActivity : BaseActivity() {
 
         lifecycleScope.launch(Dispatchers.IO) {
             try {
-                val response = api.getLogs(
-                    entityType = selectedEntityType(),
-                    entityId = selectedEntityId(),
-                    action = selectedAction(),
-                    startDate = fromDate,
-                    endDate = toDate,
-                    search = selectedSearch(),
-                    page = pageToLoad,
-                    limit = PAGE_SIZE
-                )
+                val response = repository.fetchPage(currentFilter(), pageToLoad, PAGE_SIZE)
                 withContext(Dispatchers.Main) {
                     isLoading = false
                     progress.visibility = View.GONE
@@ -306,12 +302,7 @@ class AuditTrailActivity : BaseActivity() {
         btnLoadMore.visibility = if (more) View.VISIBLE else View.GONE
     }
 
-    private fun errorMessage(e: Exception): String = when {
-        e is retrofit2.HttpException && e.code() == 403 -> getString(R.string.audit_trail_forbidden)
-        e is retrofit2.HttpException && e.code() == 401 -> getString(R.string.audit_trail_session_expired)
-        e is retrofit2.HttpException -> getString(R.string.audit_trail_server_error, e.code())
-        else -> e.message ?: getString(R.string.audit_trail_unknown_error)
-    }
+    private fun errorMessage(e: Exception): String = AuditTrailLabels.errorMessage(this, e)
 
     // ------------------------------------------------------------------
     // خروجی CSV: همان فیلترها، بدون نیاز به تغییر سرور.
@@ -325,24 +316,7 @@ class AuditTrailActivity : BaseActivity() {
 
         lifecycleScope.launch(Dispatchers.IO) {
             try {
-                val collected = mutableListOf<AuditTrailLog>()
-                var page = 1
-                var pages = 1
-                while (page <= pages && page <= MAX_EXPORT_PAGES) {
-                    val response = api.getLogs(
-                        entityType = selectedEntityType(),
-                        entityId = selectedEntityId(),
-                        action = selectedAction(),
-                        startDate = fromDate,
-                        endDate = toDate,
-                        search = selectedSearch(),
-                        page = page,
-                        limit = 200
-                    )
-                    collected.addAll(response.logs)
-                    pages = response.pages
-                    page += 1
-                }
+                val collected = repository.collectForExport(currentFilter(), EXPORT_PAGE_SIZE, MAX_EXPORT_PAGES)
 
                 if (collected.isEmpty()) {
                     withContext(Dispatchers.Main) {
@@ -354,11 +328,7 @@ class AuditTrailActivity : BaseActivity() {
                     return@launch
                 }
 
-                val file = File(getExternalFilesDir(null), exportFileName())
-                FileOutputStream(file).use { output ->
-                    output.write(CSV_BOM)
-                    output.write(csvText(collected).toByteArray(Charsets.UTF_8))
-                }
+                val file = AuditTrailCsv.writeTo(this@AuditTrailActivity, collected)
 
                 withContext(Dispatchers.Main) {
                     isLoading = false
@@ -377,39 +347,6 @@ class AuditTrailActivity : BaseActivity() {
                 }
             }
         }
-    }
-
-    private fun exportFileName(): String = "audit_trail_${System.currentTimeMillis()}.csv"
-
-    private fun csvText(items: List<AuditTrailLog>): String {
-        val header = getString(R.string.audit_trail_csv_header)
-        val builder = StringBuilder(header).append("\r\n")
-        for (item in items) {
-            val row = listOf(
-                item.timestamp,
-                item.username ?: "",
-                displayActionLabel(item),
-                entityLabel(item.entityType),
-                item.entityId?.toString() ?: "",
-                item.changedLabels?.joinToString("; ")?.takeIf { it.isNotBlank() }
-                    ?: item.changedFields.joinToString("; "),
-                displayDiff(item),
-                item.ipAddress ?: "",
-                // FIX (گروه۲/آیتم۸): ستون‌های جدید — کاربر تغییردهنده (با fallback) و نام‌ها
-                displayActor(item),
-                entityRefsLine(item)
-            )
-            builder.append(row.joinToString(",") { csvCell(it) }).append("\r\n")
-        }
-        return builder.toString()
-    }
-
-    /** استاندارد CSV: quote + escape؛ و مهار فرمول‌اینجکشن (= + - @) مثل خروجی‌های سرور. */
-    private fun csvCell(raw: String): String {
-        var value = raw
-        val first = value.firstOrNull()
-        if (first == '=' || first == '+' || first == '-' || first == '@') value = "'$value"
-        return "\"" + value.replace("\"", "\"\"") + "\""
     }
 
     private fun openExport(file: File) {
@@ -435,164 +372,25 @@ class AuditTrailActivity : BaseActivity() {
     }
 
     // ------------------------------------------------------------------
-    // برچسب‌ها و دیف
+    // برچسب‌ها و دیف — منطقِ خالص به AuditTrailLabels.kt منتقل شد (فاز P4d، برش ۲).
+    // این اعضا فقط واگذارکننده‌اند: امضایشان دقیقاً مثلِ قبل است تا هیچ call site ای
+    // (از جمله Adapter داخلی و showDiffDialog) عوض نشود.
     // ------------------------------------------------------------------
-    private fun actionLabel(action: String): String = when (action) {
-        "create" -> getString(R.string.audit_trail_action_create)
-        "update" -> getString(R.string.audit_trail_action_update)
-        "delete" -> getString(R.string.audit_trail_action_delete)
-        else -> action
-    }
-
-    // ------------------------------------------------------------------
-    // FIX (گروه۲/آیتم۸): مصرف فیلدهای غنی‌شده‌ی سرور — نام‌ها به‌جای شناسه‌ی خام،
-    // نوع تغییر به زبان ساده، کاربر تغییردهنده (با fallback روی ActivityLog)،
-    // لینک صورت‌حساب دانش‌آموز و رنگ هر نوع تغییر. همه با fallback به رفتار قبلی
-    // (اگر سرور قدیمی باشد، فیلدها null می‌آیند و همان نمایش قبلی دیده می‌شود).
-    // ------------------------------------------------------------------
-    /** برچسب فارسی عملیات: اولویت با سرور؛ سرور قدیمی ⇒ همان mapping محلی. */
-    private fun displayActionLabel(item: AuditTrailLog): String =
-        item.actionLabel?.takeIf { it.isNotBlank() } ?: actionLabel(item.action)
-
-    /** «مربوط به: سینا مرادی • ریاضی کنکور • شعبه مرکزی» — خالی اگر سرور نامی نفرستاد. */
-    private fun entityRefsLine(item: AuditTrailLog): String {
-        val refs = item.entityRefs ?: return ""
-        val parts = listOfNotNull(
-            refs["student"]?.takeIf { it.isNotBlank() },
-            refs["teacher"]?.takeIf { it.isNotBlank() },
-            refs["course"]?.takeIf { it.isNotBlank() },
-            refs["enrollment"]?.takeIf { it.isNotBlank() && refs["student"].isNullOrBlank() },
-            refs["branch"]?.takeIf { it.isNotBlank() }
-        ).distinct()
-        return parts.joinToString(" • ")
-    }
-
-    /** خلاصه‌ی تغییر: جمله‌ی آماده‌ی سرور (با برچسب فارسی و هزارگان) یا ساخت محلی. */
-    private fun displayDiff(item: AuditTrailLog): String =
-        item.changeSummary?.takeIf { it.isNotBlank() } ?: diffSummaryFor(item)
-
-    /** نام کاربر تغییردهنده: `username` لاگ ممیزی، وگرنه fallback سرور از ActivityLog. */
-    private fun displayActor(item: AuditTrailLog): String =
-        item.username?.takeIf { it.isNotBlank() }
-            ?: item.actorUsername?.takeIf { it.isNotBlank() }
-            ?: ""
-
-    /** رنگ هر نوع تغییر (سرور Material color می‌فرستد) ⇒ null اگر قابل پارس نبود. */
-    private fun parseColor(hex: String?): Int? = try {
-        hex?.takeIf { it.startsWith("#") && it.length == 7 }?.let { android.graphics.Color.parseColor(it) }
-    } catch (_: Exception) {
-        null
-    }
-
-    private fun actionIcon(action: String): String = when (action) {
-        "create" -> "➕"
-        "update" -> "✏️"
-        "delete" -> "🗑️"
-        else -> "•"
-    }
-
-    private fun entityLabel(entityType: String): String = when (entityType) {
-        "transaction" -> getString(R.string.audit_trail_entity_transaction)
-        "installment" -> getString(R.string.audit_trail_entity_installment)
-        else -> entityType
-    }
-
-    private fun friendlyFieldName(field: String): String = when (field) {
-        "amount" -> getString(R.string.audit_trail_field_amount)
-        "is_paid" -> getString(R.string.audit_trail_field_is_paid)
-        "paid_amount" -> getString(R.string.audit_trail_field_paid_amount)
-        "paid_at" -> getString(R.string.audit_trail_field_paid_at)
-        "due_date" -> getString(R.string.audit_trail_field_due_date)
-        "is_deleted" -> getString(R.string.audit_trail_field_is_deleted)
-        "is_reversed" -> getString(R.string.audit_trail_field_is_reversed)
-        "payment_method" -> getString(R.string.audit_trail_field_payment_method)
-        "description" -> getString(R.string.audit_trail_field_description)
-        "date" -> getString(R.string.audit_trail_field_date)
-        "target_wallet" -> getString(R.string.audit_trail_field_target_wallet)
-        "student_id" -> getString(R.string.audit_trail_field_student)
-        "enrollment_id" -> getString(R.string.audit_trail_field_enrollment)
-        "course_id" -> getString(R.string.audit_trail_field_course)
-        "branch_id" -> getString(R.string.audit_trail_field_branch)
-        "teacher_id" -> getString(R.string.audit_trail_field_teacher)
-        "session_id" -> getString(R.string.audit_trail_field_session)
-        else -> field
-    }
-
-    private fun formatReferenceValue(item: AuditTrailLog, field: String, value: Any?): String {
-        if (field == "course_id") return item.entityRefs?.get("course")?.takeIf { it.isNotBlank() } ?: formatValue(value)
-        if (field == "branch_id") return item.entityRefs?.get("branch")?.takeIf { it.isNotBlank() } ?: formatValue(value)
-        if (field == "student_id") return item.entityRefs?.get("student")?.takeIf { it.isNotBlank() } ?: formatValue(value)
-        if (field == "teacher_id") return item.entityRefs?.get("teacher")?.takeIf { it.isNotBlank() } ?: formatValue(value)
-        if (field == "enrollment_id") return item.entityRefs?.get("enrollment")?.takeIf { it.isNotBlank() } ?: formatValue(value)
-        return formatValue(value)
-    }
-
-    private fun formatValue(value: Any?): String {
-        if (value == null) return "—"
-        val text = when (value) {
-            is Double -> if (value == value.toLong().toDouble()) value.toLong().toString() else value.toString()
-            is Map<*, *>, is List<*> -> value.toString()
-            else -> value.toString()
-        }
-        if (text.length > 60) return text.take(60) + "…"
-        // اعداد بزرگ را با جداکننده‌ی هزارگان نشان بده (مبلغ‌ها خواناتر شوند)
-        val long = text.toLongOrNull()
-        return if (long != null && kotlin.math.abs(long) >= 1000) String.format(Locale.US, "%,d", long) else text
-    }
-
-    private fun diffSummaryFor(item: AuditTrailLog): String {
-        val changed = item.changedFields.filter { it != "id" }
-        if (changed.isEmpty()) return getString(R.string.audit_trail_no_field_detail)
-        return changed.take(3).joinToString(" • ") { field ->
-            val before = item.oldValues?.get(field)
-            val after = item.newValues?.get(field)
-            when (item.action) {
-                "create" -> "${friendlyFieldName(field)}: ${formatReferenceValue(item, field, after)}"
-                "delete" -> "${friendlyFieldName(field)}: ${formatReferenceValue(item, field, before)}"
-                else -> "${friendlyFieldName(field)}: ${formatReferenceValue(item, field, before)} → ${formatReferenceValue(item, field, after)}"
-            }
-        } + if (changed.size > 3) " …" else ""
-    }
+    private fun displayActionLabel(item: AuditTrailLog): String = AuditTrailLabels.displayActionLabel(this, item)
+    private fun entityRefsLine(item: AuditTrailLog): String = AuditTrailLabels.entityRefsLine(item)
+    private fun displayDiff(item: AuditTrailLog): String = AuditTrailLabels.displayDiff(this, item)
+    private fun displayActor(item: AuditTrailLog): String = AuditTrailLabels.displayActor(item)
+    private fun parseColor(hex: String?): Int? = AuditTrailLabels.parseColor(hex)
+    private fun actionIcon(action: String): String = AuditTrailLabels.actionIcon(action)
+    private fun entityLabel(entityType: String): String = AuditTrailLabels.entityLabel(this, entityType)
 
     /** دیالوگ دیف کامل: فقط فیلدهای واقعاً تغییریافته، قبل/بعد + نام‌ها و کاربر تغییردهنده. */
     private fun showDiffDialog(item: AuditTrailLog) {
-        val changed = item.changedFields.filter { it != "id" }.ifEmpty { item.changedFields }
-        val builder = StringBuilder()
-        builder.append(getString(R.string.audit_trail_dialog_meta,
-            displayActionLabel(item), entityLabel(item.entityType), item.entityId ?: 0))
-        // FIX (گروه۲/آیتم۸): «کاربر تغییردهنده» — اگر لاگ ممیزی کاربر نداشت، سرور از
-        // ActivityLog همان عملیات نام را برگردانده (actor_source = activity_log).
-        val actor = displayActor(item)
-        builder.append("\n").append(
-            when {
-                actor.isBlank() -> getString(R.string.audit_trail_dialog_actor_unknown)
-                item.actorSource == "activity_log" && !item.actorAction.isNullOrBlank() ->
-                    getString(R.string.audit_trail_dialog_actor_activity, actor, item.actorAction)
-                else -> getString(R.string.audit_trail_dialog_actor, actor)
-            }
-        )
-        builder.append("\n").append(getString(R.string.audit_trail_dialog_user, item.username ?: "—", item.timestamp))
-        builder.append("\n").append(getString(R.string.audit_trail_dialog_ip, item.ipAddress ?: "—"))
-        val refs = entityRefsLine(item)
-        if (refs.isNotBlank()) {
-            builder.append("\n").append(getString(R.string.audit_trail_dialog_refs, refs))
-        }
-        builder.append("\n\n")
-        if (changed.isEmpty()) {
-            builder.append(getString(R.string.audit_trail_no_field_detail))
-        } else {
-            for (field in changed) {
-                val before = formatReferenceValue(item, field, item.oldValues?.get(field))
-                val after = formatReferenceValue(item, field, item.newValues?.get(field))
-                // برچسب فارسی ستون از سرور (labels) و در نبودش mapping محلی
-                val label = item.labels?.get(field)?.takeIf { it.isNotBlank() } ?: friendlyFieldName(field)
-                builder.append("• $label: $before → $after\n")
-            }
-        }
+        val message = AuditTrailLabels.diffDialogMessage(this, item)
 
         val dialog = AlertDialog.Builder(this)
             .setTitle(getString(R.string.audit_trail_dialog_title, actionIcon(item.action)))
-            .setMessage(builder.toString())
+            .setMessage(message)
             .setPositiveButton(getString(R.string.audit_trail_dialog_ok), null)
             .setNeutralButton(getString(R.string.audit_trail_dialog_open_entity)) { _, _ ->
                 openEntity(item)
@@ -697,7 +495,8 @@ class AuditTrailActivity : BaseActivity() {
 
     companion object {
         private const val PAGE_SIZE = 50
+        /** اندازهٔ صفحهٔ خروجی: همان ۲۰۰ ردیفِ قبلی، حالا نام‌دار. */
+        private const val EXPORT_PAGE_SIZE = 200
         private const val MAX_EXPORT_PAGES = 10   // سقف ۲۰۰۰ ردیف در خروجی کلاینت‌ساید
-        private val CSV_BOM = byteArrayOf(0xEF.toByte(), 0xBB.toByte(), 0xBF.toByte())
     }
 }
