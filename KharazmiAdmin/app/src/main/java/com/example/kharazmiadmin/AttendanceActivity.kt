@@ -898,8 +898,8 @@ class AttendanceActivity : BaseActivity() {
                             pdfDocument.writeTo(java.io.FileOutputStream(file))
                             Toast.makeText(this@AttendanceActivity, getString(R.string.attendance_pdf_saved, fileName), Toast.LENGTH_LONG).show()
                         } catch (e: Exception) {
-                // FIX: Bug 19 - cancellation is not a network/UI error.
-                if (e is kotlinx.coroutines.CancellationException) throw e;
+                            // FIX: Bug 19 - cancellation is not a network/UI error.
+                            if (e is kotlinx.coroutines.CancellationException) throw e
                             Toast.makeText(this@AttendanceActivity, getString(R.string.attendance_pdf_error, e.message), Toast.LENGTH_LONG).show()
                         } finally {
                             pdfDocument.close()

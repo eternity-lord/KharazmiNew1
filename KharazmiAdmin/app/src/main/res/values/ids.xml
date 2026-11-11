@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- شناسهٔ ویوهایی که `CachedApiCall.kt` در زمانِ اجرا می‌سازد و به ریشهٔ صفحه اضافه می‌کند.
+
+     چرا این فایل لازم است: پیش از این به‌جایِ منبع، از عددِ خامِ ۸۸۷۷۶۶ و ۹۹۸۸۷۷ استفاده
+     می‌شد (lint: ResourceType — «Expected resource of type id»). عددِ دلخواه دو خطر دارد:
+     می‌تواند با یک idِ واقعی که AAPT تولید کرده برخورد کند (آن‌وقت `findViewById` ویویِ
+     اشتباهی برمی‌گرداند و حذف/پنهان‌سازی روی ویویِ دیگری اثر می‌گذارد)، و در `R` دیده
+     نمی‌شود پس هیچ ابزاری نمی‌تواند ارجاع‌هایش را پیدا کند. -->
+<resources>
+    <item name="shimmer_overlay_host" type="id" />
+    <item name="offline_banner_host" type="id" />
+</resources>

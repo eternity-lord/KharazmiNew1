@@ -40,8 +40,14 @@
     <!-- Telegram-style Pill Button (Corner Radius 28dp for Pill shape) -->
     <style name="Widget.Kharazmi.Button" parent="Widget.MaterialComponents.Button">
         <item name="cornerRadius">28dp</item>
-        <item name="android:paddingVertical">12dp</item>
-        <item name="android:paddingHorizontal">12dp</item>
+<!-- FIX(lint NewApi): android:paddingVertical/Horizontal از API 26 است و minSdk=24؛
+             روی دستگاهِ قدیمی بی‌صدا نادیده گرفته می‌شد. معادلِ تفکیک‌شده همه‌نسخه‌ها را پوشش می‌دهد. -->
+        <item name="android:paddingTop">12dp</item>
+        <item name="android:paddingBottom">12dp</item>
+<!-- FIX(lint NewApi): android:paddingVertical/Horizontal از API 26 است و minSdk=24؛
+             روی دستگاهِ قدیمی بی‌صدا نادیده گرفته می‌شد. معادلِ تفکیک‌شده همه‌نسخه‌ها را پوشش می‌دهد. -->
+        <item name="android:paddingStart">12dp</item>
+        <item name="android:paddingEnd">12dp</item>
         <item name="android:minHeight">@dimen/min_touch_target</item>
         <item name="android:textSize">13sp</item>
         <item name="android:textStyle">bold</item>
@@ -143,7 +149,10 @@
         <item name="android:singleLine">true</item>
         <item name="android:maxLines">1</item>
         <item name="android:minHeight">@dimen/min_touch_target</item>
-        <item name="android:paddingVertical">6dp</item>
+<!-- FIX(lint NewApi): android:paddingVertical/Horizontal از API 26 است و minSdk=24؛
+             روی دستگاهِ قدیمی بی‌صدا نادیده گرفته می‌شد. معادلِ تفکیک‌شده همه‌نسخه‌ها را پوشش می‌دهد. -->
+        <item name="android:paddingTop">6dp</item>
+        <item name="android:paddingBottom">6dp</item>
     </style>
 
     <!-- ==================== GOLD/DARK REDESIGN STYLES (NEW) ==================== -->
@@ -153,8 +162,14 @@
     <!-- Gold Button - gradient gold with glow, 14dp radius, black text -->
     <style name="Widget.Kharazmi.Button.Gold" parent="Widget.MaterialComponents.Button">
         <item name="cornerRadius">14dp</item>
-        <item name="android:paddingVertical">14dp</item>
-        <item name="android:paddingHorizontal">16dp</item>
+<!-- FIX(lint NewApi): android:paddingVertical/Horizontal از API 26 است و minSdk=24؛
+             روی دستگاهِ قدیمی بی‌صدا نادیده گرفته می‌شد. معادلِ تفکیک‌شده همه‌نسخه‌ها را پوشش می‌دهد. -->
+        <item name="android:paddingTop">14dp</item>
+        <item name="android:paddingBottom">14dp</item>
+<!-- FIX(lint NewApi): android:paddingVertical/Horizontal از API 26 است و minSdk=24؛
+             روی دستگاهِ قدیمی بی‌صدا نادیده گرفته می‌شد. معادلِ تفکیک‌شده همه‌نسخه‌ها را پوشش می‌دهد. -->
+        <item name="android:paddingStart">16dp</item>
+        <item name="android:paddingEnd">16dp</item>
         <item name="android:minHeight">@dimen/min_touch_target</item>
         <item name="android:textSize">15sp</item>
         <item name="android:textStyle">bold</item>
@@ -175,8 +190,14 @@
     <!-- Gold Button Outline -->
     <style name="Widget.Kharazmi.Button.Gold.Outline" parent="Widget.MaterialComponents.Button.OutlinedButton">
         <item name="cornerRadius">14dp</item>
-        <item name="android:paddingVertical">12dp</item>
-        <item name="android:paddingHorizontal">16dp</item>
+<!-- FIX(lint NewApi): android:paddingVertical/Horizontal از API 26 است و minSdk=24؛
+             روی دستگاهِ قدیمی بی‌صدا نادیده گرفته می‌شد. معادلِ تفکیک‌شده همه‌نسخه‌ها را پوشش می‌دهد. -->
+        <item name="android:paddingTop">12dp</item>
+        <item name="android:paddingBottom">12dp</item>
+<!-- FIX(lint NewApi): android:paddingVertical/Horizontal از API 26 است و minSdk=24؛
+             روی دستگاهِ قدیمی بی‌صدا نادیده گرفته می‌شد. معادلِ تفکیک‌شده همه‌نسخه‌ها را پوشش می‌دهد. -->
+        <item name="android:paddingStart">16dp</item>
+        <item name="android:paddingEnd">16dp</item>
         <item name="android:minHeight">@dimen/min_touch_target</item>
         <item name="android:textSize">14sp</item>
         <item name="android:textStyle">bold</item>

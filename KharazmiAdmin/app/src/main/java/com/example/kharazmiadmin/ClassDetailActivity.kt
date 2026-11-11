@@ -482,8 +482,8 @@ class ClassDetailActivity : BaseActivity() {
                         val json = com.google.gson.JsonParser().parse(errorBody).asJsonObject
                         json.get("detail").getAsString()
                     } catch (parseEx: Exception) {
-                // FIX: Bug 19 - cancellation is not a network/UI error.
-                if (parseEx is kotlinx.coroutines.CancellationException) throw parseEx;
+                        // FIX: Bug 19 - cancellation is not a network/UI error.
+                        if (parseEx is kotlinx.coroutines.CancellationException) throw parseEx
                         getString(R.string.cdetail_del_error)
                     }
                 } else {

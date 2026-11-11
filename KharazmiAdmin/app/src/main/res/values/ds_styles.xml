@@ -249,7 +249,10 @@
              استثنای «Chip does not support multi-line text» می‌دهد (کرش inflate) — پس تک‌خطی قفل می‌شود. -->
         <item name="android:singleLine">true</item>
         <item name="android:maxLines">1</item>
-        <item name="android:paddingVertical">6dp</item>
+<!-- FIX(lint NewApi): android:paddingVertical/Horizontal از API 26 است و minSdk=24؛
+             روی دستگاهِ قدیمی بی‌صدا نادیده گرفته می‌شد. معادلِ تفکیک‌شده همه‌نسخه‌ها را پوشش می‌دهد. -->
+        <item name="android:paddingTop">6dp</item>
+        <item name="android:paddingBottom">6dp</item>
         <item name="ensureMinTouchTargetSize">true</item>
         <item name="checkedIconVisible">false</item>
         <item name="chipIconVisible">false</item>
@@ -266,7 +269,10 @@
         <!-- FIX(chip-multiline): همان دلیل استایل بالا — Chip چندخطی پشتیبانی نمی‌شود. -->
         <item name="android:singleLine">true</item>
         <item name="android:maxLines">1</item>
-        <item name="android:paddingVertical">6dp</item>
+<!-- FIX(lint NewApi): android:paddingVertical/Horizontal از API 26 است و minSdk=24؛
+             روی دستگاهِ قدیمی بی‌صدا نادیده گرفته می‌شد. معادلِ تفکیک‌شده همه‌نسخه‌ها را پوشش می‌دهد. -->
+        <item name="android:paddingTop">6dp</item>
+        <item name="android:paddingBottom">6dp</item>
         <item name="ensureMinTouchTargetSize">true</item>
         <item name="checkedIconVisible">false</item>
         <item name="chipIconVisible">false</item>

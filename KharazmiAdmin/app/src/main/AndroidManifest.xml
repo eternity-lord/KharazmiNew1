@@ -8,6 +8,14 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.CAMERA" />
 
+    <!-- FIX(lint PermissionImpliesUnsupportedChromeOsHardware): خودِ `android.permission.CAMERA`
+         به Play می‌گوید «این اپ حتماً دوربین می‌خواهد»، پس اپ از دستگاه‌های فاقدِ دوربین
+         (مثلِ ChromeOS یا بعضی تبلت‌ها) فیلتر می‌شود. با `required="false"` اجازهٔ نصب می‌ماند
+         و هر کس به دوربین نیاز دارد باید در زمانِ اجرا در دسترس بودنش را ببیند. -->
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"

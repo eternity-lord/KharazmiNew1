@@ -180,8 +180,8 @@ class AddClassActivity : BaseActivity() {
                         }
                     }
                 } catch (e: Exception) {
-                // FIX: Bug 19 - cancellation is not a network/UI error.
-                if (e is kotlinx.coroutines.CancellationException) throw e;
+                    // FIX: Bug 19 - cancellation is not a network/UI error.
+                    if (e is kotlinx.coroutines.CancellationException) throw e
                     withContext(Dispatchers.Main) {
                         Toast.makeText(this@AddClassActivity, getString(R.string.aclass_submit_error), Toast.LENGTH_LONG).show()
                     }
