@@ -158,23 +158,36 @@ def compact_table(stats: dict) -> str:
     return "\n".join(lines)
 
 
-def cmd_write_baseline(stats: dict, path: str) -> int:
-    payload = {
+def baseline_payload(stats: dict, note: str | None = None) -> dict:
+    """دقیقاً همان چیزی که گیت مصرف می‌کند — نه بیشتر.
+
+    عمداً `category_of` و `files_with_issues` در baseline نمی‌آیند: گیت از آن‌ها استفاده
+    نمی‌کند و هر تغییرِ نامِ فایل بی‌دلیل baseline را تکان می‌داد. مهم‌تر اینکه **کلِ**
+    baseline باید از کانالِ annotation (تنها راهِ بیرون‌کشیدنِ داده از CI) قابلِ بازسازی
+    باشد، و آن دو فهرست در یک پیام جا نمی‌شدند.
+    """
+    return {
         "_comment": [
-            "baseline گیتِ lint اندروید — با KharazmiAdmin/lint_gate.py --write-baseline ساخته شده.",
-            "دانه‌بندی عمداً «شمارِ مسئله به تفکیکِ id» است؛ علت و محدودیتش در docstring همان",
-            "اسکریپت توضیح داده شده (artifact از CI قابلِ بیرون‌کشیدن نیست، فقط annotation).",
+            "baseline گیتِ lint اندروید — ساختهٔ KharazmiAdmin/lint_gate.py.",
+            "دانه‌بندی عمداً «شمارِ مسئله به تفکیکِ id» است؛ علت و محدودیتِ صادقانهٔ آن",
+            "(netting-out) در docstring همان اسکریپت آمده: artifact از CI قابلِ",
+            "بیرون‌کشیدن نیست و تنها کانال، annotation است.",
             "قاعدهٔ گیت: id جدید = شکست؛ افزایشِ شمارِ هر id = شکست؛ کاهش مجاز است.",
-            "پس از هر بهبود، این فایل را با --write-baseline تازه کنید تا دستاورد قفل شود.",
+            "پس از هر بهبود این فایل را با --write-baseline تازه کنید تا دستاورد قفل شود.",
         ],
         "total": stats["total"],
         "distinct_ids": stats["distinct_ids"],
         "per_severity": stats["per_severity"],
         "by_id": stats["by_id"],
         "severity_of": stats["severity_of"],
-        "category_of": stats["category_of"],
-        "files_with_issues": stats["files_with_issues"],
+        "report": stats["report"],
+        **({"source": note} if note else {}),
     }
+
+
+def cmd_write_baseline(stats: dict, path: str) -> int:
+    payload = baseline_payload(stats)
+
     with open(path, "w", encoding="utf-8") as fh:
         json.dump(payload, fh, ensure_ascii=False, indent=2)
         fh.write("\n")
@@ -220,7 +233,7 @@ def cmd_check(stats: dict, path: str) -> int:
     for i in gone:
         out.append(f"  gone    {base_ids[i]:5d} -> 0      {i}")
     if better or gone:
-        out.append("  (بهبود دارید — baseline را با --write-baseline تازه کنید تا قفل شود)")
+        out.append("  (بهبود دارید — baseline را تازه کنید تا دستاورد قفل شود)")
 
     report = "\n".join(out)
     print(report)
@@ -231,6 +244,17 @@ def cmd_check(stats: dict, path: str) -> int:
         return 1
 
     print(f"::notice title=lint gate: {stats['total']} issues, not worse than baseline::{escape(report)}")
+
+    # بهبود داشتیم ⇒ baseline باید تازه شود وگرنه دستاورد قفل نمی‌شود و بعداً می‌تواند
+    # بی‌صدا پس برود. ولی ما در این محیط JVM نداریم، پس «اجرای محلیِ --write-baseline»
+    # ممکن نیست؛ تنها راه این است که خودِ CI متنِ دقیقِ فایلِ تازه را منتشر کند تا عیناً
+    # commit شود. این کار عمداً **فقط در مسیرِ موفق و فقط هنگامِ بهبود** انجام می‌شود:
+    # وقتی گیت شکست خورده، برکت‌دادنِ baseline جدید یعنی بی‌اثرکردنِ همان گیت.
+    if better or gone:
+        refreshed = json.dumps(baseline_payload(stats, note="refreshed by lint_gate.py --check"),
+                               ensure_ascii=False, indent=2)
+        print("::notice title=lint baseline refreshed - commit this as KharazmiAdmin/lint-baseline.json::"
+              + escape(refreshed))
     return 0
 
 
@@ -242,19 +266,29 @@ def main() -> int:
     mode.add_argument("--write-baseline", action="store_true", help="baseline را (از گزارشِ فعلی) بساز/بازنویسی کن")
     mode.add_argument("--check", action="store_true", help="گزارشِ فعلی را با baseline مقایسه کن")
     ap.add_argument("--table", action="store_true", help="فقط جدولِ فشرده را چاپ کن (برای annotation)")
+    ap.add_argument("--emit-baseline", action="store_true",
+                    help="خودِ JSONِ baseline را در یک annotation چاپ کن تا بدونِ بازنویسیِ دستی به ریپو برسد")
+    ap.add_argument("--source", default=None, help="برچسبِ مبدأ برای --emit-baseline (مثلاً شمارهٔ اجرای CI)")
     args = ap.parse_args()
 
     # `--table` حالتِ مستقل است: همان کانالی است که baseline برای اولین بار از CI به دستِ
     # ما می‌رسد (artifact قابلِ دانلود نیست و output.summary از API خالی است، فقط annotation
     # از api.github.com خوانده می‌شود). پس نباید به یکی از دو حالتِ دیگر وابسته باشد.
-    if not args.table and args.write_baseline == args.check:
-        ap.error("exactly one of --write-baseline / --check is required (or use --table)")
+    if not args.table and not args.emit_baseline and args.write_baseline == args.check:
+        ap.error("exactly one of --write-baseline / --check / --table / --emit-baseline is required")
 
     stats = parse_report(args.report)
 
     if args.table:
         print(f"::notice title=Lint report: {stats['total']} issues / {stats['distinct_ids']} ids::{escape(compact_table(stats))}")
         print(compact_table(stats))
+        return 0
+    if args.emit_baseline:
+        payload = baseline_payload(stats, note=args.source or "CI lint report")
+        text = json.dumps(payload, ensure_ascii=False, indent=2)
+        print(f"::notice title=lint baseline JSON (commit this as KharazmiAdmin/lint-baseline.json)::"
+              f"{escape(text)}")
+        print(text)
         return 0
     if args.write_baseline:
         return cmd_write_baseline(stats, args.baseline)
