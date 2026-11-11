@@ -355,8 +355,8 @@ class ClassManagementActivity : BaseActivity() {
                             Toast.makeText(holder.itemView.context, response.message, Toast.LENGTH_SHORT).show()
                             fetchClasses()
                         } catch (e: Exception) {
-                // FIX: Bug 19 - cancellation is not a network/UI error.
-                if (e is kotlinx.coroutines.CancellationException) throw e;
+                            // FIX: Bug 19 - cancellation is not a network/UI error.
+                            if (e is kotlinx.coroutines.CancellationException) throw e
                             Toast.makeText(holder.itemView.context, getString(R.string.cmgmt_suspend_error), Toast.LENGTH_SHORT).show()
                         }
                     }

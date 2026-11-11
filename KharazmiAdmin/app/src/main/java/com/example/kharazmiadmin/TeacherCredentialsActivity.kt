@@ -142,8 +142,8 @@ class TeacherCredentialsActivity : BaseActivity() {
                             }
                         }
                     } catch (e: Exception) {
-                // FIX: Bug 19 - cancellation is not a network/UI error.
-                if (e is kotlinx.coroutines.CancellationException) throw e;
+                        // FIX: Bug 19 - cancellation is not a network/UI error.
+                        if (e is kotlinx.coroutines.CancellationException) throw e
                         android.util.Log.e("TeacherCredentialsActivity", "afterTextChanged failed", e)
                     }
                 }

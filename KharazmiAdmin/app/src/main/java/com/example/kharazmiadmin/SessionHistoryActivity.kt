@@ -56,8 +56,8 @@ class SessionHistoryActivity : BaseActivity() {
                         rv.adapter = HistoryAdapter(list)
                     }
                 } catch (e: Exception) {
-                // FIX: Bug 19 - cancellation is not a network/UI error.
-                if (e is kotlinx.coroutines.CancellationException) throw e;
+                    // FIX: Bug 19 - cancellation is not a network/UI error.
+                    if (e is kotlinx.coroutines.CancellationException) throw e
                     withContext(Dispatchers.Main) { Toast.makeText(this@SessionHistoryActivity, getString(R.string.shist_error), Toast.LENGTH_SHORT).show() }
                 }
             }

@@ -35,7 +35,7 @@ object CachedApiCall {
     // لود پویای اسکلت شیمر روی صفحه در زمان دریافت دیتا
     fun showShimmer(activity: Activity) {
         val root = activity.findViewById<ViewGroup>(android.R.id.content)
-        val shimmerId = 887766
+        val shimmerId = R.id.shimmer_overlay_host
         var shimmerView = root.findViewById<View>(shimmerId)
 
         if (shimmerView == null) {
@@ -56,7 +56,7 @@ object CachedApiCall {
 
     fun hideShimmer(activity: Activity) {
         val root = activity.findViewById<ViewGroup>(android.R.id.content)
-        val shimmerView = root.findViewById<View>(887766)
+        val shimmerView = root.findViewById<View>(R.id.shimmer_overlay_host)
         if (shimmerView != null) {
             val container = shimmerView.findViewById<com.facebook.shimmer.ShimmerFrameLayout>(R.id.shimmer_view_container)
             container?.stopShimmer()
@@ -67,7 +67,7 @@ object CachedApiCall {
     // تزریق پویای نشانگر زرد رنگ داده آفلاین به بالای صفحه بدون تغییر فایل‌های XML
     fun showOfflineBanner(activity: Activity, timestamp: Long) {
         val root = activity.findViewById<ViewGroup>(android.R.id.content)
-        val bannerId = 998877
+        val bannerId = R.id.offline_banner_host
         var banner = root.findViewById<TextView>(bannerId)
 
         val timeStr = getOfflineTimeString(activity, timestamp)
@@ -96,7 +96,7 @@ object CachedApiCall {
 
     fun hideOfflineBanner(activity: Activity) {
         val root = activity.findViewById<ViewGroup>(android.R.id.content)
-        val banner = root.findViewById<View>(998877)
+        val banner = root.findViewById<View>(R.id.offline_banner_host)
         banner?.visibility = View.GONE
     }
 
