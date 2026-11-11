@@ -145,6 +145,57 @@ def normalize_file(path: str) -> str:
     return path.lstrip("./")
 
 
+def collect_locations(path: str, wanted: set[str] | None, max_per_id: int) -> str:
+    """مکانِ `file:line` + پیامِ کوتاهِ هر مسئله، برای شناسه‌های خواسته‌شده.
+
+    چرا لازم است: baseline عمداً فقط **شمار** دارد (بندِ «کانال» در docstring)، چون باید در
+    یک annotation جا شود. برای رفعِ باگ ولی به مکان نیاز است — و گزارشِ XML فقط در CI
+    تولید می‌شود. پس همین ابزار باید بتواند مکان‌ها را هم از همان کانال بیرون بدهد،
+    بدونِ اینکه کسی مجبور شود workflow را برای یک تشخیصِ یک‌بارمصرف عوض کند.
+    """
+    if not os.path.exists(path):
+        fail_hard(f"گزارشِ lint پیدا نشد: {path}")
+    try:
+        root = ET.parse(path).getroot()
+    except ET.ParseError as exc:
+        fail_hard(f"گزارشِ lint خوانده نشد ({path}): {exc}")
+
+    per_id: dict[str, list[str]] = {}
+    for issue in root.findall("issue"):
+        iid = issue.get("id")
+        if not iid or (wanted and iid not in wanted):
+            continue
+        msg = " ".join((issue.get("message") or "").split())
+        locs = issue.findall("location")
+        where = ""
+        if locs:
+            f = normalize_file(locs[0].get("file") or "?")
+            line = locs[0].get("line")
+            col = locs[0].get("column")
+            where = f + (f":{line}" if line else "") + (f":{col}" if col else "")
+        entry = f"  {where}  {msg[:160]}"
+        if len(locs) > 1:
+            entry += f"   (+{len(locs) - 1} more location(s))"
+        per_id.setdefault(iid, []).append(entry)
+
+    out = []
+    total = 0
+    for iid in sorted(per_id, key=lambda k: (-len(per_id[k]), k)):
+        items = per_id[iid]
+        total += len(items)
+        out.append(f"{iid} ({len(items)})")
+        out.extend(items[:max_per_id])
+        if len(items) > max_per_id:
+            out.append(f"  … {len(items) - max_per_id} more (raise --max-per-id)")
+        out.append("")
+    if wanted:
+        missing = sorted(wanted - set(per_id))
+        if missing:
+            out.append(f"ids requested but not present in this report: {', '.join(missing)}")
+    out.append(f"locations listed: {total}")
+    return "\n".join(out).strip()
+
+
 def compact_table(stats: dict) -> str:
     """جدولِ فشرده برای annotation — باید در یک پیام جا شود."""
     lines = [
@@ -270,6 +321,10 @@ def main() -> int:
     mode.add_argument("--write-baseline", action="store_true", help="baseline را (از گزارشِ فعلی) بساز/بازنویسی کن")
     mode.add_argument("--check", action="store_true", help="گزارشِ فعلی را با baseline مقایسه کن")
     ap.add_argument("--table", action="store_true", help="فقط جدولِ فشرده را چاپ کن (برای annotation)")
+    ap.add_argument("--locations", action="store_true",
+                    help="مکانِ file:line هر مسئله را برای --ids منتشر کن (تشخیصِ on-demand از CI)")
+    ap.add_argument("--ids", default="", help="فهرستِ شناسه‌ها با کاما؛ خالی = همه (برای --locations)")
+    ap.add_argument("--max-per-id", type=int, default=20, help="سقفِ تعدادِ مکانِ چاپ‌شده برای هر شناسه")
     ap.add_argument("--emit-baseline", action="store_true",
                     help="خودِ JSONِ baseline را در یک annotation چاپ کن تا بدونِ بازنویسیِ دستی به ریپو برسد")
     ap.add_argument("--source", default=None, help="برچسبِ مبدأ برای --emit-baseline (مثلاً شمارهٔ اجرای CI)")
@@ -278,10 +333,22 @@ def main() -> int:
     # `--table` حالتِ مستقل است: همان کانالی است که baseline برای اولین بار از CI به دستِ
     # ما می‌رسد (artifact قابلِ دانلود نیست و output.summary از API خالی است، فقط annotation
     # از api.github.com خوانده می‌شود). پس نباید به یکی از دو حالتِ دیگر وابسته باشد.
-    if not args.table and not args.emit_baseline and args.write_baseline == args.check:
-        ap.error("exactly one of --write-baseline / --check / --table / --emit-baseline is required")
+    if not args.table and not args.emit_baseline and not args.locations \
+            and args.write_baseline == args.check:
+        ap.error("exactly one of --write-baseline / --check / --table / --emit-baseline / --locations is required")
 
     stats = parse_report(args.report)
+
+    if args.locations:
+        wanted = {x.strip() for x in args.ids.split(",") if x.strip()} or None
+        text = collect_locations(args.report, wanted, args.max_per_id)
+        label = args.ids.strip() or "all ids"
+        # عنوان بدونِ کاما: کاما جداکنندهٔ propertyها در workflow command است و عنوان را
+        # بی‌صدا کوتاه می‌کند (درسی که از خواندنِ annotationِ واقعیِ CI به دست آمد).
+        title = "lint locations for " + label.replace(",", " ").replace(":", "-")[:60]
+        print(f"::notice title={title}::{escape(text)}")
+        print(text)
+        return 0
 
     if args.table:
         print(f"::notice title=Lint report: {stats['total']} issues / {stats['distinct_ids']} ids::{escape(compact_table(stats))}")

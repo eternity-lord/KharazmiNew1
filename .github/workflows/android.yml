@@ -89,6 +89,21 @@ on:
       - main
       - "arena/**"
   workflow_dispatch:
+    # تشخیصِ on-demand: baseline عمداً فقط **شمارِ** مسئله‌ها را دارد (باید در یک annotation
+    # جا شود)، ولی برای رفعِ باگ به مکانِ `file:line` نیاز است و گزارشِ XML فقط این‌جا در CI
+    # تولید می‌شود. با این ورودی‌ها می‌توان بدونِ دست‌زدن به workflow مکان‌ها را بیرون کشید:
+    #   gh workflow run android --ref <branch> -f lint_ids=NewApi,ResourceType
+    inputs:
+      lint_ids:
+        description: "فهرستِ شناسه‌های lint با کاما (مثلاً NewApi,ResourceType)؛ خالی = هیچ"
+        required: false
+        default: ""
+        type: string
+      lint_max_per_id:
+        description: "سقفِ تعدادِ مکانِ چاپ‌شده برای هر شناسه"
+        required: false
+        default: "20"
+        type: string
 
 permissions:
   contents: read
@@ -246,6 +261,26 @@ jobs:
             exit 0
           fi
           python3 lint_gate.py --report "$report" --baseline lint-baseline.json --check
+
+      # مکانِ دقیقِ مسئله‌ها، فقط وقتی دستی خواسته شود.
+      # ⚠️ شرط عمداً `github.event_name == 'workflow_dispatch'` را هم دارد: در رویدادِ push
+      # مقدارِ `inputs` **null** است و در عبارت‌های GitHub `null != ''` **true** می‌شود، یعنی
+      # بدونِ این محافظ step در هر push اجرا می‌شد و با `--ids ""` همهٔ ۱۳۸۵ مکان را
+      # منتشر می‌کرد. ورودی‌ها هم از طریقِ env پاس می‌شوند نه درون‌خطی در shell، تا
+      # تزریقِ دستور ممکن نباشد.
+      - name: Publish lint locations for the requested ids (on demand)
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.lint_ids != '' }}
+        env:
+          LINT_IDS: ${{ inputs.lint_ids }}
+          LINT_MAX: ${{ inputs.lint_max_per_id }}
+        run: |
+          set -uo pipefail
+          report=$(find app/build/reports -name 'lint-results*.xml' -type f 2>/dev/null | head -1 || true)
+          if [ -z "$report" ]; then
+            echo "::error title=lint locations could not run::گزارشِ XML لینت پیدا نشد."
+            exit 2
+          fi
+          python3 lint_gate.py --report "$report" --locations --ids "$LINT_IDS" --max-per-id "${LINT_MAX:-20}"
 
       # ── چرا این step وجود دارد ────────────────────────────────────────────────
       # لاگِ خامِ job از هاستِ `results-receiver.actions.githubusercontent.com` سرو می‌شود
