@@ -15,12 +15,16 @@
 #      می‌گیرد لینکِ منابع است، نه کامپایلرِ Kotlin.
 #   ۲) `:app:testDebugUnitTest` — تست‌های واحدِ JVM (بدون امولاتور): `CachePolicy`،
 #      `InputValidation` و `DebouncedRequest` با ساعتِ مجازیِ coroutines-test.
+#   ۳) `:app:lintDebug` + گیتِ baseline (فاز P4c) — تا این فاز lint هرگز اجرا نشده بود و
+#      وضعیتش کاملاً ناشناخته بود. سیاست «صفرکن» نیست، «بدتر نشود» است: گزارشِ XML با
+#      `KharazmiAdmin/lint-baseline.json` مقایسه می‌شود و **id جدید** یا **افزایشِ شمارِ هر id**
+#      شکست است. کاهش مجاز است (و باید baseline را تازه کرد تا دستاورد قفل شود).
+#      اگر `lint-baseline.json` در ریپو نباشد، گیت بی‌صدا رد نمی‌شود: یک `::warning::` صریح
+#      می‌دهد که «هنوز enforcing نیست». جزئیات و محدودیتِ دانه‌بندی: `KharazmiAdmin/lint_gate.py`.
 #
 # چه چیزی عمداً اجرا **نمی‌شود**:
 #   • `androidTest` (Espresso) — به امولاتور/دستگاه نیاز دارد؛ `AllActivitiesClickableTest.kt`
 #     و `ExampleInstrumentedTest.kt` در این job دَویده نمی‌شوند.
-#   • `lint` — فعلاً نه: هدفِ این job دانستنِ وضعیتِ build است، نه افزودنِ یک منبعِ خطای جدید
-#     که هنوز baseline ندارد.
 #   • `assembleRelease` — minify خاموش است و امضای release در ریپو نیست.
 #
 # ─────────────────────────────────────────────────────────────────────────────
@@ -210,6 +214,38 @@ jobs:
         run: |
           set -o pipefail
           gradle --stacktrace :app:testDebugUnitTest 2>&1 | tee /tmp/gradle-test.log
+
+      # ── فاز P4c: گیتِ lint («بدتر نشود») ──────────────────────────────────────
+      # `abortOnError = false` در `app/build.gradle.kts` ست شده تا این task حتی با وجودِ
+      # مسئله هم گزارشِ XML را بنویسد و نشکند؛ تصمیمِ رد/قبول با step بعدی است که گزارش را
+      # با `KharazmiAdmin/lint-baseline.json` مقایسه می‌کند.
+      - name: Run Android lint (debug variant)
+        run: |
+          set -o pipefail
+          gradle --stacktrace :app:lintDebug 2>&1 | tee /tmp/gradle-lint.log
+
+      # چرا جدولِ فشرده به‌صورتِ annotation منتشر می‌شود: لاگِ خامِ job از هاستِ
+      # `results-receiver...` سرو می‌شود و دانلودِ artifact از `pipelines...` — که هر دو در
+      # محیطِ کاریِ ما بسته‌اند. `output.summary` هم از API خالی برمی‌گردد. تنها کانالِ خوانا
+      # از `api.github.com` **annotation** است، و GitHub برای هر اجرا تعدادِ کمی annotation
+      # نگه می‌دارد، پس یک پیامِ چندخطی و فشرده فرستاده می‌شود نه یکی به ازای هر مسئله.
+      - name: Gate lint against the committed baseline
+        run: |
+          set -uo pipefail
+          report=$(find app/build/reports -name 'lint-results*.xml' -type f 2>/dev/null | head -1 || true)
+          if [ -z "$report" ]; then
+            echo "::error title=lint gate could not run::گزارشِ XML لینت پیدا نشد؛ یعنی :app:lintDebug اجرا نشده یا شکسته است. نبودنِ گزارش هرگز «صفر مسئله» تلقی نمی‌شود."
+            tail -n 25 /tmp/gradle-lint.log 2>/dev/null || true
+            exit 2
+          fi
+          echo "report: $report"
+          # جدولِ کامل همیشه منتشر می‌شود (حتی وقتی گیت رد می‌شود) تا علتِ شکست خوانا باشد
+          python3 lint_gate.py --report "$report" --table
+          if [ ! -f lint-baseline.json ]; then
+            echo "::warning title=lint gate is NOT enforcing yet::فایلِ KharazmiAdmin/lint-baseline.json در ریپو نیست، پس «بدتر نشود» تعریف ندارد و این گیت فقط گزارش می‌دهد. این حالت باید موقت باشد: جدولِ annotationِ همین اجرا را در آن فایل commit کنید."
+            exit 0
+          fi
+          python3 lint_gate.py --report "$report" --baseline lint-baseline.json --check
 
       # ── چرا این step وجود دارد ────────────────────────────────────────────────
       # لاگِ خامِ job از هاستِ `results-receiver.actions.githubusercontent.com` سرو می‌شود
