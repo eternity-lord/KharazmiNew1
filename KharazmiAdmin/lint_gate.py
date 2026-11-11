@@ -57,7 +57,7 @@ SEVERITY_ORDER = {"Fatal": 0, "Error": 1, "Warning": 2, "Information": 3, "Ignor
 
 def fail_hard(msg: str) -> None:
     """شکستِ سخت (کدِ ۲) — برای «گیت کار نکرد»، نه «گیت بدتر شد»."""
-    print(f"::error title=lint gate could not run::{escape(msg)}")
+    emit_annotation("error", "lint gate could not run", msg)
     print(msg, file=sys.stderr)
     raise SystemExit(2)
 
@@ -65,6 +65,50 @@ def fail_hard(msg: str) -> None:
 def escape(text: str) -> str:
     """فرارِ workflow command: درصد، CR و LF باید encoded شوند."""
     return text.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
+
+
+# سقفِ واقعیِ کانالِ annotation. اندازه‌گیری‌شده در اجرای CI شمارهٔ 43042529340: فیلدِ
+# `message` دقیقاً روی **۴۰۹۶** کاراکتر بریده می‌شود و `raw_message` خالی برمی‌گردد.
+# حاشیهٔ ۱۹۶ کاراکتری برای عنوان و رقم‌های شمارهٔ قسمت گذاشته شده.
+MAX_ANNOTATION = 3900
+
+# GitHub برای هر سطح (error/warning/notice) تعدادِ محدودی annotation نگه می‌دارد، پس قطعه‌ها
+# باید کم بمانند. اگر متن بیشتر بخواهد، **اعلام** می‌شود نه اینکه بی‌صدا دور ریخته شود.
+MAX_PARTS = 8
+
+
+def emit_annotation(level: str, title: str, text: str) -> int:
+    """متن را در یک یا چند annotationِ زیرِ سقفِ ۴KB منتشر می‌کند؛ تعدادِ قطعه‌ها را برمی‌گرداند.
+
+    چرا لازم است: تا پیش از این هر انتشار یک پیامِ تنها بود و GitHub بی‌صدا روی ۴۰۹۶
+    کاراکتر می‌بُردش. این فقط خروجیِ بلند را زشت نمی‌کرد — اگر `lint-baseline.json` روزی از
+    ۴KB بزرگ‌تر می‌شد، `--emit-baseline` یک JSONِ **ناقص** منتشر می‌کرد و کسی که آن را
+    commit می‌کرد baselineِ خراب داشت و گیت بی‌معنا می‌شد. پس یا باید قطعه‌بندی شود یا
+    بلند اعلام شود که نشد.
+
+    قطعه‌ها روی مرزِ خط می‌شکنند (نه وسطِ کاراکتر) و `(part i/n)` می‌خورند، پس بازچسباندنِ
+    آن‌ها دقیق و بدونِ ابهام است.
+    """
+    parts: list[str] = []
+    cur = ""
+    for line in text.split("\n"):
+        if cur and len(cur) + 1 + len(line) > MAX_ANNOTATION:
+            parts.append(cur)
+            cur = line
+        else:
+            cur = f"{cur}\n{line}" if cur else line
+    if cur:
+        parts.append(cur)
+
+    total = len(parts)
+    if total > MAX_PARTS:
+        print(f"::warning title={title} - truncated for the annotation channel::"
+              f"{escape(f'{total} parts needed but only {MAX_PARTS} fit; narrow --ids or lower --max-per-id.')}")
+    shown = min(total, MAX_PARTS)
+    for i, part in enumerate(parts[:shown], 1):
+        t = title if total == 1 else f"{title} (part {i}/{total})"
+        print(f"::{level} title={t}::{escape(part)}")
+    return shown
 
 
 def parse_report(path: str) -> dict:
@@ -291,14 +335,14 @@ def cmd_check(stats: dict, path: str) -> int:
 
     if new_ids or worse:
         msg = "LINT GATE FAILED - وضعیتِ lint بدتر شده است\n" + report
-        print(f"::error title=lint gate: must not get worse::{escape(msg)}")
+        emit_annotation("error", "lint gate FAILED - must not get worse", msg)
         return 1
 
     # ⚠️ عنوانِ workflow command **کاما نمی‌پذیرد**: بخشِ propertyها با کاما جدا می‌شود
     # (`::notice title=X,file=Y::msg`)، پس هر کامای داخلِ عنوان آن را بی‌صدا کوتاه می‌کند.
     # نسخهٔ اولِ این خط «lint gate: N issues, not worse than baseline» بود و GitHub فقط
     # «lint gate: N issues» را نگه داشت. عنوان‌های این فایل عمداً بدونِ کاما هستند.
-    print(f"::notice title=lint gate OK: {stats['total']} issues / no regression::{escape(report)}")
+    emit_annotation("notice", f"lint gate OK - {stats['total']} issues / no regression", report)
 
     # بهبود داشتیم ⇒ baseline باید تازه شود وگرنه دستاورد قفل نمی‌شود و بعداً می‌تواند
     # بی‌صدا پس برود. ولی ما در این محیط JVM نداریم، پس «اجرای محلیِ --write-baseline»
@@ -308,8 +352,9 @@ def cmd_check(stats: dict, path: str) -> int:
     if better or gone:
         refreshed = json.dumps(baseline_payload(stats, note="refreshed by lint_gate.py --check"),
                                ensure_ascii=False, indent=2)
-        print("::notice title=lint baseline refreshed - commit this as KharazmiAdmin/lint-baseline.json::"
-              + escape(refreshed))
+        emit_annotation("notice",
+                        "lint baseline refreshed - commit as KharazmiAdmin/lint-baseline.json",
+                        refreshed)
     return 0
 
 
@@ -345,20 +390,21 @@ def main() -> int:
         label = args.ids.strip() or "all ids"
         # عنوان بدونِ کاما: کاما جداکنندهٔ propertyها در workflow command است و عنوان را
         # بی‌صدا کوتاه می‌کند (درسی که از خواندنِ annotationِ واقعیِ CI به دست آمد).
-        title = "lint locations for " + label.replace(",", " ").replace(":", "-")[:60]
-        print(f"::notice title={title}::{escape(text)}")
+        title = "lint locations for " + label.replace(",", " ").replace(":", "-")[:40]
+        emit_annotation("notice", title, text)
         print(text)
         return 0
 
     if args.table:
-        print(f"::notice title=Lint report: {stats['total']} issues / {stats['distinct_ids']} ids::{escape(compact_table(stats))}")
+        emit_annotation("notice", f"Lint report - {stats['total']} issues / {stats['distinct_ids']} ids",
+                        compact_table(stats))
         print(compact_table(stats))
         return 0
     if args.emit_baseline:
         payload = baseline_payload(stats, note=args.source or "CI lint report")
         text = json.dumps(payload, ensure_ascii=False, indent=2)
-        print(f"::notice title=lint baseline JSON (commit this as KharazmiAdmin/lint-baseline.json)::"
-              f"{escape(text)}")
+        emit_annotation("notice",
+                        "lint baseline JSON - commit as KharazmiAdmin/lint-baseline.json", text)
         print(text)
         return 0
     if args.write_baseline:

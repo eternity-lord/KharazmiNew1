@@ -1,2 +1,2 @@
-NewApi,SuspiciousIndentation,ResourceType,PermissionImpliesUnsupportedChromeOsHardware,StringFormatMatches
+NewApi,SuspiciousIndentation,ResourceType,PermissionImpliesUnsupportedChromeOsHardware
 20
