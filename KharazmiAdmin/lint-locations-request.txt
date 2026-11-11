@@ -1,2 +1,0 @@
-NewApi,SuspiciousIndentation,ResourceType,PermissionImpliesUnsupportedChromeOsHardware
-20
