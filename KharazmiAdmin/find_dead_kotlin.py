@@ -93,7 +93,7 @@ def _iter_files(_mode: str = "all"):
 
 
 def _strip_comments(text: str) -> str:
-    """کامنت‌ها را خالی می‌کند ولی **تعدادِ خطوط را دقیقاً حفظ می‌کند**.
+    r"""کامنت‌ها را خالی می‌کند ولی **تعدادِ خطوط را دقیقاً حفظ می‌کند**.
 
     چرا مهم است: بازهٔ هر تعریف از `text[:match.start()].count("\n")` به دست می‌آید، پس اگر
     حذفِ کامنت حتی یک خط را جابه‌جا کند، همهٔ بازه‌ها غلط می‌شوند و حذف‌کننده خطِ اشتباهی را
@@ -102,6 +102,12 @@ def _strip_comments(text: str) -> str:
     """
     text = re.sub(r"/\*.*?\*/", lambda m: "\n" * m.group(0).count("\n"), text, flags=re.S)
     return re.sub(r"^[ \t]*//[^\n]*", "", text, flags=re.M)
+
+
+def _read(path: str) -> str:
+    """خواندنِ متنِ فایل با context manager (وگرنه دستگیرهٔ فایل در پویشِ بزرگ باز می‌ماند)."""
+    with open(path, encoding="utf-8", errors="replace") as fh:
+        return fh.read()
 
 
 def _word_count(name: str, text: str) -> int:
@@ -117,10 +123,10 @@ def main() -> int:
     args = parser.parse_args()
 
     kt_files, xml_files = _iter_files("decls")
-    kt_raw = {p: open(p, encoding="utf-8", errors="replace").read() for p in kt_files}
+    kt_raw = {p: _read(p) for p in kt_files}
     kt_code = {p: _strip_comments(t) for p, t in kt_raw.items()}
     # XML با کامنت پاک نمی‌شود: `<!-- <com.x.Y/> -->` هم برای ما «ارجاع» است (محافظه‌کارانه)
-    xml_text = {p: open(p, encoding="utf-8", errors="replace").read() for p in xml_files}
+    xml_text = {p: _read(p) for p in xml_files}
 
     manifest_text = xml_text.get(os.path.join(APP_SRC, "main", "AndroidManifest.xml"), "")
     in_manifest = set(re.findall(r'android:name="\.?([\w.]+)"', manifest_text))
