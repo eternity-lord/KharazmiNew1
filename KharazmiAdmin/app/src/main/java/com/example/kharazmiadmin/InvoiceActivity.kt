@@ -26,57 +26,7 @@ import com.google.android.material.textfield.TextInputEditText
 import kotlin.math.abs
 import kotlinx.coroutines.*
 import java.util.UUID // FIX (audit-v2/idempotency): تولید کلید retry
-import retrofit2.http.Body
-import retrofit2.http.POST
-import retrofit2.http.GET
-import retrofit2.http.Path
 import retrofit2.HttpException
-
-
-// Print Receipt Request Model
-data class PrintReceiptRequest(val transaction_id: Int)
-
-// Print Receipt Response Model
-data class PrintReceiptResponse(
-    val status: String,
-    val message: String,
-    val print_job_id: String? = null,
-    val receipt_data: Map<String, Any>? = null
-)
-
-// PDF Receipt Response Model
-data class PdfReceiptResponse(
-    val status: String,
-    val message: String,
-    val pdf_filename: String? = null,
-    val receipt_data: Map<String, Any>? = null
-)
-
-
-// FIX H16: جزئیات رسیدِ سرور-محور برای چاپ مجدد (به‌جای اعتماد به Intent extras).
-data class ReceiptDetailsResponse(
-    val transaction_id: Int,
-    val remittance_number: Any? = null,
-    val student_name: String? = null,
-    val student_national_code: String? = null,
-    val amount: Long? = null,
-    val payment_method: String? = null,
-    val tracking_code: String? = null,
-    val date: String? = null,
-    val description: String? = null,
-    val target_wallet: String? = null,
-    val type: String? = null,
-    val is_reversed: Boolean? = null,
-    val course_name: String? = null,
-    // چاپ حواله: کدام معلم، برای چند جلسه، به کدام کیف پول واریز شده (سرور قدیمی نمی‌فرستد → null)
-    val course_code: String? = null,
-    val teacher_name: String? = null,
-    val sessions_covered: Int? = null,
-    val wallet_label: String? = null,
-    val paid_to_name: String? = null,
-    val class_remaining_teacher: Long? = null,
-    val class_remaining_institute: Long? = null
-)
 
 
 class InvoiceActivity : BaseActivity() {
