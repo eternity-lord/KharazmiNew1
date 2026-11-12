@@ -27,6 +27,7 @@ from KharazmiAdmin.kotlin_warning_gate import (
     collect_locations,
     compact_table,
     emit_annotation,
+    escape,
     kind_of,
     main,
     normalize_path,
@@ -260,15 +261,52 @@ def test_write_baseline_then_check_round_trips(tmp_path, capsys):
 
 
 # ── ۴) کانالِ annotation ────────────────────────────────────────────────────
+def test_multiline_messages_are_percent_encoded_so_github_keeps_them(capsys):
+    """باگی که فقط CI لو داد: GitHub پیامِ annotation را تا نخستین LF خام نگه می‌دارد.
+
+    اندازه‌گیری در اجرایِ ۴۳۲۶۴۹۷۷۴۲۳: نسخهٔ اول newline خام چاپ می‌کرد، پس
+    `--emit-baseline` فقط «{» را رساند (`message_len=1`، `raw_message` تهی) و `--table`
+    فقط خطِ نخستِ جدول را. چون annotation تنها کانالِ بیرون‌کشیدنِ baseline از CI است،
+    این باگ بی‌صدا مرحلهٔ enforcing را غیرممکن می‌کرد — و محلی دیده نمی‌شد چون خروجیِ
+    چاپ‌شده رویِ ترمینال سالم به نظر می‌رسید.
+    """
+    body = "line one\nline two\nline three"
+    assert emit_annotation("notice", "multi line body", body) == 1
+    out = capsys.readouterr().out
+    published = [ln for ln in out.splitlines() if ln.startswith("::notice")]
+    assert len(published) == 1, "یک پیامِ چندخطی باید دقیقاً یک خطِ فیزیکی منتشر شود"
+    assert "\n" not in published[0]
+    assert "%0A" in published[0]
+    # محتوایِ رمزگشایی‌شده باید عینِ ورودی باشد — یعنی چیزی دور ریخته نشده
+    decoded = published[0].split("::", 2)[2].replace("%0A", "\n").replace("%25", "%")
+    assert decoded == body
+
+
+def test_escape_handles_percent_cr_and_lf():
+    assert escape("a\nb") == "a%0Ab"
+    assert escape("a\rb") == "a%0Db"
+    # درصد نخست فرار می‌شود وگرنه %0Aهایِ خودِ متن با فرارِ ما قاطی می‌شوند
+    assert escape("100% \n done") == "100%25 %0A done"
+    # متنی که از قبل «%0A» دارد با فرارِ درصد دوپهلو نمی‌شود (درصد نخست فرار می‌شود)
+    assert escape("%0A") == "%250A"
+
+
 def test_annotations_chunk_below_the_measured_4kb_ceiling(capsys):
     body = "\n".join("x" * 200 for _ in range(60))          # ~12KB
     parts = emit_annotation("notice", "kotlin warning baseline JSON - commit as KharazmiAdmin", body)
     out = capsys.readouterr().out
     assert parts > 1
-    for line in out.splitlines():
-        if line.startswith("::notice"):
-            assert len(line) <= MAX_ANNOTATION + 120, len(line)
-    assert f"(part 1/{parts})" in out and f"(part {parts}/{parts})" in out
+    physical = [ln for ln in out.splitlines() if ln.startswith("::notice")]
+    assert len(physical) == parts, "هر قطعه باید دقیقاً یک خطِ فیزیکیِ بی‌LF باشد"
+    for line in physical:
+        assert len(line) <= MAX_ANNOTATION + 200, len(line)
+        assert "\n" not in line
+    # شمارهٔ قطعه در عنوان است، نه در پیام
+    assert f"title=kotlin warning baseline JSON - commit as KharazmiAdmin (part 1/{parts})" in out
+    assert f"(part {parts}/{parts})" in out
+    # بازچسباندنِ قطعه‌ها باید عینِ ورودی را بدهد
+    rejoined = "\n".join(ln.split("::", 2)[2].replace("%0A", "\n") for ln in physical)
+    assert rejoined == body
 
 
 def test_annotation_titles_never_contain_a_comma(capsys):

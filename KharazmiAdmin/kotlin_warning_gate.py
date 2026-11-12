@@ -120,6 +120,21 @@ class LogUnavailable(RuntimeError):
     """لاگِ Gradle ناخوانا یا ناقص است ⇒ هرگز «صفر warning» تلقی نمی‌شود."""
 
 
+def escape(text: str) -> str:
+    """فرارِ workflow command: درصد، CR و LF باید percent-encode شوند.
+
+    چرا حیاتی است: GitHub متنِ annotation را تا **نخستین LF خام** نگه می‌دارد و بقیه را
+    بی‌صدا دور می‌ریزد. این در اجرایِ CI شمارهٔ ۴۳۲۶۴۹۷۷۴۲۳ اندازه‌گیری شد: نسخهٔ اولِ
+    این اسکریپت newline خام چاپ می‌کرد و در نتیجه `--emit-baseline` فقط «{» (یک کاراکتر،
+    `message_len=1`) و `--table` فقط خطِ نخستِ جدول (۵۵ کاراکتر) را به ریپو رساند، با
+    `raw_message` تهی. چون annotation **تنها** کانالِ بیرون‌کشیدنِ baseline از CI است
+    (artifact بسته است و `output.summary` از API خالی برمی‌گردد)، این برش بی‌صدا کلِ
+    مرحلهٔ enforcing را غیرممکن می‌کرد — و locally هیچ تستی نمی‌دید چون خروجیِ چاپ‌شده
+    رویِ ترمینال سالم به نظر می‌رسید. `lint_gate.py` همین را با `escape()` حل کرده بود.
+    """
+    return text.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
+
+
 def emit_annotation(level: str, title: str, text: str) -> int:
     """متن را در یک یا چند annotationِ زیرِ سقفِ ۴KB منتشر می‌کند؛ تعدادِ قطعه‌ها را برمی‌گرداند.
 
@@ -144,10 +159,13 @@ def emit_annotation(level: str, title: str, text: str) -> int:
               f"{total} parts needed but only {MAX_PARTS} are published")
         parts = parts[:MAX_PARTS]
         total = len(parts)
+    shown = len(parts)
     for i, part in enumerate(parts, start=1):
-        suffix = f"\n(part {i}/{total})" if total > 1 else ""
-        print(f"::{level} title={safe_title}::{part}{suffix}")
-    return total
+        # شمارهٔ قطعه در **عنوان** می‌آید نه در پیام: پیام نباید LF خام داشته باشد و
+        # عنوانِ جدا، بازچسباندنِ قطعه‌ها را بی‌ابهام می‌کند (همان قراردادِ lint_gate.py).
+        t = safe_title if shown == 1 else f"{safe_title} (part {i}/{shown})"
+        print(f"::{level} title={t}::{escape(part)}")
+    return shown
 
 
 def normalize_path(raw: str, marker: str = ANDROID_ROOT_MARKER) -> str:
