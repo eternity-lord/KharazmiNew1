@@ -67,6 +67,18 @@ jobs:
         working-directory: Kharazmi_Server
         run: python -m pytest tests/test_audit.py tests/test_dashboard.py tests/test_dashboard_performance.py tests/test_suite_cwd_independence.py -q
 
+      # گیتِ قراردادِ مسیرها: اندروید هرگز نباید مسیری را صدا بزند که سرور ندارد
+      # (کلاسِ 404 در زمانِ اجرا) و `docs/app-map/server-routes.csv` نباید از سطحِ
+      # واقعیِ OpenAPI عقب بماند. چرا `--gate` و نه خودِ اسکریپت: exit code پیش‌فرض
+      # عمداً قرمز است چون CSVِ تاریخیِ فازِ صفر ۸ اعلامِ LiveApi/`auth/device_token`
+      # را ندارد (ورودیِ منجمد؛ `--write` هم بازنویسی‌اش نمی‌کند) و اسکریپتی که همیشه
+      # ۱ می‌دهد گیت نمی‌شود. `--gate` فقط ناورداهای زنده را اجبار می‌کند.
+      # هزینه‌اش ~۲ ثانیه است: `live_server_routes()` اپ را با DB یک‌بارمصرف import
+      # می‌کند و هرگز `Kharazmi_Server/gaj_db.db` را باز نمی‌کند — و چون پیش از گامِ
+      # گاردِ md5 آمده، همان گارد این step را هم پوشش می‌دهد.
+      - name: Gate the Android-server route contract
+        run: python scripts/validate_app_map.py --gate
+
       - name: Guard - real institute database untouched
         run: |
           after=$(md5sum Kharazmi_Server/gaj_db.db | cut -d' ' -f1)
