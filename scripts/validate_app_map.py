@@ -356,10 +356,62 @@ def write_current_overlays(calls: list[dict[str, str]] | None = None) -> None:
     (OUT_DIR / "android-route-diff.md").write_text(_render_route_diff(server_rows, calls), encoding="utf-8")
 
 
+def evaluate_gate(report: dict, saved_count: int, live_keys: set | None) -> list[str]:
+    """Live-contract invariants only; the frozen phase-zero drift is deliberately not fatal.
+
+    Why a separate mode exists: the default exit code stays red on purpose while
+    ``docs/app-map/android-api-calls.csv`` (a frozen phase-zero input that ``--write``
+    never rewrites) lags the Kotlin source by the eight LiveApi / ``auth/device_token``
+    declarations that ``tests/route_audit/test_phase_zero_map.py`` pins at 170. A script
+    that always exits 1 cannot serve as a CI gate, so its genuinely useful signals were
+    never enforced automatically. ``--gate`` enforces exactly what must hold today:
+
+    * the app never calls a route the server does not expose (the runtime-404 class);
+    * ``docs/app-map/server-routes.csv`` still equals the live OpenAPI surface;
+    * the historical map lists no declaration that has vanished from the Kotlin source.
+
+    Pure function of the report so it can be unit-tested without importing the FastAPI
+    app (which costs a DB spin-up) — see ``tests/route_audit/test_phase_zero_map.py``.
+    """
+    failures: list[str] = []
+    if report["android_only_routes"] != 0:
+        sample = ", ".join(f"{m} {pth}" for m, pth in list(report["android_only_list"])[:8])
+        failures.append(
+            f"android_only_routes={report['android_only_routes']}: the app calls route(s) the "
+            f"server does not expose (runtime 404): {sample}"
+        )
+    if live_keys is None:
+        failures.append(
+            "live server routes were not computed - do not combine --gate with --skip-server-import"
+        )
+    else:
+        if not report["server_map_exact"]:
+            failures.append(
+                "server_map_exact is False: docs/app-map/server-routes.csv disagrees with the live "
+                f"OpenAPI surface (missing={len(report['server_map_missing'])}, "
+                f"stale={len(report['server_map_stale'])})"
+            )
+        if report["server_runtime_count"] != saved_count:
+            failures.append(
+                f"server route count drift: live={report['server_runtime_count']} "
+                f"saved_in_csv={saved_count}"
+            )
+    if report["retrofit_source_map_missing"]:
+        sample = ", ".join(f"{m} {pth}" for m, pth in list(report["retrofit_source_map_missing"])[:8])
+        failures.append(
+            f"the historical map lists {len(report['retrofit_source_map_missing'])} declaration(s) "
+            f"that no longer exist in the Kotlin source: {sample}"
+        )
+    return failures
+
+
 def main_cli() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--skip-server-import", action="store_true", help="compare Android declarations only")
     parser.add_argument("--write", action="store_true", help="write current Retrofit field inventory and route-diff overlay")
+    parser.add_argument("--gate", action="store_true",
+                        help="CI gate mode: enforce only the live contract invariants; the historical\n"
+                             "phase-zero drift is reported but is not fatal")
     args = parser.parse_args()
     calls = parse_retrofit_calls()
     report = compare_retrofit_map(source_calls=calls)
@@ -375,6 +427,16 @@ def main_cli() -> int:
         write_current_overlays(calls)
         report["written"] = ["docs/route-tests/android-api-current.csv", "docs/route-tests/android-route-diff.md"]
     print(json.dumps(report, ensure_ascii=False, indent=2))
+    if args.gate:
+        failures = evaluate_gate(report, saved_count=len(saved_keys), live_keys=live_keys)
+        for line in failures:
+            print(f"::error title=route contract gate::{line}")
+        if failures:
+            print(f"route contract gate: FAILED ({len(failures)} invariant(s))")
+            return 1
+        print("route contract gate: OK - no Android-only route, server CSV matches the live "
+              f"OpenAPI surface ({report['server_runtime_count']} routes), no phantom map entry")
+        return 0
     # Keep the historical map mismatch visible even when overlays were written;
     # `--write` does not rewrite the supplied phase-zero inputs.
     map_current = (
