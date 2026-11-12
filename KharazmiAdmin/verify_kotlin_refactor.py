@@ -66,12 +66,17 @@ STAR_PROVIDES = {
 }
 
 # نام‌هایی که در Kotlin/Java بدونِ import حل می‌شوند.
+# `IntArray`/`Regex` و… builtinِ stdlibِ Kotlin‌اند و `RESULT_OK` ثابتِ به‌ارث‌رسیدهٔ
+# `Activity` است؛ نبودشان در این مجموعه اوراکلِ نوع را وادار به «توضیحِ زبانی» می‌کرد.
 BUILTIN = set(
     """Int String Boolean Long Double Float Short Byte Char Any Unit Nothing List Map Set
     Collection Iterable Pair Triple Array ArrayList HashMap HashSet LinkedHashMap MutableList
     MutableMap MutableSet Number Comparable Throwable Exception Error Runnable Void Object
     CharSequence ByteArray IntRange LongRange ClosedRange Sequence Override Deprecated Suppress
-    Companion StringBuilder Charsets System Math""".split()
+    Companion StringBuilder Charsets System Math
+    IntArray LongArray ShortArray DoubleArray FloatArray BooleanArray CharArray ArrayDeque
+    Regex MatchResult Result Lazy Comparator MutableCollection MutableIterable UInt ULong
+    RESULT_OK RESULT_CANCELED""".split()
 )
 
 COMMENT = re.compile(r"//[^\n]*|/\*.*?\*/", re.S)
@@ -176,9 +181,13 @@ def make_spans(text: str, indent: int = 4):
 
     def members() -> list[str]:
         pat = re.compile(
-            rf"^ {{{indent}}}(?:private |internal |public |protected )?(?:override |open |suspend )*fun (\w+)\("
+            rf"^ {{{indent}}}(?:private |internal |public |protected )?(?:override |open |suspend |inline )*fun (\w+)\(",
+            re.M,
         )
-        return [m.group(1) for m in pat.finditer(text)]
+        # بدونِ re.M الگویِ ^ فقط آغازِ رشته را می‌دید و فهرستِ تهی می‌داد؛ آن تهی بودن
+        # با except KeyError بی‌صدا بلعیده می‌شد. اینجا صریح اثبات می‌کنیم عضو پیدا شده است.
+        names = [m.group(1) for m in pat.finditer(text)]
+        return names
 
     return span, text_of, members, lines
 
@@ -366,11 +375,14 @@ def member_blocks(text: str, indent: int = 4) -> list[tuple[str, str]]:
     """بلوکِ هر عضوِ تابع (با کامنتِ چسبیدهٔ بالایش) — دانه‌بندیِ درست برای استخراجِ تابع."""
     out = []
     span, text_of, members, _ = make_spans(text, indent)
-    for name in members():
+    seen = members()
+    for name in seen:
         try:
             out.append((name, text_of(name)))
         except KeyError:
             continue
+    if seen and not out:
+        raise SystemExit(f"ABORT: {len(seen)} عضو پیدا شد ولی هیچ بازه‌ای ساخته نشد — الگویِ decl_index را ببین")
     return out
 
 
@@ -587,6 +599,57 @@ def check_pins(only: str | None, granularity: str) -> list[str]:
             print("      هیچ پینی ندارد")
     return fails
 
+def norm_body(text: str) -> str:
+    """بدنه را برای مقایسه نرمال می‌کند: کامنت/تورفتگی/فضای اضافی حذف می‌شود.
+
+    پیش از هر یکسان‌سازیِ تابع‌های هم‌نام باید این مقایسه انجام شود؛ درسِ بک‌اند
+    (`_now_str_with_seconds` با %H:%M:%S در برابرِ `_now_str` با %H:%M) می‌گوید
+    دو هم‌نام با منطقِ متفاوت هرگز نباید یکی شوند.
+    """
+    out = []
+    for line in strip_comments(text).splitlines():
+        c = code_only(line).strip()
+        if c:
+            out.append(re.sub(r"\s+", " ", c))
+    return "\n".join(out)
+
+
+def check_duplicates(names: list[str]) -> list[str]:
+    """همهٔ تعریف‌های هم‌نام در پکیجِ اپ را می‌یابد و بدنه‌ها را گروه‌بندی می‌کند."""
+    found: dict[str, list] = {n: [] for n in names}
+    for f in sorted(APP_SRC.rglob("*.kt")):
+        src = f.read_text(encoding="utf-8")
+        for name, block in member_blocks(src):
+            short = name.split(".").pop()
+            if short in found:
+                sig = block.strip().splitlines()[0] if block.strip() else ""
+                found[short].append((f, sig, block))
+    fails: list[str] = []
+    for n in names:
+        hits = found[n]
+        print(f"  [dup] {n}: {len(hits)} تعریف")
+        if len(hits) < 2:
+            for f, sig, _ in hits:
+                print(f"      تنها: {f.name} :: {sig.strip()[:84]}")
+            continue
+        groups: dict[str, list] = {}
+        for f, sig, block in hits:
+            idx = block.find("{")           # خطِ امضا از مقایسه بیرون می‌ماند
+            groups.setdefault(norm_body(block[idx + 1:] if idx >= 0 else block), []).append((f, sig, block))
+        for i, (body, members) in enumerate(groups.items(), 1):
+            print(f"      گروه {i}: {len(members)} عضو، {len(body.splitlines())} خطِ نرمال — "
+                  + "، ".join(f"{f.name}" for f, _, _ in members))
+            for f, sig, _ in members:
+                print(f"          {f.name} :: {sig.strip()[:88]}")
+        if len(groups) == 1:
+            print(f"      ⇒ بدنه‌ها یکسان‌اند: یکسان‌سازیِ {n} امن است")
+        else:
+            print(f"      ⇒ {len(groups)} بدنهٔ متفاوت: {n} را یکی نکن")
+            fails.append(f"{n}: {len(groups)} بدنهٔ متفاوت — یکسان‌سازی ممنوع")
+        print()
+    return fails
+
+
 def check_spans(paths: list[pathlib.Path], want: list[str]) -> list[str]:
     """بازهٔ دقیقِ اعضا را چاپ می‌کند — ورودیِ استخراجِ کلمه‌به‌کلمه."""
     fails = []
@@ -624,13 +687,15 @@ def main() -> int:
     ap.add_argument("--pins", action="store_true", help="نقشهٔ پینِ سراسری")
     ap.add_argument("--allow-born", default="", help="نام‌های تازهٔ مجاز، با کاما")
     ap.add_argument("--scopes", default="", help="نگاشتِ «فایل=scope» با کاما، برای --arity")
+    ap.add_argument("--duplicates", default="", help="نام‌های هم‌نام، با کاما، برای مقایسهٔ بدنه بین فایل‌ها")
     ap.add_argument("--changed", action="store_true", help="خودکار: فایل‌های .ktِ تغییریافته + تازه")
     ap.add_argument("--granularity", choices=("member", "top"), default="member",
                     help="دانه‌بندیِ بلوک برای --pins: member=هر تابع (پیش‌فرض)، top=بلوکِ سطحِ بالا")
     args = ap.parse_args()
 
-    if not any([args.types, args.diff, args.arity, args.members, args.names, args.pins]) and args.spans is None:
-        ap.error("دستِ کم یکی از --types/--diff/--arity/--members/--names/--pins لازم است")
+    if not any([args.types, args.diff, args.arity, args.members, args.names, args.pins,
+                args.duplicates]) and args.spans is None:
+        ap.error("دستِ کم یکی از --types/--diff/--arity/--members/--names/--pins/--duplicates لازم است")
 
     paths: list[pathlib.Path] = []
     for f in args.files:
@@ -664,6 +729,8 @@ def main() -> int:
         fails += check_arity(paths, scopes)
     if paths and args.members:
         fails += check_members(paths)
+    if args.duplicates:
+        fails += check_duplicates([x.strip() for x in args.duplicates.split(",") if x.strip()])
     if args.names:
         fails += check_names(allow)
 
