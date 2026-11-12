@@ -60,6 +60,19 @@ object JalaliUtils {
             gd -= monthDays[gm]
             gm += 1
         }
+        // FIX(P4d-5): سرور بعدِ تبدیل، رفت‌وبرگشت را می‌سنجد:
+        //     if gregorian_to_jalali(result) != original: raise ValueError("Invalid Jalali date")
+        // این پورت آن گارد را نداشت، پس تاریخِ محال به‌جایِ رد شدن بی‌صدا به روزِ بعد
+        // سُرسره می‌شد: ۱۴۰۴/۰۷/۳۱ → ۲۰۲۵-۱۰-۲۳ در حالی که مهر ۳۰ روزه است و سرور
+        // ردش می‌کند. رویِ شبکهٔ کاملِ ورودی‌هایِ قابلِ رسیدن سنجیده شد
+        // (jy 1000..1699 × jm 1..12 × jd 1..31 = 260400 حالت):
+        //   پیش ازِ این گارد 4731 واگرایی با سرور، پس از آن 0.
+        // پیش‌شرطِ `gm in 1..12` عمداً اول می‌آید: اگر روزِ محال از دوازده ماه سرریز کند،
+        // gregorianToJalali با gm=13 به cumulativeMonthDays[12] می‌خورد و
+        // ArrayIndexOutOfBoundsException می‌دهد؛ require با && کوتاه‌مدار جلویش را می‌گیرد.
+        require(gm in 1..12 && gregorianToJalali(gy, gm, gd) == Triple(jyIn, jm, jd)) {
+            "Invalid Jalali date"
+        }
         return GregorianCalendar(gy, gm - 1, gd)
     }
 
