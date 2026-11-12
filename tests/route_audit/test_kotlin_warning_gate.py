@@ -29,6 +29,7 @@ from KharazmiAdmin.kotlin_warning_gate import (
     emit_annotation,
     escape,
     kind_of,
+    locations_for_kinds,
     main,
     normalize_path,
     parse_log,
@@ -289,6 +290,54 @@ def test_escape_handles_percent_cr_and_lf():
     assert escape("100% \n done") == "100%25 %0A done"
     # متنی که از قبل «%0A» دارد با فرارِ درصد دوپهلو نمی‌شود (درصد نخست فرار می‌شود)
     assert escape("%0A") == "%250A"
+
+
+def test_overlong_kind_keeps_a_stable_hash_instead_of_being_silently_truncated():
+    """بریدنِ بی‌سروصدا fail-silent بود: دو پیامِ متفاوت با ۸۰ نویسهٔ اولِ یکسان یکی
+    شمرده می‌شدند و گیت بی‌خبر سبز می‌ماند. این در موجودیِ واقعیِ CI (اجرایِ
+    ۴۳۲۶۶۸۰۷۲۵۱) رخ داد — یک قالبِ deprecation دقیقاً رویِ «Activit» بریده شد.
+    """
+    head = "x" * 90
+    a = kind_of(f"{head} alpha")
+    b = kind_of(f"{head} beta")
+    # هر دو کوتاه می‌مانند ولی یکتا هستند
+    assert len(a) <= 88 and a != b
+    assert "#" in a and "#" in b
+    # هش پایدار است: همان پیام ⇒ همان شناسه، و ترتیب/فاصله بی‌اثر
+    assert kind_of(f"{head} alpha") == a
+    assert kind_of(f"{head}  alpha") == a          # فاصلهٔ اضافی نرمال می‌شود
+    # پیامِ کوتاه هرگز هش نمی‌گیرد (خواناییِ شناسه حفظ شود)
+    assert "#" not in kind_of("Unreachable code")
+
+
+def test_gate_failure_publishes_positions_and_full_messages_of_the_offending_kind(tmp_path, capsys):
+    """شکستِ گیت باید بدونِ یک دورِ دیگرِ CI قابلِ عمل باشد.
+
+    شناسه‌ها عمداً کوتاه و نرمال‌شده‌اند، پس خودِ شناسه مکان نمی‌دهد؛ در مسیرِ شکست،
+    مکانِ `file:line:col` به‌همراهِ **پیامِ کامل** (نه شناسهٔ بریده) منتشر می‌شود.
+    """
+    stats = _stats(REALISTIC_LOG)
+    msg = "This method has been deprecated in favor of using the Activity Result API"
+    log = REALISTIC_LOG.replace(
+        "BUILD SUCCESSFUL in 1m 42s",
+        f"w: {CI}/Settings.kt:31:9 '{msg}'\nBUILD SUCCESSFUL in 1m 42s")
+    rc = main(["--log", _write(tmp_path, "off.log", log), "--check",
+               "--baseline", _baseline(tmp_path, _full_baseline(stats))])
+    assert rc == 1
+    out = capsys.readouterr().out
+    assert "locations of the failing kinds" in out
+    assert "Settings.kt:31:9" in out
+    assert msg in out                      # پیامِ کامل، نه شناسهٔ کوتاه‌شده
+
+
+def test_locations_for_kinds_reports_only_the_requested_kinds():
+    stats = _stats(REALISTIC_LOG)
+    text = locations_for_kinds(stats, ["Name shadowed: *"], 10)
+    assert "Name shadowed: *  (x1)" in text
+    assert f"{ROOT}/MainActivity.kt:120:9" in text
+    assert "Casting" not in text           # قالب‌هایِ دیگر نشت نکنند
+    over = locations_for_kinds(stats, ["Variable '*' is never used"], 0)
+    assert "... 1 more" in over            # سقف رعایت و **اعلام** شود، نه بی‌صدا
 
 
 def test_annotations_chunk_below_the_measured_4kb_ceiling(capsys):

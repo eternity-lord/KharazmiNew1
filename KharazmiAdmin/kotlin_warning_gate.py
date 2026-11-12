@@ -65,6 +65,7 @@ artifact از CI قابلِ دانلود نیست و `output.summary` از API �
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
 import sys
@@ -200,7 +201,15 @@ def kind_of(message: str) -> str:
             break
     t = _TRAILING_IDENT_RE.sub(r"\1*", t)
     t = _SPACE_RE.sub(" ", t).strip().rstrip(".")
-    return t[:MAX_KIND_LEN] or message.strip()[:MAX_KIND_LEN] or "unknown"
+    if len(t) > MAX_KIND_LEN:
+        # بریدنِ بی‌سروصدا **fail-silent** بود: دو پیامِ متفاوت که ۸۰ نویسهٔ اولِ یکسان
+        # دارند یکی شمرده می‌شدند و گیت بی‌خبر سبز می‌ماند. این در موجودیِ واقعیِ CI
+        # (اجرایِ ۴۳۲۶۶۸۰۷۲۵۱) اتفاق افتاد: یک قالبِ deprecation دقیقاً رویِ کلمهٔ
+        # «Activit» بریده شد. پس شناسهٔ بلند کوتاه می‌شود ولی **هشِ پایدارِ کلِ متنِ نرمال‌شده**
+        # را به دنبالِ خود نگه می‌دارد تا یکتایی از دست نرود و بریدگی در خودِ شناسه پیدا باشد.
+        digest = hashlib.sha1(t.encode("utf-8")).hexdigest()[:6]
+        return f"{t[:MAX_KIND_LEN]}#{digest}"
+    return t or message.strip()[:MAX_KIND_LEN] or "unknown"
 
 
 def read_log(path: str) -> str:
@@ -348,6 +357,12 @@ def check_against_baseline(stats: dict, baseline_path: str) -> int:
         for item in problems:
             print(f"::error title=kotlin warning gate::{item}")
         print(summary)
+        # شکست باید **قابلِ عمل** باشد: مکانِ همان قالب‌هایی که باعثِ شکست شدند، با پیامِ
+        # کامل (نه شناسهٔ کوتاه‌شده) منتشر می‌شود تا بدونِ یک دورِ دیگرِ CI قابلِ رفع باشد.
+        offending = sorted(set(new_kinds) | set(regressed))
+        detail = locations_for_kinds(stats, offending)
+        if detail.strip():
+            emit_annotation("notice", "kotlin warning gate - locations of the failing kinds", detail)
         return 1
 
     print(summary)
@@ -361,6 +376,25 @@ def check_against_baseline(stats: dict, baseline_path: str) -> int:
     else:
         print("no change against the baseline")
     return 0
+
+
+def locations_for_kinds(stats: dict, kinds: list[str], max_per_kind: int = 10) -> str:
+    """مکانِ `file:line:col` + **پیامِ کاملِ** warningها برایِ قالب‌هایِ داده‌شده.
+
+    چرا لازم است: وقتی گیت در CI با «قالبِ جدید» می‌شکند، توسعه‌دهنده باید بتواند بدونِ
+    یک دورِ دیگر CI (و بدونِ دسترسی به لاگِ Gradle) بفهمد کجاست. شناسه‌ها عمداً کوتاه و
+    نرمال‌شده‌اند، پس خودِ شناسه مکان نمی‌دهد.
+    """
+    out: list[str] = []
+    for kind in kinds:
+        hits = [w for w in stats["warnings"] if w["kind"] == kind]
+        out.append(f"{kind}  (x{len(hits)})")
+        for w in hits[:max_per_kind]:
+            out.append(f"    {w['file']}:{w['line']}:{w['col']}  {w['message']}")
+        if len(hits) > max_per_kind:
+            out.append(f"    ... {len(hits) - max_per_kind} more")
+        out.append("")
+    return "\n".join(out)
 
 
 def collect_locations(stats: dict, wanted: set[str] | None, max_per_kind: int) -> str:

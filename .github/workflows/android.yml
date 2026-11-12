@@ -194,12 +194,17 @@ jobs:
       # `output.summary` از API خالی برمی‌گردد؛ تنها کانالِ قابلِ اتکا annotation است. پس
       # `--emit-baseline` خودِ JSON را در annotationِ قطعه‌بندی‌شده چاپ می‌کند تا commit شود
       # و گامِ بعدی با `--check` enforcing شود («بدتر نشود»، نه «صفر شود»).
+      # `--locations` عمداً در همین فازِ bootstrap هست: شناسه‌ها کوتاه و نرمال‌شده‌اند، پس
+      # خودشان مکان نمی‌دهند. برایِ بررسیِ warningهایِ پرسignal (مثلِ آن یک موردِ
+      # `Java type mismatch` که از interop با Java می‌آید و می‌تواند باگِ واقعی باشد) به
+      # مکان و پیامِ **کامل** نیاز است. در فازِ enforcing این فلگ برداشته می‌شود چون مکانِ
+      # قالب‌هایِ شکست‌زا خودکار در مسیرِ شکست منتشر می‌شود (نه همیشه، که نویز شود).
       # fail-closed: اگر لاگِ کامپایل نباشد/خالی باشد یا `BUILD FAILED` داشته باشد، اسکریپت
       # exit=2 می‌دهد؛ یک لاگِ ناقص هرگز «صفر warning» گزارش نمی‌شود.
       - name: Report the Kotlin compiler warning inventory
         run: |
           python3 kotlin_warning_gate.py --log /tmp/gradle-assemble.log --table \
-            --emit-baseline --source "CI run ${GITHUB_RUN_ID}"
+            --emit-baseline --locations --source "CI run ${GITHUB_RUN_ID}"
 
       - name: Run JVM unit tests
         run: |
