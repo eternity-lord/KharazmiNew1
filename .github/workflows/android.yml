@@ -184,6 +184,23 @@ jobs:
           set -o pipefail
           ./gradlew --stacktrace :app:assembleDebug 2>&1 | tee /tmp/gradle-assemble.log
 
+      # ── فاز P4d-7: موجودیِ warningهای کامپایلرِ Kotlin ───────────────────────
+      # تا امروز خروجیِ کامپایلر خوانده نمی‌شد و شمارِ warningها **ناشناخته** بود، درحالی‌که
+      # `allWarningsAsErrors` هم ست نشده. warningهای کامپایلر با lint فرق دارند: می‌توانند
+      # باگِ واقعی باشند (`Name shadowed`، `Casting will throw ClassCastException`،
+      # `Unreachable code`)، نه فقط سبک.
+      # این گام فعلاً **گزارش‌دهی** است نه enforcing — به همان دلیلی که فازِ P4c برای lint
+      # این‌گونه شروع شد: baseline باید از CI بیاید، چون artifact قابلِ دانلود نیست و
+      # `output.summary` از API خالی برمی‌گردد؛ تنها کانالِ قابلِ اتکا annotation است. پس
+      # `--emit-baseline` خودِ JSON را در annotationِ قطعه‌بندی‌شده چاپ می‌کند تا commit شود
+      # و گامِ بعدی با `--check` enforcing شود («بدتر نشود»، نه «صفر شود»).
+      # fail-closed: اگر لاگِ کامپایل نباشد/خالی باشد یا `BUILD FAILED` داشته باشد، اسکریپت
+      # exit=2 می‌دهد؛ یک لاگِ ناقص هرگز «صفر warning» گزارش نمی‌شود.
+      - name: Report the Kotlin compiler warning inventory
+        run: |
+          python3 kotlin_warning_gate.py --log /tmp/gradle-assemble.log --table \
+            --emit-baseline --source "CI run ${GITHUB_RUN_ID}"
+
       - name: Run JVM unit tests
         run: |
           set -o pipefail
