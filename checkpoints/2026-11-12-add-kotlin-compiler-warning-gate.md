@@ -90,9 +90,9 @@ pass ⟺ هیچ **قالبِ جدیدی** نباشد **و** شمارِ هیچ ق
 
 | بررسی | نتیجه |
 |---|---|
-| سوئیتِ تازهٔ شاهد | **20 passed** در ۰٫۱۲s |
+| سوئیتِ تازهٔ شاهد | **25 passed** در ۰٫۲۲s |
 | GATE A (`pytest -q` ریشه) | **1279 passed** در 137.33s — بی‌تغییر، چون تست‌های تازه در `tests/route_audit` هستند و `testpaths` جمعشان نمی‌کند |
-| GATE B (`pytest ./tests/route_audit`) | 255 → **275 passed** (+۲۰) |
+| GATE B (`pytest ./tests/route_audit`) | 255 → **280 passed** (+۲۵) |
 | GATE C (سوئیتِ cwd از داخلِ `Kharazmi_Server`) | **31 passed** |
 | `validate_app_map.py --gate` (برشِ قبلی، اکنون در main) | exit **0** — بی‌تغییر |
 | `ruff check .` | **250** (بی‌تغییر؛ `KharazmiAdmin` در `extend-exclude` است) · `--select F821 .` ⇒ All checks passed |
@@ -176,7 +176,89 @@ enforcing را غیرممکن می‌کرد — baseline هرگز به ریپو 
 واقعی آن‌قدر فشرده است که در یک annotation جا می‌شود و دانه‌بندیِ قالبی درست انتخاب شده بود
 (۳ قالب، نه ۴۵ موقعیت). جزئیاتِ هر قالب در اجرایِ بعدی، با `escape()` درست، به ریپو می‌رسد.
 
-## ۹) بدهیِ باقی‌مانده
+## ۹) فازِ enforcing: baseline از CI رسید و گیت قفل شد
+
+اجرایِ `43268013140` موجودیِ کامل را با `escape()` درست منتشر کرد (`message_len` از **۱** به
+**۱۸۰۹** رسید) و `KharazmiAdmin/kotlin-warnings-baseline.json` **عیناً** از همان annotation
+commit شد — بدونِ بازنویسیِ دستی، با همان قالبی که خودِ ابزار می‌نویسد (`indent=2`).
+
+**موجودیِ واقعی: ۴۵ warning در ۳ قالب، در ۱۰ فایل.**
+
+| قالب | شمار |
+|---|---|
+| `'*' is deprecated. Deprecated in Java` | ۴۰ |
+| `'*' is deprecated. This method has been deprecated in favor of using the Activit#6b3040` | ۴ |
+| `Java type mismatch: inferred type is '*', but '*' was expected` | ۱ |
+
+پرشمارترین فایل‌ها: `SecureLoginStore.kt` با ۱۱ مورد، و سپس پنج فایل با ۵ مورد
+(`ArchivedClassesActivity`، `AuditTrailActivity`، `EditStudentActivity`،
+`StudentRegisterActivity`، `TeacherRegisterActivity`).
+
+دو نتیجهٔ فوری:
+
+۱) **۴۴ مورد از ۴۵ بدهیِ مدرن‌سازی است، نه باگ** — deprecationهایِ `EncryptedSharedPreferences`،
+`MasterKey`، `PersianCalendar`، `JsonParser`، `PersianDatePickerDialog.Listener` و چهار موردِ
+`startActivityForResult` که باید به Activity Result API مهاجرت کنند. این‌ها حالا **قفل** شده‌اند:
+بدتر نمی‌شوند و هر موردِ تازه‌ای که اضافه شود CI را قرمز می‌کند.
+
+۲) **آن یک موردِ `Java type mismatch` سرنخِ باگِ واقعی است** و گیت از روزِ اول همان کاری را
+کرد که برایش ساخته شده بود. مکانِ کامل از `--locations`:
+
+```
+StudentProfileErrors.kt:20:73  Java type mismatch: inferred type is 'kotlin.Nothing?',
+                               but 'kotlin.String' was expected.
+L20: if (d.isNotBlank()) d else obj.optString("message", null)?.takeIf { it.isNotBlank() }
+```
+
+ستونِ ۷۳ همان `null` است که به `JSONObject.optString(String, String)` — یک APIِ **Java** با
+پارامترِ platform-type — داده می‌شود. بررسیِ رفتاری نشان می‌دهد این `null` **بی‌اثر** است:
+`optString(name)` بدونِ آرگومانِ دوم پیش‌فرضِ `""` دارد و `"".takeIf { it.isNotBlank() }` هم
+`null` می‌دهد، یعنی در هر چهار حالت (کلید غایب / JSON null / رشتهٔ خالی / رشتهٔ غیرخالی)
+نتیجه یکسان است. پس اصلاحش هم warning را می‌برد هم یک مرزِ شکنندهٔ Java را حذف می‌کند؛
+ولی چون سورسِ Kotlin است باید در برشِ جداگانه با اوراکل و شاهدِ CI انجام شود (بندِ ۱۰).
+
+### دو نقصِ دیگر که پیش از enforcing رفع شدند
+
+* **بریدنِ شناسه fail-silent بود.** `MAX_KIND_LEN=80` آن قالبِ دوم را دقیقاً رویِ کلمهٔ
+  «Activit» بریده بود. دو پیامِ متفاوت با ۸۰ نویسهٔ اولِ یکسان، یکی شمرده می‌شدند و گیت
+  بی‌خبر سبز می‌ماند. رفع: شناسهٔ بلند کوتاه می‌شود ولی **هشِ شش‌نویسه‌ایِ sha1 از کلِ متنِ
+  نرمال‌شده** را به دنبالِ خود نگه می‌دارد (`…Activit#6b3040`) — یکتایی حفظ می‌شود و بریدگی
+  در خودِ شناسه پیدا است. پیامِ کوتاه هرگز هش نمی‌گیرد تا خواناییِ شناسه‌ها بماند.
+* **مسیرِ بهبود بن‌بست بود.** ابزار می‌گفت «`--write-baseline` را اجرا کن» درحالی‌که در محیطِ
+  کاریِ ما JVM نیست و اجرایِ محلیِ Gradle ممکن نیست؛ یعنی بهبود هرگز قفل نمی‌شد و می‌توانست
+  بی‌صدا پس برود. رفع: در مسیرِ **موفق و فقط هنگامِ بهبود**، خودِ CI متنِ دقیقِ baselineِ تازه
+  را در annotation منتشر می‌کند تا عیناً commit شود (همان قاعدهٔ `lint_gate.py`: هنگامِ شکستِ
+  گیت هرگز baselineِ تازه برکت نمی‌شود، چون یعنی بی‌اثرکردنِ همان گیت).
+
+### شاهدِ محلیِ پیش از push
+
+چون baseline باید در CI هم پاس می‌شد، پیش از push یک لاگِ مصنوعی از **پیام‌هایِ واقعیِ
+ثبت‌شده در annotation** ساخته شد (۴۰+۴+۱ = ۴۵ warning با همان متن‌ها، در file:line هایِ
+متمایز تا حذفِ تکرار اثر نکند):
+
+```
+--check → exit=0 | now 45 in 3 kinds | baseline 45 in 3 kinds | delta +0
+با یک `Unreachable code`ِ اضافه → exit=1 | new warning kinds: Unreachable code x1
+```
+
+و تستِ `test_committed_baseline_is_consistent_with_the_tool_and_the_ci_inventory` همان سازگاری
+را برایِ همیشه قفل می‌کند: هر سه شناسهٔ baseline باید با `kind_of` همین ابزار از **پیامِ
+واقعیِ** کامپایلر بازتولید شوند (شاملِ شناسهٔ هش‌دار). پس اگر روزی `MAX_KIND_LEN`، الگویِ
+نرمال‌سازی یا تابعِ هش عوض شود و baseline را بی‌معنا کند، این تست قرمز می‌شود — نه اینکه گیت
+در CI بی‌دلیل «قالبِ جدید» ببیند.
+
+تستِ `test_improvement_publishes_commit_ready_json_that_then_passes_the_gate` هم کلِ کانال را
+end-to-end می‌آزماید: annotation → رمزگشاییِ `%0A`/`%25` → JSONِ معتبر → نوشتنش به‌عنوانِ
+baseline → پاس شدنِ گیت با `delta +0`. این دقیقاً همان زنجیره‌ای است که باگِ newlineِ خام
+پاره‌اش کرده بود.
+
+گامِ CI هم از «Report the Kotlin compiler warning inventory» به
+**«Gate the Kotlin compiler warnings against the committed baseline»** تغییر نام داد و
+دستورش `--table --check --baseline kotlin-warnings-baseline.json` شد. فلگِ `--locations` از
+گامِ دائمی برداشته شد (مکانِ قالب‌هایِ شکست‌زا حالا خودکار و فقط در مسیرِ شکست منتشر می‌شود،
+تا انتشارِ همیشگیِ همهٔ مکان‌ها نویز نشود)؛ گامِ lint که `--locations` خودش را دارد دست‌نخورده ماند.
+
+## ۺ) بدهیِ باقی‌مانده
 
 * **مرحلهٔ enforcing همین گیت**: خواندنِ annotationِ اجرایِ CI، commitِ
   `KharazmiAdmin/kotlin-warnings-baseline.json`، و تغییرِ گام به

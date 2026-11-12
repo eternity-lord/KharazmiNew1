@@ -18,6 +18,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+REPO_ROOT = Path(__file__).resolve().parents[2]
+
 import pytest
 
 from KharazmiAdmin.kotlin_warning_gate import (
@@ -338,6 +340,75 @@ def test_locations_for_kinds_reports_only_the_requested_kinds():
     assert "Casting" not in text           # قالب‌هایِ دیگر نشت نکنند
     over = locations_for_kinds(stats, ["Variable '*' is never used"], 0)
     assert "... 1 more" in over            # سقف رعایت و **اعلام** شود، نه بی‌صدا
+
+
+def _decode_annotation(out: str, title_fragment: str) -> str:
+    """annotationِ منتشرشده را دقیقاً همان‌طور که GitHub نگه می‌دارد بازچسبانی و رمزگشایی می‌کند."""
+    parts = []
+    for ln in out.splitlines():
+        if ln.startswith("::notice") and title_fragment in ln:
+            parts.append(ln.split("::", 2)[2].replace("%0A", "\n").replace("%0D", "\r").replace("%25", "%"))
+    assert parts, f"annotation با عنوانِ شاملِ {title_fragment!r} منتشر نشد"
+    return "\n".join(parts)
+
+
+def test_improvement_publishes_commit_ready_json_that_then_passes_the_gate(tmp_path, capsys):
+    """کلِ کانال را end-to-end می‌آزماید: annotation → رمزگشایی → JSON → baseline → پاس.
+
+    چرا حیاتی است: در محیطِ کاریِ ما JVM/Gradle نیست، پس «اجرای محلیِ --write-baseline»
+    ممکن نیست و تنها راهِ قفل‌کردنِ بهبود، commitِ JSONی است که خودِ CI منتشر می‌کند. اگر
+    آن JSON ناقص یا رمزنگشته نباشد (باگِ newlineِ خام)، بهبود هرگز قفل نمی‌شود و می‌تواند
+    بی‌صدا پس برود.
+    """
+    stats = _stats(REALISTIC_LOG)
+    shorter = "\n".join(line for line in REALISTIC_LOG.splitlines() if "Name shadowed" not in line)
+    log = _write(tmp_path, "better.log", shorter)
+    assert main(["--log", log, "--check",
+                 "--baseline", _baseline(tmp_path, _full_baseline(stats))]) == 0
+    out = capsys.readouterr().out
+    payload = json.loads(_decode_annotation(out, "baseline refreshed"))
+    assert payload["total"] == 3 and payload["distinct_kinds"] == 3
+    assert "Name shadowed: *" not in payload["by_kind"]
+    # همان JSONِ منتشرشده، بی‌هیچ ویرایشِ دستی، باید گیت را پاس کند
+    refreshed = _baseline(tmp_path, payload)
+    assert main(["--log", log, "--check", "--baseline", refreshed]) == 0
+    assert "delta +0" in capsys.readouterr().out
+
+
+# پیام‌هایِ واقعیِ ثبت‌شده از annotationِ اجرایِ CI شمارهٔ ۴۳۲۶۸۰۱۳۱۴۰ → شناسهٔ قالبِ هرکدام.
+CI_RECORDED_MESSAGE_TO_KIND = {
+    "'class MasterKey : Any' is deprecated. Deprecated in Java.":
+        "'*' is deprecated. Deprecated in Java",
+    "'fun startActivityForResult(intent: Intent, requestCode: Int): Unit' is deprecated. "
+    "This method has been deprecated in favor of using the Activity Result API":
+        "'*' is deprecated. This method has been deprecated in favor of using the Activit#6b3040",
+    "Java type mismatch: inferred type is 'kotlin.Nothing?', but 'kotlin.String' was expected.":
+        "Java type mismatch: inferred type is '*', but '*' was expected",
+}
+
+
+def test_committed_baseline_is_consistent_with_the_tool_and_the_ci_inventory():
+    """baselineِ commit‌شده باید با همین نسخه از ابزار و با موجودیِ واقعیِ CI بخواند.
+
+    سه چیز را قفل می‌کند: (۱) فایل واقعاً در ریپو هست و JSONِ معتبر است؛ (۲) شمارها
+    خودسازگارند (`sum(by_kind) == total == 45` و `len(by_kind) == distinct_kinds`)؛
+    (۳) هر سه شناسه از **پیامِ واقعیِ** کامپایلر با `kind_of` همین ابزار بازتولید می‌شوند —
+    شاملِ آن شناسه‌ای که پسوندِ هش دارد. پس اگر روزی `MAX_KIND_LEN`، الگویِ نرمال‌سازی یا
+    تابعِ هش عوض شود و baseline را بی‌معنا کند، این تست قرمز می‌شود؛ نه اینکه گیت در CI
+    بی‌دلیل «قالبِ جدید» ببیند.
+    """
+    path = REPO_ROOT / "KharazmiAdmin" / "kotlin-warnings-baseline.json"
+    assert path.exists(), "baseline باید از annotationِ اجرایِ ۴۳۲۶۸۰۱۳۱۴۰ commit شده باشد"
+    base = json.loads(path.read_text(encoding="utf-8"))
+    assert base["total"] == 45
+    assert base["distinct_kinds"] == 3 == len(base["by_kind"])
+    assert sum(base["by_kind"].values()) == base["total"]
+    assert base["files_with_warnings"] == 10
+    for msg, kind in CI_RECORDED_MESSAGE_TO_KIND.items():
+        assert kind_of(msg) == kind, msg
+        assert kind in base["by_kind"], kind
+    assert base["by_kind"]["'*' is deprecated. Deprecated in Java"] == 40
+    assert base["by_kind"]["Java type mismatch: inferred type is '*', but '*' was expected"] == 1
 
 
 def test_annotations_chunk_below_the_measured_4kb_ceiling(capsys):

@@ -371,8 +371,18 @@ def check_against_baseline(stats: dict, baseline_path: str) -> int:
         text = f"{summary}\nbaseline can be refreshed (improvements must be locked in):\n{detail}"
         if gone:
             text += "\nkinds fully resolved: " + ", ".join(gone)
-        text += "\nRun --write-baseline and commit the result."
+        text += "\nThe commit-ready JSON follows as a separate annotation."
         emit_annotation("notice", "kotlin warning baseline can be refreshed", text)
+        # «اجرای محلیِ `--write-baseline`» در محیطِ کاریِ ما ممکن نیست چون JVM/Gradle نیست؛
+        # پس خودِ CI متنِ **دقیقِ** فایلِ تازه را منتشر می‌کند تا عیناً commit شود. این کار
+        # عمداً فقط در مسیرِ موفق و فقط هنگامِ بهبود انجام می‌شود: وقتی گیت شکست خورده،
+        # برکت‌دادنِ baselineِ جدید یعنی بی‌اثرکردنِ همان گیت (همان قاعدهٔ lint_gate.py).
+        refreshed = json.dumps(
+            baseline_payload(stats, note="refreshed by kotlin_warning_gate.py --check"),
+            ensure_ascii=False, indent=2)
+        emit_annotation("notice",
+                        "kotlin warning baseline refreshed - commit as KharazmiAdmin/" + DEFAULT_BASELINE,
+                        refreshed)
     else:
         print("no change against the baseline")
     return 0

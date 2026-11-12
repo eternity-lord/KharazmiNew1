@@ -184,27 +184,28 @@ jobs:
           set -o pipefail
           ./gradlew --stacktrace :app:assembleDebug 2>&1 | tee /tmp/gradle-assemble.log
 
-      # ── فاز P4d-7: موجودیِ warningهای کامپایلرِ Kotlin ───────────────────────
-      # تا امروز خروجیِ کامپایلر خوانده نمی‌شد و شمارِ warningها **ناشناخته** بود، درحالی‌که
-      # `allWarningsAsErrors` هم ست نشده. warningهای کامپایلر با lint فرق دارند: می‌توانند
-      # باگِ واقعی باشند (`Name shadowed`، `Casting will throw ClassCastException`،
-      # `Unreachable code`)، نه فقط سبک.
-      # این گام فعلاً **گزارش‌دهی** است نه enforcing — به همان دلیلی که فازِ P4c برای lint
-      # این‌گونه شروع شد: baseline باید از CI بیاید، چون artifact قابلِ دانلود نیست و
-      # `output.summary` از API خالی برمی‌گردد؛ تنها کانالِ قابلِ اتکا annotation است. پس
-      # `--emit-baseline` خودِ JSON را در annotationِ قطعه‌بندی‌شده چاپ می‌کند تا commit شود
-      # و گامِ بعدی با `--check` enforcing شود («بدتر نشود»، نه «صفر شود»).
-      # `--locations` عمداً در همین فازِ bootstrap هست: شناسه‌ها کوتاه و نرمال‌شده‌اند، پس
-      # خودشان مکان نمی‌دهند. برایِ بررسیِ warningهایِ پرسignal (مثلِ آن یک موردِ
-      # `Java type mismatch` که از interop با Java می‌آید و می‌تواند باگِ واقعی باشد) به
-      # مکان و پیامِ **کامل** نیاز است. در فازِ enforcing این فلگ برداشته می‌شود چون مکانِ
-      # قالب‌هایِ شکست‌زا خودکار در مسیرِ شکست منتشر می‌شود (نه همیشه، که نویز شود).
-      # fail-closed: اگر لاگِ کامپایل نباشد/خالی باشد یا `BUILD FAILED` داشته باشد، اسکریپت
-      # exit=2 می‌دهد؛ یک لاگِ ناقص هرگز «صفر warning» گزارش نمی‌شود.
-      - name: Report the Kotlin compiler warning inventory
+      # ── فاز P4d-7: گیتِ warningهای کامپایلرِ Kotlin («بدتر نشود») ────────────
+      # تا امروز خروجیِ کامپایلر خوانده نمی‌شد و `allWarningsAsErrors` هم ست نبود، پس شمارِ
+      # warningها **ناشناخته** بود؛ و warningهای کامپایلر برخلافِ lint می‌توانند باگِ واقعی
+      # باشند (`Name shadowed`، `Casting will throw ClassCastException`، `Unreachable code`).
+      #
+      # این گام حالا **enforcing** است. baseline عیناً از annotationِ اجرایِ CI شمارهٔ
+      # ۴۳۲۶۸۰۱۳۱۴۰ commit شده: ۴۵ warning در ۳ قالب و در ۱۰ فایل (۴۴ مورد deprecation و
+      # یک `Java type mismatch` در StudentProfileErrors.kt:20). قاعده: قالبِ جدید = شکست،
+      # افزایشِ شمارِ هر قالب = شکست، کاهش مجاز است. چون در محیطِ کاریِ ما JVM نیست و
+      # `--write-baseline` محلی ممکن نیست، هنگامِ بهبود خودِ CI متنِ دقیقِ baselineِ تازه را
+      # در annotation منتشر می‌کند تا عیناً commit شود و دستاورد بی‌صدا پس نرود.
+      # (فازِ bootstrap عمداً یک اجرای گزارش‌دهی داشت: هم عدد را داد و هم خودِ کانالِ
+      # annotation را آزمود — و همان اجرا باگِ newlineِ خام را لو داد که بی‌صدا کلِ این
+      # مرحله را غیرممکن می‌کرد.)
+      #
+      # fail-closed: اگر لاگِ کامپایل نباشد/خالی باشد یا `BUILD FAILED` داشته باشد یا شاهدِ
+      # اجرایِ taskِ کامپایل در آن پیدا نشود، اسکریپت exit=2 می‌دهد؛ یک لاگِ ناقص هرگز
+      # «صفر warning» گزارش نمی‌شود.
+      - name: Gate the Kotlin compiler warnings against the committed baseline
         run: |
           python3 kotlin_warning_gate.py --log /tmp/gradle-assemble.log --table \
-            --emit-baseline --locations --source "CI run ${GITHUB_RUN_ID}"
+            --check --baseline kotlin-warnings-baseline.json
 
       - name: Run JVM unit tests
         run: |
