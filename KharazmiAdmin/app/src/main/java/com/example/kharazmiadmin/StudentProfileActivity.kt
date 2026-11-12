@@ -25,15 +25,12 @@ import com.google.android.material.tabs.TabLayout
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.util.Locale
-import kotlin.math.abs
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Path
-
 
 // ==========================================
 // 3. Activity Logic
@@ -402,7 +399,7 @@ class StudentProfileActivity : BaseActivity() {
                     sb.append("\nبدهی تفکیک‌شده کلاس‌ها:\n")
                     rows.forEach { row ->
                         if (row.is_unassigned) {
-                            sb.append("بدهی بدون کلاس — آموزشگاه: ${formatCurrency(row.debt_institute)}\n")
+                            sb.append("بدهی بدون کلاس — آموزشگاه: ${StudentProfileFormat.formatCurrency(row.debt_institute)}\n")
                         } else {
                             val classLabel = EnrollmentLabels.classTitle(this, row.course_title, row.course_code)
                             sb.append("کلاس $classLabel — معلم ${row.teacher_name ?: "بدون معلم"}\n")
@@ -674,37 +671,6 @@ class StudentProfileActivity : BaseActivity() {
         }
     }
 
-    private fun buildTotalStatus(walletBalance: Long, totalDebt: Long): String {
-        val balanceSection = when {
-            walletBalance < 0 -> getString(R.string.profile_debt_total, formatCurrency(abs(walletBalance)))
-            walletBalance > 0 -> getString(R.string.profile_credit_total, formatCurrency(walletBalance))
-            else -> getString(R.string.profile_settled_total)
-        }
-
-        val debtSection = if (totalDebt > 0) getString(R.string.profile_debt_reg, formatCurrency(totalDebt)) else ""
-        return balanceSection + debtSection
-    }
-
-    private fun buildWalletStatus(label: String, balance: Long, debt: Long): String {
-        val status = when {
-            balance < 0 -> getString(R.string.profile_ower, formatCurrency(abs(balance)))
-            balance > 0 -> getString(R.string.profile_creditor, formatCurrency(balance))
-            else -> getString(R.string.profile_settled)
-        }
-
-        val debtSection = if (debt > 0) getString(R.string.profile_debt_short, formatCurrency(debt)) else ""
-        return "$label: $status$debtSection"
-    }
-
-    private fun colorForBalance(balance: Long): Int = when {
-        balance < 0 -> UiColors.resolve(this, R.color.status_danger)
-        balance > 0 -> UiColors.resolve(this, R.color.status_success)
-        else -> UiColors.resolve(this, R.color.text_secondary)
-    }
-
-    private fun formatCurrency(value: Long): String =
-        String.format(Locale("en", "US"), "%,d", abs(value))
-
     // --- منطق جدید عکس پروفایل (آپلود فیزیکی، گالری، دوربین و دسترسی‌ها) ---
     private fun showImageSelectDialog() {
         val options = arrayOf(getString(R.string.profile_photo_camera), getString(R.string.profile_photo_gallery))
@@ -881,45 +847,6 @@ class StudentProfileActivity : BaseActivity() {
         }
     }
 
-    // ———————————————— A1: helpers ————————————————
-    private fun extractServerDetail(e: Exception): String? {
-        return try {
-            if (e is retrofit2.HttpException) {
-                val body = e.response()?.errorBody()?.string()
-                if (!body.isNullOrBlank()) {
-                    val obj = org.json.JSONObject(body)
-                    val d = obj.optString("detail", "")
-                    if (d.isNotBlank()) d else obj.optString("message", null)?.takeIf { it.isNotBlank() }
-                } else null
-            } else null
-        } catch (_: Exception) { null }
-    }
-
-    private fun normalizePersianDigits(input: String): String {
-        val fa = "۰۱۲۳۴۵۶۷۸۹"
-        val ar = "٠١٢٣٤٥٦٧٨٩"
-        val sb = StringBuilder(input.length)
-        for (c in input) {
-            val fi = fa.indexOf(c)
-            val ai = if (fi >= 0) -1 else ar.indexOf(c)
-            sb.append(when {
-                fi >= 0 -> ('0' + fi)
-                ai >= 0 -> ('0' + ai)
-                else -> c
-            })
-        }
-        return sb.toString()
-    }
-
-    private fun isValidJalaliDate(raw: String): Boolean {
-        val normalized = normalizePersianDigits(raw.trim())
-        val re = Regex("^\\\\d{4}/\\\\d{2}/\\\\d{2}$")
-        if (!re.matches(normalized)) return false
-        return try {
-            JalaliUtils.parseProjectDate(normalized) != null
-        } catch (_: Exception) { false }
-    }
-
     // ———————————————— A1: پرداخت ————————————————
     private fun confirmAndPayInstallment(item: StudentInstallmentItem) {
         AlertDialog.Builder(this)
@@ -948,7 +875,7 @@ class StudentProfileActivity : BaseActivity() {
             } catch (e: Exception) {
                 if (e is kotlinx.coroutines.CancellationException) throw e
                 withContext(Dispatchers.Main) {
-                    val detail = extractServerDetail(e) ?: e.message ?: getString(R.string.common_unknown_error)
+                    val detail = StudentProfileErrors.extractServerDetail(e) ?: e.message ?: getString(R.string.common_unknown_error)
                     Toast.makeText(this@StudentProfileActivity, getString(R.string.common_err_with_detail, detail), Toast.LENGTH_LONG).show()
                 }
             }
@@ -981,7 +908,7 @@ class StudentProfileActivity : BaseActivity() {
                 if (e is kotlinx.coroutines.CancellationException) throw e
                 withContext(Dispatchers.Main) {
                     // حتی 400 (موبایل ولی ثبت نشده) باید پیام سرور نمایش داده شود — الزام تسک
-                    val detail = extractServerDetail(e) ?: e.message ?: getString(R.string.common_unknown_error)
+                    val detail = StudentProfileErrors.extractServerDetail(e) ?: e.message ?: getString(R.string.common_unknown_error)
                     Toast.makeText(this@StudentProfileActivity, getString(R.string.common_err_with_detail, detail), Toast.LENGTH_LONG).show()
                 }
             }
@@ -1046,7 +973,7 @@ class StudentProfileActivity : BaseActivity() {
                         }
                         val enrollmentId = courseIds[idx]
                         val rawAmount = etAmount.text?.toString()?.trim() ?: ""
-                        val normalizedAmountStr = normalizePersianDigits(rawAmount).replace(",", "").replace("٬", "").replace(" ", "")
+                        val normalizedAmountStr = StudentProfileFormat.normalizePersianDigits(rawAmount).replace(",", "").replace("٬", "").replace(" ", "")
                         val amount = normalizedAmountStr.toIntOrNull()
                         if (amount == null || amount <= 0) {
                             etAmount.error = getString(R.string.installment_error_amount)
@@ -1058,8 +985,8 @@ class StudentProfileActivity : BaseActivity() {
                             return@setOnClickListener
                         }
                         val rawDue = etDue.text?.toString()?.trim() ?: ""
-                        val normalizedDue = normalizePersianDigits(rawDue)
-                        if (!isValidJalaliDate(normalizedDue)) {
+                        val normalizedDue = StudentProfileFormat.normalizePersianDigits(rawDue)
+                        if (!StudentProfileFormat.isValidJalaliDate(normalizedDue)) {
                             etDue.error = getString(R.string.installment_error_due)
                             Toast.makeText(this@StudentProfileActivity, getString(R.string.installment_error_due), Toast.LENGTH_SHORT).show()
                             return@setOnClickListener
@@ -1071,7 +998,7 @@ class StudentProfileActivity : BaseActivity() {
             } catch (e: Exception) {
                 if (e is kotlinx.coroutines.CancellationException) throw e
                 withContext(Dispatchers.Main) {
-                    val detail = extractServerDetail(e) ?: e.message ?: getString(R.string.common_unknown_error)
+                    val detail = StudentProfileErrors.extractServerDetail(e) ?: e.message ?: getString(R.string.common_unknown_error)
                     Toast.makeText(this@StudentProfileActivity, getString(R.string.common_err_with_detail, detail), Toast.LENGTH_LONG).show()
                 }
             }
@@ -1097,7 +1024,7 @@ class StudentProfileActivity : BaseActivity() {
             } catch (e: Exception) {
                 if (e is kotlinx.coroutines.CancellationException) throw e
                 withContext(Dispatchers.Main) {
-                    val detail = extractServerDetail(e) ?: e.message ?: getString(R.string.common_unknown_error)
+                    val detail = StudentProfileErrors.extractServerDetail(e) ?: e.message ?: getString(R.string.common_unknown_error)
                     Toast.makeText(this@StudentProfileActivity, getString(R.string.common_err_with_detail, detail), Toast.LENGTH_LONG).show()
                 }
             }

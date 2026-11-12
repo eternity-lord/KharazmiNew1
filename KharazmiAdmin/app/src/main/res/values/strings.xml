@@ -299,14 +299,6 @@
     <string name="profile_delete_yes">حذف کن</string>
     <string name="profile_delete_error">خطا در حذف</string>
     <string name="profile_status_error">خطا در تغییر وضعیت</string>
-    <string name="profile_debt_total">بدهی باقی‌مانده: %1$s تومان</string>
-    <string name="profile_credit_total">اعتبار دانش‌آموز: %1$s تومان</string>
-    <string name="profile_settled_total">تسویه‌شده</string>
-    <string name="profile_debt_reg">" | بدهی ثبت‌شده: %1$s تومان"</string>
-    <string name="profile_ower">بدهی %1$s تومان</string>
-    <string name="profile_creditor">اعتبار %1$s تومان</string>
-    <string name="profile_settled">تسویه‌شده</string>
-    <string name="profile_debt_short">" | بدهی: %1$s تومان"</string>
     <string name="profile_photo_camera">گرفتن عکس با دوربین</string>
     <string name="profile_photo_gallery">انتخاب از گالری</string>
     <string name="profile_photo_title">آپلود عکس پروفایل</string>
