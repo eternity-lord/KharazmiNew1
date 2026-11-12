@@ -132,9 +132,30 @@ annotation تبدیل می‌کند — و annotation تنها کانالی اس
 CI نمی‌شکند.
 
 انتظار: annotation باید بگوید آن دو شناسه در گزارش نیستند ⇒ تأییدِ تجربیِ «هیچ رخدادِ
-زنده‌ای nowhere». و بعد از این برش، فایل سرِ جایش می‌ماند به‌عنوانِ **tripwire**: اگر روزی
+زنده‌ای هیچ‌جا». و بعد از این برش، فایل سرِ جایش می‌ماند به‌عنوانِ **tripwire**: اگر روزی
 کسی `paddingVertical` واقعی را به یک style برگرداند، CI همان لحظه مکانِ `file:line` را
 منتشر می‌کند. (گیتِ lint هم مستقل از این، `NewApi` را به‌عنوانِ شناسهٔ جدید می‌شکند.)
+
+**نتیجهٔ واقعیِ اجرا — شاهدِ دریافت‌شده، نه پیش‌بینی.** اجرایِ CI شمارهٔ `43248926932`
+رویِ commit `12dca7b` این annotation را منتشر کرد:
+
+```
+[notice] lint locations for NewApi UnusedAttribute ::
+  ids requested but not present in this report: NewApi, UnusedAttribute
+  locations listed: 0
+```
+
+یعنی در checkoutِ **سالمِ** CI، در کلِ ماژولِ app هیچ مسئلهٔ زندهٔ `NewApi` یا
+`UnusedAttribute` وجود ندارد — نه در آن ۳۴ فایلِ layout و نه در `values*`. این همان حلقهٔ
+تجربیِ ناقصِ بندِ ۵ است: چون PR #14 ثابت کرده بود lint رخدادِ واقعیِ این صفت‌ها را در
+`values*` به‌عنوانِ `NewApi` می‌گیرد، صفر بودنِ هر دو شناسه در کلِ ماژول یعنی آن ۱۴
+انطباقِ خام در `values*` **صفتِ زنده نیستند**. پس زنجیرهٔ استنتاجیِ بندِ ۵ با شاهدِ
+مستقیم بسته شد و دیگر به خواندنِ `res/` در این sandboxِ خراب نیازی نیست.
+
+از همان اجرا: گیتِ lint `total: baseline=1360 now=1360 (+0)` · `distinct ids: 32 → 32` ·
+`new ids: 0 | worse ids: 0 | improved ids: 0 | gone ids: 0` · `per_severity: Error=148
+(همه StringFormatMatches), Warning=1212` · `files with issues: 157` · هر دو شغلِ pytest
+(`repo root + temp DB` و `route audit`) success · گامِ ۸ «Run JVM unit tests» success.
 
 ## ۷) تصحیحاتِ همین برش
 
