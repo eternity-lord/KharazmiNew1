@@ -266,8 +266,13 @@ def params_of(decl: str) -> tuple[int, int]:
     return sum(0 if "=" in p else 1 for p in parts), len(parts)
 
 
-def count_args(text: str, start: int) -> int:
-    """start = جایِ «(»؛ شمارِ آرگومان‌ها با عبورِ رشته‌آگاه از ()/[]/{} و `.`ها."""
+def count_args(text: str, start: int) -> tuple[int, int]:
+    """start = جایِ «(»؛ برمی‌گرداند (شمارِ آرگومان‌ها، جایِ «)» بسته‌شونده).
+
+    جایِ «)» لازم است تا بتوان دید آیا بلافاصله بعدش یک trailing lambda آمده — در
+    Kotlin آن lambda یک آرگومانِ واقعیِ آخر است و شمارشِ بدونِ آن، مثبتِ کاذبِ
+    ناهمخوانیِ arity می‌سازد.
+    """
     depth, j, args = 0, start, 1
     while j < len(text):
         c = text[j]
@@ -289,7 +294,7 @@ def count_args(text: str, start: int) -> int:
         elif c == "," and depth == 1:
             args += 1
         j += 1
-    return 0 if not text[start + 1 : j].strip() else args
+    return (0 if not text[start + 1 : j].strip() else args), j
 
 
 def signature_table(text: str, scope: str, indent: int = 4) -> dict[tuple[str, str], tuple[int, int]]:
@@ -492,37 +497,73 @@ def check_types(paths: list[pathlib.Path], differential: bool, allow: set[str]) 
 
 
 def check_arity(paths: list[pathlib.Path], scopes: dict[str, str]) -> list[str]:
+    """تطبیقِ شمارِ آرگومانِ فراخوانی‌ها با اعلام‌ها.
+
+    دو شکلِ فراخوانی در Kotlin هست و هر دو شمرده می‌شوند:
+      • `name(a, b)`            → شمارِ آرگومان‌ها از داخلِ پرانتز
+      • `name(a, b) { … }`      → همان، به‌علاوهٔ یک trailing lambda (آرگومانِ آخر)
+      • `name { … }`            → بدونِ پرانتز؛ فقط یک trailing lambda
+    شکلِ سوم پیش‌تر دیده نمی‌شد، پس یک تابعِ زنده «صفر فراخوانی» به‌نظر می‌رسید — همان
+    دامی که در `InvoiceActivity.ensureEnrollmentForSubmit` نزدیک بود ۳۳ خط کدِ زنده را
+    «مرده» جلوه دهد.
+    """
     tables: dict[tuple[str, str], tuple[int, int]] = {}
     for p in paths:
         tables |= signature_table(p.read_text(encoding="utf-8"), scopes.get(p.name, p.stem))
-    fails, checked = [], 0
+    fails: list[str] = []
+    checked = 0
+    decl_re = re.compile(r"\s*(?:private |internal |public |protected )?(?:override |open )?(?:suspend )?fun ")
     for p in paths:
         scope = scopes.get(p.name, p.stem)
         text = p.read_text(encoding="utf-8")
+
+        def resolve(m_start: int, name: str):
+            line_start = text.rfind("\n", 0, m_start) + 1
+            if decl_re.match(text[line_start : m_start + 4]):
+                return None                      # خودِ اعلام است، نه فراخوانی
+            prefix = text[max(0, m_start - 28) : m_start]
+            q = re.search(r"([A-Z]\w*|repository|api)\.$", prefix)
+            target = scopes.get(q.group(1) + ".kt", q.group(1)) if q else scope
+            return tables.get((target, name))
+
+        def complain(name: str, n: int, req: int, total: int, pos: int):
+            line = text[:pos].count("\n") + 1
+            fails.append(f"{p.name}:{line} {name}({n}) ولی اعلام req={req} total={total}")
+
+        # شکلِ ۱ و ۲: فراخوانیِ با پرانتز (و trailing lambdaِ چسبیده به آن)
         for m in re.finditer(r"(?<![\w.])(\w+)\(", text):
             name = m.group(1)
             if name in KW_NOT_CALL:
                 continue
-            line_start = text.rfind("\n", 0, m.start()) + 1
-            if re.match(r"\s*(?:private |internal |public |protected )?(?:override |open )?(?:suspend )?fun ",
-                        text[line_start : m.start() + 4]):
-                continue  # خودِ اعلام است، نه فراخوانی
-            prefix = text[max(0, m.start() - 28) : m.start()]
-            q = re.search(r"([A-Z]\w*|repository|api)\.$", prefix)
-            target = scopes.get(q.group(1) + ".kt", q.group(1)) if q else scope
-            if (target, name) not in tables:
+            sig = resolve(m.start(), name)
+            if sig is None:
                 continue
-            n = count_args(text, m.end() - 1)
-            req, total = tables[(target, name)]
+            n, close = count_args(text, m.end() - 1)
+            k = close + 1
+            while k < len(text) and text[k] in " \t\r\n":
+                k += 1
+            if k < len(text) and text[k] == "{":
+                n += 1
+            req, total = sig
             checked += 1
             if not (req <= n <= total):
-                line = text[: m.start()].count("\n") + 1
-                fails.append(f"{p.name}:{line} {name}({n}) ولی اعلام req={req} total={total}")
+                complain(name, n, req, total, m.start())
+        # شکلِ ۳: فقط trailing lambda، بدونِ پرانتز
+        for m in re.finditer(r"(?<![\w.])(\w+)\s*\{", text):
+            name = m.group(1)
+            if name in KW_NOT_CALL:
+                continue
+            sig = resolve(m.start(), name)
+            if sig is None:
+                continue
+            req, total = sig
+            checked += 1
+            if not (req <= 1 <= total):
+                complain(name, 1, req, total, m.start())
     print(f"  [arity] {checked} نقطهٔ فراخوانی سنجیده شد، {len(fails)} ناهمخوانی")
     for f in fails[:10]:
         print(f"      !! {f}")
     return fails
-
 
 def check_members(paths: list[pathlib.Path]) -> list[str]:
     fails = []
