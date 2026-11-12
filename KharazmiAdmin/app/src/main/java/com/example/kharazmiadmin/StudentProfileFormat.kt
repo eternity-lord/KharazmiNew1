@@ -35,7 +35,7 @@ object StudentProfileFormat {
 
     fun isValidJalaliDate(raw: String): Boolean {
         val normalized = normalizePersianDigits(raw.trim())
-        val re = Regex("^\\\\d{4}/\\\\d{2}/\\\\d{2}$")
+        val re = Regex("^\\d{4}/\\d{2}/\\d{2}$")
         if (!re.matches(normalized)) return false
         return try {
             JalaliUtils.parseProjectDate(normalized) != null
