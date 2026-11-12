@@ -376,7 +376,12 @@ def get_student_report_card(
             courses_details.append({
                 "course_title": c_title,
                 "teacher_name": f"{en.course.teacher.first_name} {en.course.teacher.last_name}" if en.course.teacher else "حذف شده",
-                "attendance_percentage": round(attendance_percentage, 1) if 'attendance_percentage' in locals() else round(attendance_pct, 1),
+                # FIX(F821): گاردِ `'attendance_percentage' in locals()` همیشه False بود — آن نام
+                # هیچ‌جا در این تابع assign نمی‌شود (تنها جای دیگر، کلیدِ dict در export_report_card_pdf
+                # است)، پس Python آن را global می‌بیند و locals() هرگز شاملش نمی‌شود ⇒ شاخهٔ اول
+                # کدِ مرده بود و مقدار همیشه از attendance_pct (همین حلقه، چند خط بالاتر) می‌آمد.
+                # رفتار و شکلِ پاسخ هیچ تغییری نکرد؛ فقط نامِ تعریف‌نشده و گاردِ بی‌اثر برداشته شد.
+                "attendance_percentage": round(attendance_pct, 1),
                 "grades": g_list,
                 "average_score": avg_score
             })
