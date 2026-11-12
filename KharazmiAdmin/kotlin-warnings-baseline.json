@@ -1,0 +1,31 @@
+{
+  "_comment": [
+    "baseline گیتِ warningهای کامپایلرِ Kotlin — ساختهٔ KharazmiAdmin/kotlin_warning_gate.py.",
+    "دانه‌بندی عمداً «شمارِ warning به تفکیکِ قالبِ پیام» است؛ علت و محدودیتِ صادقانهٔ آن",
+    "(netting-out) در docstring همان اسکریپت آمده: artifact از CI قابلِ دانلود نیست و",
+    "output.summary از API خالی برمی‌گردد، پس تنها کانالِ انتقالِ baseline همان annotation است.",
+    "شناسه‌ها قالبِ پیام‌اند، نه id پایدارِ ابزار: نام‌های نقل‌قولی '*' و اعداد N شده‌اند."
+  ],
+  "total": 45,
+  "distinct_kinds": 3,
+  "by_kind": {
+    "'*' is deprecated. Deprecated in Java": 40,
+    "'*' is deprecated. This method has been deprecated in favor of using the Activit#6b3040": 4,
+    "Java type mismatch: inferred type is '*', but '*' was expected": 1
+  },
+  "files_with_warnings": 10,
+  "top_files": {
+    "KharazmiAdmin/app/src/main/java/com/example/kharazmiadmin/SecureLoginStore.kt": 11,
+    "KharazmiAdmin/app/src/main/java/com/example/kharazmiadmin/ArchivedClassesActivity.kt": 5,
+    "KharazmiAdmin/app/src/main/java/com/example/kharazmiadmin/AuditTrailActivity.kt": 5,
+    "KharazmiAdmin/app/src/main/java/com/example/kharazmiadmin/EditStudentActivity.kt": 5,
+    "KharazmiAdmin/app/src/main/java/com/example/kharazmiadmin/StudentRegisterActivity.kt": 5,
+    "KharazmiAdmin/app/src/main/java/com/example/kharazmiadmin/TeacherRegisterActivity.kt": 5,
+    "KharazmiAdmin/app/src/main/java/com/example/kharazmiadmin/InstituteSettingsActivity.kt": 3,
+    "KharazmiAdmin/app/src/main/java/com/example/kharazmiadmin/StudentProfileActivity.kt": 3,
+    "KharazmiAdmin/app/src/main/java/com/example/kharazmiadmin/ClassDetailActivity.kt": 2,
+    "KharazmiAdmin/app/src/main/java/com/example/kharazmiadmin/StudentProfileErrors.kt": 1
+  },
+  "log": "/tmp/gradle-assemble.log",
+  "source": "CI run 43268013140"
+}
