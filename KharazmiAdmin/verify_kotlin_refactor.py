@@ -43,7 +43,18 @@ import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 APP_SRC = ROOT / "KharazmiAdmin/app/src/main/java/com/example/kharazmiadmin"
-TEST_DIRS = [ROOT / "KHarazmi_Server/tests", ROOT / "tests"]
+# املایِ درستِ هر دو پوشه با `h` کوچک است: `Kharazmi_Server` و `KharazmiAdmin`. نسخهٔ اولِ
+# این خط پوشهٔ تستِ سرور را با حرفِ بزرگِ `H` نوشته بود، یعنی پوشه‌ای که **وجود ندارد**؛
+# ثابت هرگز مصرف نمی‌شد — کورپسِ نقشهٔ پین از `git ls-files` در `test_files()` می‌آید —
+# وگرنه ۸۰ فایلِ تستِ سمتِ سرور بی‌صدا از کورپس بیرون می‌ماندند؛ همان فایل‌هایی که
+# پین‌هایِ سختِ Kotlin در آن‌هاست (`test_android_resources_static.py` به‌تنهایی ۱۷ فایلِ .kt
+# و ۲۱۷ لیترال را پین می‌کند). حالا ثابت **مصرف می‌شود** تا همان مین دوباره کار گذاشته نشود.
+TEST_DIRS = [ROOT / "Kharazmi_Server/tests", ROOT / "tests"]
+# کفِ هر پوشه جداگانه. `MIN_TEST_FILES` تنها یک کفِ کورِ سراسری است: اگر پوشهٔ تستِ سمتِ
+# سرور تغییرِ نام دهد کورپس از ۱۱۸ به ۳۸ می‌رسد و آن کف (۱۰۰) می‌گیردش، ولی اگر روزی
+# `tests/` آن‌قدر رشد کند که کفِ سراسری بدونِ فایل‌هایِ سرور هم پاس شود، دیگر کافی نیست.
+# شمارِ امروز: ۸۰ و ۳۸ ⇒ کف‌ها ۶۰ و ۳۰ (حاشیهٔ امن برایِ جابه‌جاییِ چند فایل، نه بیشتر).
+MIN_FILES_PER_TEST_DIR = {"Kharazmi_Server/tests": 60, "tests": 30}
 ANALYZER = ROOT / "KharazmiAdmin/find_dead_kotlin.py"
 
 # بسته‌های star: چه نام‌هایی فراهم می‌کنند. بدونِ این، `import retrofit2.http.*` به
@@ -338,6 +349,23 @@ def test_files() -> list[pathlib.Path]:
         raise SystemExit(f"ABORT: کورپسِ تست ناقص است، اینها نیستند: {sorted(absent)}")
     if len(out) < MIN_TEST_FILES:
         raise SystemExit(f"ABORT: کورپسِ تست فقط {len(out)} فایل دارد (< {MIN_TEST_FILES}) — قابلِ اعتماد نیست")
+    # کنترلِ دانه‌بندی‌شدهٔ هر پوشهٔ تست (بندِ `MIN_FILES_PER_TEST_DIR`). دو نکته:
+    # (۱) نبودنِ پوشه **شکستِ پرسروصدا** است نه شمارِ صفر — دامِ شناخته‌شدهٔ این پروژه این
+    # بود که یک خواندنِ ناموفق، صفر/پاک گزارش شود؛ (۲) پیامِ خطا راهِ تشخیص را هم می‌گوید.
+    for d in TEST_DIRS:
+        rel = str(d.relative_to(ROOT))
+        if not d.exists():
+            raise SystemExit(
+                f"ABORT: پوشهٔ تست `{rel}` وجود ندارد. املایش را با "
+                "`git ls-files | grep -i <basename>` بسنجید — نامِ واقعی با `h` کوچک است"
+            )
+        n = sum(1 for p in out if d in p.parents)
+        floor = MIN_FILES_PER_TEST_DIR.get(rel, 1)
+        if n < floor:
+            raise SystemExit(
+                f"ABORT: پوشهٔ تست `{rel}` فقط {n} فایل در کورپس دارد (< {floor}). نقشهٔ پین "
+                "بدونِ این فایل‌ها ناقص است و بی‌صدا «پینی نیست» گزارش می‌دهد."
+            )
     return sorted(out)
 
 
