@@ -82,4 +82,4 @@
 
 ## ۹) بدهی‌های بازِ قبلی (بدونِ تغییر)
 
-۹۱ موردِ `paddingVertical`/`paddingHorizontal` در ۳۴ layout که lint آن‌ها را `NewApi` نمی‌زند · ۱۴۸ `StringFormatMatches` (تنها Errorهای باقی‌ماندهٔ lint، triaged out) · گیتِ warningهای کامپایلرِ Kotlin ساخته نشده · `validate_app_map.py` در HEAD هم exit=1 می‌دهد (۸ endpointِ ثبت‌نشده) و در هیچ workflow ای نیست · بدهیِ `./gradlew wrapper` (تا اجرا نشود، `validate-wrappers: false` + `gradle-version: 8.13` + گامِ Guard لازم‌اند).
+~~۹۱ موردِ `paddingVertical`/`paddingHorizontal` در ۳۴ layout که lint آن‌ها را `NewApi` نمی‌زند~~ (بسته شد ۲۰۲۶-۱۱-۱۲ / P4d-6: باگ نیستند — aapt2 بازنویسی می‌کند و lint عمداً benign می‌داندشان؛ `checkpoints/2026-11-12-investigate-phase4d6-padding-attrs-aapt2-desugar.md`) · ۱۴۸ `StringFormatMatches` (تنها Errorهای باقی‌ماندهٔ lint، triaged out) · گیتِ warningهای کامپایلرِ Kotlin ساخته نشده · `validate_app_map.py` در HEAD هم exit=1 می‌دهد (۸ endpointِ ثبت‌نشده) و در هیچ workflow ای نیست · بدهیِ `./gradlew wrapper` (تا اجرا نشود، `validate-wrappers: false` + `gradle-version: 8.13` + گامِ Guard لازم‌اند).

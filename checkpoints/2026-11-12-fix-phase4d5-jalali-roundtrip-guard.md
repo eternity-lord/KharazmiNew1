@@ -161,9 +161,12 @@ validate_app_map     server_map_exact=True · runtime=221 · android_only=0 (exi
 
 ## ۷) بدهیِ باقی‌مانده
 
-- `minSdk = 24` ولی `android:paddingVertical/Horizontal` نیاز به **API 26** دارد ⇒
-  **۱۰۵ رخداد در ۳۷ فایلِ layout** رویِ دستگاه‌هایِ ۲۴–۲۵ بی‌صدا نادیده گرفته
-  می‌شوند (باگِ بصریِ واقعی، نه فقط نویزِ lint).
+- ~~`minSdk = 24` ولی `android:paddingVertical/Horizontal` نیاز به **API 26** دارد ⇒
+  «۱۰۵ رخداد در ۳۷ فایلِ layout» باگِ بصریِ واقعی~~ — **این بند غلط بود و در برشِ P4d-6
+  تصحیح شد:** آن ۳۷ فایل ۳۴ layout + ۳ فایلِ values بودند (`۱۰۵ = ۹۱ + ۱۴`)، و رخدادِ
+  layoutها باگ نیست چون خودِ aapt2 در `ResourceFileFlattener` بازنویسی‌شان می‌کند و lint
+  هم عمداً در فهرستِ «benign» گذاشته‌شان است (AOSP commit `139515660`). شواهد:
+  `checkpoints/2026-11-12-investigate-phase4d6-padding-attrs-aapt2-desugar.md`.
 - lint: ۱۳۶۰ مسئله / ۳۲ شناسه منجمد در بیس‌لاین، از جمله `Error=148` از نوعِ
   `StringFormatMatches`.
 - `find_dead_kotlin`: ۸ نماد / ۱۰۴ خط با برچسبِ DEFER (عمدی).

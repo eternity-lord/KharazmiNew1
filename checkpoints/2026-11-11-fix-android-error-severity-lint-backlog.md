@@ -115,6 +115,18 @@ Error نیستند. اینکه آیا این نقطهٔ کورِ lint است ی�
 ویرایشِ سرسریِ ۳۴ فایل در این فاز توجیه نداشت. این تنها بدهیِ شناخته‌شدهٔ باقی‌مانده از
 این فاز است.
 
+> **به‌روزرسانیِ ۲۰۲۶-۱۱-۱۲ (برشِ P4d-6) — بررسی انجام شد؛ پاسخ «نه نقطهٔ کور، بلکه
+> رفتارِ عمدیِ ابزار» است:** aapt2 در `ResourceFileFlattener` همین صفت‌ها را در فایل‌های
+> layout به معادلِ همه‌نسخه‌ها بازنویسی می‌کند (`paddingHorizontal` → `paddingLeft` +
+> `paddingRight`) و lint هم دقیقاً همین چهار صفت (`padding{Horizontal,Vertical}` و
+> `layout_margin{Horizontal,Vertical}`) را عمداً «benign» می‌داند (AOSP commit `139515660`
+> در `platform/tools/base`). آن بازنویسی فقط برایِ layout است نه `values/` — که دقیقاً
+> توضیح می‌دهد چرا آن ۱۴ موردِ `values*` به‌عنوانِ `NewApi` گرفته شدند و این ۹۱ مورد نه.
+> پس **باگ نیستند** و ویرایشِ ۳۴ فایل هیچ نقصی را برنمی‌داشت؛ و چون `paddingHorizontal`
+> به `paddingLeft/Right` تجزیه می‌شود نه `paddingStart/End`، جایگزینیِ دستی حتی می‌توانست
+> رفتار را عوض کند. شواهد، زنجیرهٔ استنتاجی برایِ `values*` (چون در آن پنجرهٔ زمانی
+> checkoutِ sandbox خواندنی نبود) و tripwireِ CI: `checkpoints/2026-11-12-investigate-phase4d6-padding-attrs-aapt2-desugar.md`.
+
 ### ۴٫۳ `ResourceType` (۲) — عددِ خام به‌جایِ شناسهٔ منبع
 `CachedApiCall.kt` اسکلتِ شیمر و بنرِ آفلاین را با idهای خامِ `887766` و `998877` می‌ساخت
 (تخصیص در `:38` و `:70`، جست‌وجو در `:59` و `:99`). دو خطر: عددِ دلخواه می‌تواند با یک idِ
@@ -189,7 +201,9 @@ ruff `251` · `ruff --select F821` `1` · mypy `726` خطا در `44` فایل �
    متنِ محافظت‌شدهٔ تست‌ها سرجایش بماند. حالا که Errorهای لینت صفرِ واقعی شده‌اند، این کار
    روی درختِ امن‌تری انجام می‌شود — به‌ویژه چون ۸ موردِ `SuspiciousIndentation` دقیقاً همان
    الگویی بودند که جابه‌جایی‌شان در ریفکتور خطرناک بود.
-2. بررسیِ آن **۹۱ موردِ layout** از `paddingVertical/Horizontal` که lint نگرفت (بندِ ۴٫۲).
+2. ~~بررسیِ آن **۹۱ موردِ layout** از `paddingVertical/Horizontal` که lint نگرفت (بندِ ۴٫۲).~~
+   **انجام شد (۲۰۲۶-۱۱-۱۲، برشِ P4d-6): نقطهٔ کور نیست — aapt2 بازنویسی‌شان می‌کند و
+   lint عمداً benign می‌داندشان ⇒ باگ نیستند.** `checkpoints/2026-11-12-investigate-phase4d6-padding-attrs-aapt2-desugar.md`.
 3. گیتِ warningهای کامپایلرِ Kotlin (خطوطِ `w:`) با همین الگوی «بدتر نشود».
 4. بدهیِ باز از P4-prep: `./gradlew wrapper` تا بتوان `validate-wrappers: false` و Guard step
    را از workflow برداشت.
