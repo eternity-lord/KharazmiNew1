@@ -103,7 +103,7 @@ FAILED test_group5_behavior.py::…::test_23b_single_endpoint_remains_and_bulk_e
 
 ## ۸) بدهی‌های بازِ قبلی (بدونِ تغییر)
 
-- **۹۱ موردِ `paddingVertical`/`paddingHorizontal` در ۳۴ فایلِ layout** که lint آن‌ها را `NewApi` نمی‌زند (فقط ۱۴ موردِ داخلِ `values*` را می‌زد که در فازِ قبل اصلاح شد).
+- **۹۱ موردِ `paddingVertical`/`paddingHorizontal` در ۳۴ فایلِ layout** که lint آن‌ها را `NewApi` نمی‌زند (فقط ۱۴ موردِ داخلِ `values*` را می‌زد که در فازِ قبل اصلاح شد). **[بسته شد ۲۰۲۶-۱۱-۱۲ / P4d-6: باگ نیستند — aapt2 در `ResourceFileFlattener` بازنویسی‌شان می‌کند و lint عمداً benign می‌داندشان؛ `checkpoints/2026-11-12-investigate-phase4d6-padding-attrs-aapt2-desugar.md`.]**
 - **۱۴۸ `StringFormatMatches`** (همهٔ Errorهای باقی‌ماندهٔ lint) — triaged out؛ فرمت‌ها درست کار می‌کنند.
 - **گیتِ warningهای کامپایلرِ Kotlin** (`w:`) هنوز ساخته نشده.
 - **بدهیِ `./gradlew wrapper`:** jar فعلی با jar رسمیِ `gradle/gradle@v8.13.0` تفاوتِ container دارد (۴۲۶۱۳ در برابر ۴۳۷۰۵ بایت، sha256 متفاوت، ۳۲/۳۳ CRC یکسان)؛ تا وقتی کاربر `./gradlew wrapper` را اجرا نکند، `validate-wrappers: false` + `gradle-version: 8.13` + گامِ Guard در `android.yml` لازم‌اند.

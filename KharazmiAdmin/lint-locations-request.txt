@@ -1,0 +1,21 @@
+NewApi,UnusedAttribute
+20
+# ── این فایل چیست ──────────────────────────────────────────────────────────────
+# گامِ «Publish lint locations for the requested ids» در .github/workflows/android.yml
+# وقتی inputِ lint_ids خالی باشد، خطِ ۱ این فایل را به‌عنوانِ فهرستِ شناسه‌ها و خطِ ۲ را
+# به‌عنوانِ --max-per-id می‌خواند. فقط خطِ ۱ و ۲ خوانده می‌شوند؛ بقیهٔ خطوط آزادند.
+#
+# چرا این دو شناسه: `android:padding{Vertical,Horizontal}` و `layout_margin{Vertical,Horizontal}`
+# از API 26 هستند و minSdk این اپ ۲۴. در فایل‌های layout خودِ aapt2 آن‌ها را به معادلِ
+# همه‌نسخه‌ها بازنویسی می‌کند (ResourceFileFlattener) و lint هم عمداً در فهرستِ «benign»
+# گذاشته‌شان است (AOSP commit 139515660 در platform/tools/base) ⇒ آنجا باگ نیستند.
+# ولی در values/ (style و theme) آن بازنویسی انجام نمی‌شود، پس یک رخدادِ واقعیِ NewApi
+# آنجا = باگِ واقعیِ رندر رویِ دستگاه‌هایِ API 24/25 (همان ۱۴ موردی که PR #14 اصلاح کرد).
+#
+# انتظارِ ما: annotationِ این گام باید بگوید «ids requested but not present in this
+# report: NewApi, UnusedAttribute» و «locations listed: 0». اگر روزی مکانِ file:line
+# چاپ کرد، یک بازگشتِ واقعی است و باید همان‌جا اصلاح شود — پس این فایل عمداً سرِ جایش
+# می‌ماند (tripwire)، نه اینکه بعد از یک اجرا پاک شود. گیتِ lint هم مستقل از این،
+# هر شناسهٔ جدید را شکست می‌دهد.
+#
+# جزئیات و شواهد: checkpoints/2026-11-12-investigate-phase4d6-padding-attrs-aapt2-desugar.md
