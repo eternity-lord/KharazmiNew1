@@ -14,7 +14,8 @@
 #      ۷۳ drawable، ۶ فایل values) و چیزی که «drawableِ حذف‌شده هنوز جایی ارجاع شده» را
 #      می‌گیرد لینکِ منابع است، نه کامپایلرِ Kotlin.
 #   ۲) `:app:testDebugUnitTest` — تست‌های واحدِ JVM (بدون امولاتور): `CachePolicy`،
-#      `InputValidation` و `DebouncedRequest` با ساعتِ مجازیِ coroutines-test.
+#      `InputValidation`، `DebouncedRequest` با ساعتِ مجازیِ coroutines-test، و
+#      `StudentProfileFormat` (گاردِ تاریخِ شمسی و قالبِ مبلغ).
 #   ۳) `:app:lintDebug` + گیتِ baseline (فاز P4c) — تا این فاز lint هرگز اجرا نشده بود و
 #      وضعیتش کاملاً ناشناخته بود. سیاست «صفرکن» نیست، «بدتر نشود» است: گزارشِ XML با
 #      `KharazmiAdmin/lint-baseline.json` مقایسه می‌شود و **id جدید** یا **افزایشِ شمارِ هر id**
@@ -28,54 +29,52 @@
 #   • `assembleRelease` — minify خاموش است و امضای release در ریپو نیست.
 #
 # ─────────────────────────────────────────────────────────────────────────────
-# یافتهٔ امنیتیِ مهم: `KharazmiAdmin/gradle/wrapper/gradle-wrapper.jar` اصیل نیست
+# بدهیِ wrapper حل شد (۲۰۲۶-۱۱-۱۲): سه‌گانهٔ رسمیِ Gradle 8.13.0 نصب شد
 # ─────────────────────────────────────────────────────────────────────────────
-#   اولین اجرای همین workflow با پیامِ زیر شکست خورد:
+#   تاریخچه: نخستین اجرای همین workflow با این پیام شکست خورد:
 #       Error: At least one Gradle Wrapper Jar failed validation!
 #       ✗ Found unknown Gradle Wrapper JAR files:
 #         ccb27f2587513f0aac87b1587174aeaa167fe67643dea3fae4fce73d4d11594a
-#   یعنی SHA-256 این jar با هیچ‌کدام از انتشارهای رسمیِ Gradle نمی‌خواند. چون این فایل
-#   «یک blob باینری از کدِ اجرایی است که در ریپو commit شده» (و دقیقاً همان چیزی است که
-#   حملهٔ زنجیرهٔ تأمین با PRِ «Update to Gradle xxx» انجام می‌شود)، قبل از هر کاری
-#   کالبدشکافی‌اش کردیم. نتیجه در برابرِ jarِ رسمیِ `gradle/gradle` tag `v8.13.0`:
+#   چون این فایل «یک blob باینری از کدِ اجراییِ commit‌شده در ریپو» است (دقیقاً همان چیزی
+#   که حملهٔ زنجیرهٔ تأمین با PRِ «Update to Gradle xxx» انجام می‌شود)، کالبدشکافی شد:
+#   کدِ داخلش همان Gradle 8.13 بود (۳۲ entry از ۳۳ با CRC-32 یکسان در برابرِ
+#   `gradle/gradle@v8.13.0`) ولی ظرفِ ZIP یک بار باز و دوبسته شده بود (timestamp همهٔ
+#   entryها ۲۰۲۶-۰۹-۱۰ در برابرِ ۱۹۸۰-۰۱-۰۱ِ رسمیِ reproducible) و MANIFEST یک
+#   `Main-Class` اضافه داشت؛ همان که SHA-256 را عوض کرده بود.
 #
-#       • ۳۳ entry در هر دو؛ نام‌ها کاملاً یکسان؛ هیچ class/بستهٔ اضافی یا ناشناس نیست
-#       • ۳۲ entry از ۳۳ → **CRC-32 یکسان**، یعنی بایت‌های decompressedِ همهٔ کلاس‌ها
-#         (`org/gradle/cli/*`، `org/gradle/wrapper/*`، `org/gradle/internal/file/*`،
-#         `WrapperDistributionUrlConverter`) با Gradle 8.13 رسمی مو‌به‌مو یکی است
-#       • تنها تفاوت: `META-INF/MANIFEST.MF` (۱۱۳ بایت در برابر ۶۳). نسخهٔ ما `Main-Class:
-#         org.gradle.wrapper.GradleWrapperMain` دارد و نسخهٔ ریپوِ gradle/gradle ندارد —
-#         یعنی jarِ ما همان flavorِ داخلِ **distribution** است (که runnable است)، نه کپیِ
-#         داخلِ سورسِ Gradle. این تفاوت موردِ انتظار است، نه نشانهٔ دست‌کاری.
-#       • ظرفِ ZIP بازنویسی شده: timestamp رسمیِ همهٔ entryها `1980-01-01` است (buildِ
-#         reproducible)، ولی مالِ ما `2026-09-10` برای همهٔ entryهاست و اندازهٔ فشرده
-#         ۴۲۶۱۳ در برابر ۴۳۷۰۵ بایت.
+#   تشخیصِ تکمیلیِ ۲۰۲۶-۱۱-۱۲ نشان داد انحراف فقط jar نبود — **wrapper سه‌جانبه ناسازگار
+#   بود**:
+#       • `gradle-wrapper.properties` → `gradle-8.13-bin.zip`
+#       • `gradlew` / `gradlew.bat`   → قالبِ Gradle **۸٫۱۴+**: فراخوانیِ `-jar`،
+#         `CLASSPATH="\"\""` (خالی)، بدونِ `-Dfile.encoding=UTF-8`، کپی‌رایتِ «2015» تنها
+#       • `gradle-wrapper.jar`         → کلاس‌های ۸٫۱۳ با مانیفستِ `Main-Class`-دار
+#         (که از ۸٫۱۴ رسمی است) در ظرفِ بازبسته‌بندی‌شده
+#   سبکِ `-jar`+`Main-Class` از Gradle ۸٫۱۴ آمده (jarِ رسمیِ v8.14.0 = ۴۳۷۶۴ بایت با
+#   `Main-Class`؛ jarِ رسمیِ v8.13.0 = ۴۳۷۰۵ بایت بدونِ آن). یعنی اسکریپت‌ها از نسخهٔ
+#   جدیدتر، jar از نسخهٔ قدیمی‌تر و distributionUrl از سومی — پس `./gradlew` ریپو با jarِ
+#   رسمیِ ۸٫۱۳ کار نمی‌کرد و برای همین CI تا امروز wrapper را اجرا نمی‌کرد.
 #
-#   جمع‌بندی: **کدِ داخلِ jar همان Gradle 8.13 رسمی است**، ولی خودِ ظرف یک بار باز و دوباره
-#   فشرده شده (به‌احتمالِ زیاد همان چرخهٔ zip/unzip که کل ریپو از آن آمده — ریپو در ابتدا
-#   یک فایلِ zip بود) و همین، بایت‌ها و در نتیجه SHA-256 را عوض کرده است.
+#   راه‌حلِ خودِ Gradle اجرای `./gradlew wrapper` است که JVM و شبکه به services.gradle.org
+#   می‌خواهد و در محیطِ کاریِ ما ممکن نیست. معادلِ آن بدونِ Gradle انجام شد: هر سه فایل
+#   بایت‌به‌بایت از tag رسمیِ `v8.13.0` مخزنِ `gradle/gradle` از راهِ `api.github.com`
+#   گرفته و نصب شدند:
+#       gradle/wrapper/gradle-wrapper.jar   ۴۳۷۰۵ بایت  SHA-256 81a82aae…610fecd7ae45f
+#       gradlew                              ۸۷۷۴ بایت  mode 100755، قالبِ GradleWrapperMain
+#       gradlew.bat                          ۲۸۹۴ بایت
+#   آن SHA-256 همان «Official Gradle 8.13 wrapper JAR checksum, verified against
+#   services.gradle.org» است (مستقلاً هم در فهرست‌های allowlist عمومی دیده می‌شود)، پس
+#   اعتبارسنجیِ رسمی دوباره فعال شد و build هم از wrapper اجرا می‌شود (`./gradlew`)، نه از
+#   یک Gradleِ جداگانه با ورودیِ `gradle-version`. به این ترتیب نسخهٔ Gradleٔی که واقعاً
+#   build می‌کند همان است که `gradle-wrapper.properties` اعلام می‌کند و توسعه‌دهندهٔ محلی هم
+#   دقیقاً همان را می‌گیرد.
 #
-#   راه‌حلِ دائمی که خودِ Gradle توصیه می‌کند: اجرای `./gradlew wrapper` با یک
-#   distribution رسمی تا jarِ قابل‌اعتبار **بازتولید** شود. این کار JVM و شبکه به
-#   services.gradle.org می‌خواهد و در محیطِ کاریِ ما ممکن نیست.
+#   step «Guard» (pin دستیِ SHA-256 + مطابقتِ نسخهٔ CI با wrapper) پاک شد چون جانشینِ موقتِ
+#   اعتبارسنجیِ رسمی بود؛ اکنون خودِ اکشن همان کار را با فهرستِ رسمیِ Gradle انجام می‌دهد و
+#   برای هر انتشارِ آینده هم معتبر است نه فقط یک فایلِ پین‌شده.
 #
-#   پس تا آن زمان، دو تصمیمِ محافظه‌کارانه گرفته شد:
-#     ۱) این job **هرگز jarِ ریپو را اجرا نمی‌کند**. با ورودیِ `gradle-version` اکشنِ
-#        setup-gradle خودِ Gradle 8.13 را از منبعِ رسمی دانلود و به PATH اضافه می‌کند و ما
-#        `gradle` را صدا می‌زنیم نه `./gradlew` را. یعنی کدِ آن blobِ بازبسته‌بندی‌شده در CI
-#        هرگز اجرا نمی‌شود.
-#     ۲) چون اعتبارسنجیِ رسمی نمی‌تواند این jar را تأیید کند، `validate-wrappers: false` شد
-#        و **جای آن را یک گیتِ دقیق‌تر گرفت**: step «Guard» زیر SHA-256 همان jar را pin
-#        می‌کند و در صورتِ هر تغییر hard fail می‌دهد، پس تعویضِ بی‌صدایِ این باینری در CI
-#        غیرممکن است (کاری که اعتبارسنجیِ عمومی برای *آینده* انجام می‌دهد، این pin برای
-#        *همین* فایل انجام می‌دهد). همان step نگهبان است که نسخهٔ Gradle در
-#        `gradle-wrapper.properties` را با نسخهٔ pin‌شدهٔ CI مطابقت می‌دهد تا این دو از هم
-#        واگرا نشوند.
-#
-#   ⚠️ وقتی jar با `./gradlew wrapper` بازتولید شد: `validate-wrappers: false` را بردارید،
-#      `gradle-version` را حذف کنید تا build از wrapper اجرا شود، step «Guard» را پاک کنید و
-#      فراخوانی‌ها را به `./gradlew` برگردانید — یعنی به حالتِ استاندارد و امن‌تر برگردید.
-# ─────────────────────────────────────────────────────────────────────────────
+#   اگر روزی wrapper بازتولید شد (`./gradlew wrapper`) هیچ کارِ اضافی لازم نیست: این job از
+#   پیش در حالتِ استاندارد است. تنها قید این است که jarِ تازه هم از یک انتشارِ رسمیِ Gradle
+#   باشد، وگرنه `validate-wrappers` می‌شکند — که دقیقاً خواستِ ماست.
 #
 # تریگر عمداً فقط push است (بدون pull_request) — هم‌راستا با `tests.yml`: ساخت/بررسی/مرجِ
 # PR فقط با دستورِ صریح کاربر. هر شاخهٔ `arena/**` هم پوشش دارد تا هر فازِ P4 **پیش از
@@ -129,57 +128,17 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      # `gradle-version` ⇒ خودِ اکشن Gradle 8.13 را دانلود و به PATH اضافه می‌کند و ما
-      # `gradle` را صدا می‌زنیم؛ به همین دلیل wrapper jarِ ریپو هرگز اجرا نمی‌شود (توضیحِ
-      # کامل در سرِ همین فایل). `validate-wrappers: false` هم فقط به همین دلیل است و گیتِ
-      # جایگزینش step «Guard» زیر است.
+      # اعتبارسنجیِ wrapper **فعال** است: jarِ ریپو بایت‌به‌بایت همان artifactِ رسمیِ
+      # `gradle/gradle@v8.13.0` است (توضیح در سرِ همین فایل)، پس این گیت دیگر مانع نیست و
+      # جایِ step «Guard» قدیمی را می‌گیرد. `gradle-version` عمداً ست **نشده**: build باید از
+      # wrapper اجرا شود تا نسخهٔ Gradle همان باشد که `gradle-wrapper.properties` اعلام
+      # می‌کند، نه نسخهٔ دلخواهِ CI.
       # کشِ وابستگی‌ها: build سردِ Gradle چند دقیقه است، با کش به حدود یک دقیقه می‌رسد.
-      - name: Set up Gradle 8.13 (downloaded by the action, dependency cache)
+      - name: Set up Gradle (version comes from the wrapper, dependency cache)
         uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: "8.13"
-          validate-wrappers: false
+          validate-wrappers: true
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
-
-      # ── گیتِ جایگزینِ اعتبارسنجیِ wrapper ──────────────────────────────────────
-      # اگر کسی این باینری را عوض کند، CI همین‌جا با پیامِ روشن می‌شکند. اگر عمدی باشد
-      # (بازتولید با `./gradlew wrapper`)، دستورِ بازگشت به حالتِ استاندارد در پیام آمده.
-      - name: Guard - wrapper jar pinned, CI Gradle version matches the wrapper
-        env:
-          EXPECTED_WRAPPER_SHA256: ccb27f2587513f0aac87b1587174aeaa167fe67643dea3fae4fce73d4d11594a
-          PINNED_GRADLE_VERSION: "8.13"
-        run: |
-          set -euo pipefail
-          jar="gradle/wrapper/gradle-wrapper.jar"
-          props="gradle/wrapper/gradle-wrapper.properties"
-
-          actual=$(sha256sum "$jar" | cut -d' ' -f1)
-          if [ "$actual" != "$EXPECTED_WRAPPER_SHA256" ]; then
-            echo "::error::SHA-256 فایل $jar تغییر کرده است."
-            echo "  انتظار (pin‌شده): $EXPECTED_WRAPPER_SHA256"
-            echo "  فعلی            : $actual"
-            echo "این فایل یک باینریِ اجراییِ commit‌شده است و اعتبارسنجیِ رسمیِ Gradle آن را"
-            echo "نمی‌شناسد (توضیح کامل در سرِ .github/workflows/android.yml)، پس تغییرش نباید"
-            echo "بی‌صدا رد شود."
-            echo "اگر عمداً با './gradlew wrapper' از یک distribution رسمی بازتولیدش کرده‌اید:"
-            echo "  ۱) validate-wrappers: false را بردارید تا اعتبارسنجیِ رسمی دوباره فعال شود،"
-            echo "  ۲) gradle-version را حذف کنید و فراخوانی‌ها را به ./gradlew برگردانید،"
-            echo "  ۳) همین step «Guard» را پاک کنید."
-            exit 1
-          fi
-          echo "✅ wrapper jar با pin مطابقت دارد (و در این job اجرا نمی‌شود)."
-
-          url=$(sed -n 's/^distributionUrl=//p' "$props" | tr -d '\\')
-          case "$url" in
-            *"gradle-$PINNED_GRADLE_VERSION"*)
-              echo "✅ wrapper همان Gradle $PINNED_GRADLE_VERSION را می‌خواهد: $url"
-              ;;
-            *)
-              echo "::error::واگراییِ نسخه: CI با Gradle $PINNED_GRADLE_VERSION پین شده ولی $props می‌گوید: $url"
-              echo "یا gradle-version را در همین workflow به‌روز کنید یا wrapper را به همان نسخه برگردانید."
-              exit 1
-              ;;
-          esac
 
       # `local.properties` عمداً در ریپو نیست (مسیرِ SDK ماشین‌به‌ماشین فرق می‌کند)، پس AGP
       # باید `sdk.dir` را از SDKِ از‌پیش‌نصب‌شدهٔ رانر بخواند. اگر رانر روزی بدون
@@ -195,7 +154,7 @@ jobs:
           echo "sdk.dir=$ANDROID_HOME" > local.properties
           echo "SDK:    $ANDROID_HOME"
           java -version 2>&1 | head -1
-          gradle --version | sed -n '1,12p'
+          ./gradlew --version | sed -n '1,12p'
 
       # compileSdk = 34 است؛ تصویرِ رانر ممکن است platform دیگری داشته باشد. پذیرشِ license
       # هم این‌جا انجام می‌شود تا AGP بتواند هر جزءِ دیگری را که لازم دارد خودش دانلود کند.
@@ -223,12 +182,12 @@ jobs:
       - name: Compile Kotlin and link resources (debug variant)
         run: |
           set -o pipefail
-          gradle --stacktrace :app:assembleDebug 2>&1 | tee /tmp/gradle-assemble.log
+          ./gradlew --stacktrace :app:assembleDebug 2>&1 | tee /tmp/gradle-assemble.log
 
       - name: Run JVM unit tests
         run: |
           set -o pipefail
-          gradle --stacktrace :app:testDebugUnitTest 2>&1 | tee /tmp/gradle-test.log
+          ./gradlew --stacktrace :app:testDebugUnitTest 2>&1 | tee /tmp/gradle-test.log
 
       # ── فاز P4c: گیتِ lint («بدتر نشود») ──────────────────────────────────────
       # `abortOnError = false` در `app/build.gradle.kts` ست شده تا این task حتی با وجودِ
@@ -237,7 +196,7 @@ jobs:
       - name: Run Android lint (debug variant)
         run: |
           set -o pipefail
-          gradle --stacktrace :app:lintDebug 2>&1 | tee /tmp/gradle-lint.log
+          ./gradlew --stacktrace :app:lintDebug 2>&1 | tee /tmp/gradle-lint.log
 
       # چرا جدولِ فشرده به‌صورتِ annotation منتشر می‌شود: لاگِ خامِ job از هاستِ
       # `results-receiver...` سرو می‌شود و دانلودِ artifact از `pipelines...` — که هر دو در
