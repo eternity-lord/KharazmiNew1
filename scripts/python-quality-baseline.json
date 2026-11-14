@@ -1,0 +1,100 @@
+{
+  "_comment": [
+    "baseline گیتِ کیفیتِ کدِ پایتون — ساختهٔ scripts/python_quality_gate.py.",
+    "دانه‌بندی «شمارِ خطا به تفکیکِ شناسهٔ خودِ ابزار» است: ruff یک code می‌دهد",
+    "(مثل F841) و mypy یک error-code (مثل arg-type)، پس برخلافِ گیتِ warningهای",
+    "Kotlin هیچ قالب‌سازیِ دست‌سازی از متنِ پیام لازم نیست.",
+    "نسخهٔ ابزارها بخشی از baseline است: ruff/mypy بین نسخه‌ها قواعد تازه اضافه",
+    "می‌کنند، پس شمارِ نسخهٔ دیگر قابلِ مقایسه نیست و گیت exit 2 می‌دهد (ناشناخته)،",
+    "نه پاس و نه شکست. نسخه‌های pin‌شده در Kharazmi_Server/requirements-dev.txt‌اند.",
+    "محدودیتِ صادقانه: netting-out — رفعِ یک خطا و افزودنِ یک خطایِ هم‌شناسه",
+    "نه total را تغییر می‌دهد نه by_code را، پس گیت ساکت می‌ماند."
+  ],
+  "ruff": {
+    "version": "0.17.4",
+    "total": 250,
+    "distinct_codes": 27,
+    "by_code": {
+      "E701": 57,
+      "F841": 31,
+      "B905": 27,
+      "C408": 27,
+      "E702": 23,
+      "W293": 12,
+      "SIM102": 11,
+      "E722": 10,
+      "RUF015": 8,
+      "UP031": 8,
+      "B007": 6,
+      "SIM115": 5,
+      "SIM108": 4,
+      "RUF013": 3,
+      "SIM103": 3,
+      "C401": 2,
+      "E731": 2,
+      "RUF021": 2,
+      "C416": 1,
+      "RET501": 1,
+      "RET503": 1,
+      "RUF019": 1,
+      "RUF046": 1,
+      "SIM110": 1,
+      "SIM300": 1,
+      "UP035": 1,
+      "W292": 1
+    },
+    "files_with_issues": 63,
+    "top_files": {
+      "tests/route_audit/sweep/common.py": 30,
+      "tests/route_audit/kotlin_contract.py": 21,
+      "Kharazmi_Server/routers/reports.py": 17,
+      "Kharazmi_Server/tests/test_priority3_integrity.py": 12,
+      "Kharazmi_Server/tests/test_wallet_finance_audit.py": 11,
+      "Kharazmi_Server/routers/audit.py": 10,
+      "tests/route_audit/sweep/run_sweep.py": 9,
+      "Kharazmi_Server/routers/timeline.py": 8,
+      "Kharazmi_Server/tests/test_roles_installment_notifications_audit.py": 7,
+      "Kharazmi_Server/routers/dunning.py": 6
+    }
+  },
+  "mypy": {
+    "version": "2.4.1",
+    "total": 725,
+    "distinct_codes": 14,
+    "by_code": {
+      "arg-type": 239,
+      "assignment": 206,
+      "var-annotated": 72,
+      "union-attr": 59,
+      "misc": 54,
+      "valid-type": 43,
+      "no-untyped-def": 19,
+      "return-value": 17,
+      "operator": 5,
+      "call-overload": 3,
+      "type-var": 3,
+      "index": 2,
+      "list-item": 2,
+      "attr-defined": 1
+    },
+    "files_with_issues": 44,
+    "top_files": {
+      "Kharazmi_Server/routers/admin.py": 99,
+      "Kharazmi_Server/models.py": 88,
+      "Kharazmi_Server/financial_calculations.py": 33,
+      "Kharazmi_Server/routers/classes.py": 33,
+      "Kharazmi_Server/routers/finance.py": 33,
+      "Kharazmi_Server/routers/attendance.py": 30,
+      "Kharazmi_Server/services/transaction_admin.py": 30,
+      "Kharazmi_Server/services/payments.py": 29,
+      "Kharazmi_Server/routers/reports.py": 27,
+      "Kharazmi_Server/routers/exams.py": 25
+    },
+    "checked_files": 55
+  },
+  "totals": {
+    "combined": 975,
+    "distinct_codes": 41
+  },
+  "source": "local run of ruff 0.17.4 + mypy 2.4.1 on 8657b18"
+}
