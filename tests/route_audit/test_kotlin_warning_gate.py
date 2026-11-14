@@ -390,25 +390,38 @@ CI_RECORDED_MESSAGE_TO_KIND = {
 def test_committed_baseline_is_consistent_with_the_tool_and_the_ci_inventory():
     """baselineِ commit‌شده باید با همین نسخه از ابزار و با موجودیِ واقعیِ CI بخواند.
 
-    سه چیز را قفل می‌کند: (۱) فایل واقعاً در ریپو هست و JSONِ معتبر است؛ (۲) شمارها
-    خودسازگارند (`sum(by_kind) == total == 45` و `len(by_kind) == distinct_kinds`)؛
+    چهار چیز را قفل می‌کند: (۱) فایل واقعاً در ریپو هست و JSONِ معتبر است؛ (۲) شمارها
+    خودسازگارند (`sum(by_kind) == total == 44` و `len(by_kind) == distinct_kinds`)؛
     (۳) هر سه شناسه از **پیامِ واقعیِ** کامپایلر با `kind_of` همین ابزار بازتولید می‌شوند —
     شاملِ آن شناسه‌ای که پسوندِ هش دارد. پس اگر روزی `MAX_KIND_LEN`، الگویِ نرمال‌سازی یا
     تابعِ هش عوض شود و baseline را بی‌معنا کند، این تست قرمز می‌شود؛ نه اینکه گیت در CI
-    بی‌دلیل «قالبِ جدید» ببیند.
+    بی‌دلیل «قالبِ جدید» ببیند. (۴) شناسهٔ «ناهمخوانیِ نوعِ Java» که تا اجرایِ
+    ۴۳۶۰۴۳۹۵۱۲۱ در baseline بود باید **بیرون مانده باشد**: تنها رخدادِ واقعی‌اش در
+    `StudentProfileErrors.kt` رفع شد، پس بازگشتش هم اینجا و هم در گیتِ CI قرمز می‌شود.
     """
     path = REPO_ROOT / "KharazmiAdmin" / "kotlin-warnings-baseline.json"
-    assert path.exists(), "baseline باید از annotationِ اجرایِ ۴۳۲۶۸۰۱۳۱۴۰ commit شده باشد"
+    assert path.exists(), "baseline باید از annotationِ اجرایِ ۴۳۶۰۴۳۹۵۱۲۱ commit شده باشد"
     base = json.loads(path.read_text(encoding="utf-8"))
-    assert base["total"] == 45
-    assert base["distinct_kinds"] == 3 == len(base["by_kind"])
+    assert base["total"] == 44
+    assert base["distinct_kinds"] == 2 == len(base["by_kind"])
     assert sum(base["by_kind"].values()) == base["total"]
-    assert base["files_with_warnings"] == 10
+    assert base["files_with_warnings"] == 9
+    assert sum(base["top_files"].values()) == base["total"]
+    # (۳) بازتولیدِ هر شناسه از پیامِ واقعیِ کامپایلر — مستقل از بودن یا نبودنش در baseline
     for msg, kind in CI_RECORDED_MESSAGE_TO_KIND.items():
         assert kind_of(msg) == kind, msg
-        assert kind in base["by_kind"], kind
+    # هیچ شناسهٔ ناشناخته‌ای در baseline نیست (هر چه هست از همین پیام‌هایِ ثبت‌شده می‌آید)
+    assert set(base["by_kind"]) <= set(CI_RECORDED_MESSAGE_TO_KIND.values())
     assert base["by_kind"]["'*' is deprecated. Deprecated in Java"] == 40
-    assert base["by_kind"]["Java type mismatch: inferred type is '*', but '*' was expected"] == 1
+    activity = next(k for k in base["by_kind"] if k.startswith("'*' is deprecated. This method"))
+    assert base["by_kind"][activity] == 4 and activity.endswith("#6b3040")
+    # (۴) گونهٔ رفع‌شده بیرون مانده و فایلش هم دیگر در فهرستِ پرهشدار نیست
+    resolved = CI_RECORDED_MESSAGE_TO_KIND[
+        "Java type mismatch: inferred type is 'kotlin.Nothing?', but 'kotlin.String' was expected."
+    ]
+    assert resolved == "Java type mismatch: inferred type is '*', but '*' was expected"
+    assert resolved not in base["by_kind"], "گونهٔ رفع‌شده نباید به baseline برگردد"
+    assert not any(k.endswith("StudentProfileErrors.kt") for k in base["top_files"])
 
 
 def test_annotations_chunk_below_the_measured_4kb_ceiling(capsys):
