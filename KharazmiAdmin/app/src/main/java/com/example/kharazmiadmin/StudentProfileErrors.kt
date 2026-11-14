@@ -17,7 +17,13 @@ object StudentProfileErrors {
                 if (!body.isNullOrBlank()) {
                     val obj = org.json.JSONObject(body)
                     val d = obj.optString("detail", "")
-                    if (d.isNotBlank()) d else obj.optString("message", null)?.takeIf { it.isNotBlank() }
+                    // FIX(kotlin-warning): دومین آرگومانِ optString پیش‌تر null بود، ولی امضایِ Java آن
+                    // پارامتر را String (نه String?) اعلام کرده است؛ همان یک null تنها هشدارِ
+                    // «Java type mismatch» در کلِ پروژه را می‌ساخت. رفتار هیچ تغییری نکرده است: این
+                    // fallback تنها وقتی خوانده می‌شود که کلید غایب باشد؛ در آن حالت پیش‌تر هم نتیجه
+                    // null بود (فراخوانِ امن رویِ null) و اکنون رشتهٔ خالی در isNotBlank رد می‌شود و
+                    // باز null. خطِ بالایی هم برایِ «detail» از قبل رشتهٔ خالی را می‌داد.
+                    if (d.isNotBlank()) d else obj.optString("message", "").takeIf { it.isNotBlank() }
                 } else null
             } else null
         } catch (_: Exception) { null }

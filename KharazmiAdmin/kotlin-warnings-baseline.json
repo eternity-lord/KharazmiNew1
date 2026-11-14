@@ -6,14 +6,13 @@
     "output.summary از API خالی برمی‌گردد، پس تنها کانالِ انتقالِ baseline همان annotation است.",
     "شناسه‌ها قالبِ پیام‌اند، نه id پایدارِ ابزار: نام‌های نقل‌قولی '*' و اعداد N شده‌اند."
   ],
-  "total": 45,
-  "distinct_kinds": 3,
+  "total": 44,
+  "distinct_kinds": 2,
   "by_kind": {
     "'*' is deprecated. Deprecated in Java": 40,
-    "'*' is deprecated. This method has been deprecated in favor of using the Activit#6b3040": 4,
-    "Java type mismatch: inferred type is '*', but '*' was expected": 1
+    "'*' is deprecated. This method has been deprecated in favor of using the Activit#6b3040": 4
   },
-  "files_with_warnings": 10,
+  "files_with_warnings": 9,
   "top_files": {
     "KharazmiAdmin/app/src/main/java/com/example/kharazmiadmin/SecureLoginStore.kt": 11,
     "KharazmiAdmin/app/src/main/java/com/example/kharazmiadmin/ArchivedClassesActivity.kt": 5,
@@ -23,9 +22,8 @@
     "KharazmiAdmin/app/src/main/java/com/example/kharazmiadmin/TeacherRegisterActivity.kt": 5,
     "KharazmiAdmin/app/src/main/java/com/example/kharazmiadmin/InstituteSettingsActivity.kt": 3,
     "KharazmiAdmin/app/src/main/java/com/example/kharazmiadmin/StudentProfileActivity.kt": 3,
-    "KharazmiAdmin/app/src/main/java/com/example/kharazmiadmin/ClassDetailActivity.kt": 2,
-    "KharazmiAdmin/app/src/main/java/com/example/kharazmiadmin/StudentProfileErrors.kt": 1
+    "KharazmiAdmin/app/src/main/java/com/example/kharazmiadmin/ClassDetailActivity.kt": 2
   },
   "log": "/tmp/gradle-assemble.log",
-  "source": "CI run 43268013140"
+  "source": "CI run 43604395121 (PR #27), refreshed by kotlin_warning_gate.py --check"
 }
