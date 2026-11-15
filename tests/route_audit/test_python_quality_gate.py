@@ -115,9 +115,21 @@ def make_runner(ruff_items: list[dict] | None = None, mypy_out: str = "",
     return runner
 
 
+def fake_ruff() -> str:
+    """جایگزینِ `find_ruff()` برایِ تست‌هایی که runnerِ ساختگی تزریق می‌کنند.
+
+    چرا لازم است: این شاهدها هرگز ruffِ واقعی را اجرا نمی‌کنند، پس وجودِ باینریِ ruff رویِ
+    دیسک نباید پیش‌نیازشان باشد. بدونِ این، suite فقط رویِ ماشینی سبز می‌ماند که
+    `requirements-dev.txt` نصب داشته باشد — و دقیقاً همین باعثِ قرمزیِ jobِ `route-audit`
+    در CI شد، چون آن job عمداً ruff/mypy را نصب نمی‌کند.
+    """
+    return "/does/not/need/to/exist/ruff"
+
+
 def stats_for(root: Path, ruff_items: list[dict], mypy_errors: list[tuple[str, int, str]],
               **kwargs) -> dict:
-    return collect(root, runner=make_runner(ruff_items, mypy_text(mypy_errors), **kwargs))
+    return collect(root, runner=make_runner(ruff_items, mypy_text(mypy_errors), **kwargs),
+                   ruff_resolver=fake_ruff)
 
 
 def write_baseline(path: Path, stats: dict, note: str = "test baseline") -> Path:
@@ -233,13 +245,13 @@ def test_collect_accepts_ruff_exit_1_because_findings_are_normal(tmp_path):
 def test_collect_refuses_ruff_exit_2(tmp_path):
     runner = make_runner([], mypy_text(TWO_ERRORS), ruff_rc=2)
     with pytest.raises(ToolUnavailable, match="ruff failed to run"):
-        collect(tmp_path, runner=runner)
+        collect(tmp_path, runner=runner, ruff_resolver=fake_ruff)
 
 
 def test_collect_refuses_mypy_exit_2(tmp_path):
     runner = make_runner([ruff_item(tmp_path, "a.py")], "", mypy_rc=2)
     with pytest.raises(ToolUnavailable, match="mypy failed to run"):
-        collect(tmp_path, runner=runner)
+        collect(tmp_path, runner=runner, ruff_resolver=fake_ruff)
 
 
 def test_collect_refuses_a_summary_that_disagrees_with_the_parsed_errors(tmp_path):
@@ -248,20 +260,20 @@ def test_collect_refuses_a_summary_that_disagrees_with_the_parsed_errors(tmp_pat
     runner = make_runner([], "pkg/a.py:1: error: x  [misc]\npkg/b.py:2: error: y  [misc]\n"
                              "Found 5 errors in 2 files (checked 9 source files)")
     with pytest.raises(ToolUnavailable, match="summary says 5 errors"):
-        collect(tmp_path, runner=runner)
+        collect(tmp_path, runner=runner, ruff_resolver=fake_ruff)
 
 
 def test_collect_refuses_a_summary_that_disagrees_on_the_file_count(tmp_path):
     runner = make_runner([], "pkg/a.py:1: error: x  [misc]\npkg/b.py:2: error: y  [misc]\n"
                              "Found 2 errors in 7 files (checked 9 source files)")
     with pytest.raises(ToolUnavailable, match="summary says 7 files"):
-        collect(tmp_path, runner=runner)
+        collect(tmp_path, runner=runner, ruff_resolver=fake_ruff)
 
 
 def test_collect_refuses_a_broken_version_probe(tmp_path):
     runner = make_runner([], mypy_text(TWO_ERRORS), version_rc=1)
     with pytest.raises(ToolUnavailable, match="--version failed"):
-        collect(tmp_path, runner=runner)
+        collect(tmp_path, runner=runner, ruff_resolver=fake_ruff)
 
 
 def test_collect_refuses_to_run_without_a_ruff_executable(tmp_path, monkeypatch):
@@ -271,6 +283,33 @@ def test_collect_refuses_to_run_without_a_ruff_executable(tmp_path, monkeypatch)
     monkeypatch.setattr("scripts.python_quality_gate.find_ruff", boom)
     with pytest.raises(ToolUnavailable, match="not found"):
         collect(tmp_path, runner=make_runner([], mypy_text(TWO_ERRORS)))
+
+
+def test_an_injected_runner_does_not_require_ruff_to_be_installed(tmp_path, monkeypatch):
+    """نیمهٔ دومِ آن جفت: تزریقِ runner باید **کافی** باشد، نه اینکه بی‌صدا به محیطِ نصب
+    وابسته بماند.
+
+    این شاهد مستقیماً از یک شکستِ واقعیِ CI آمده است. jobِ `route-audit` عمداً
+    `requirements-dev.txt` را نصب نمی‌کند (به ruff/mypy نیاز ندارد)، پس در آن محیط هیچ
+    باینریِ ruff وجود ندارد. نسخهٔ اولِ `collect()` پیش از نگاه کردن به `runner` عبارتِ
+    `find_ruff()` را صدا می‌زد، در نتیجه ۲۱ شاهدِ این فایل با
+    `ToolUnavailable: ruff executable not found` قرمز می‌شدند — در حالی که همان suite در
+    محیطِ توسعه (که ruff داشت) سبز بود. یعنی تست‌ها به‌جایِ سنجشِ منطقِ گیت، محیطِ نصب را
+    می‌سنجیدند.
+
+    حالا این تست `find_ruff` را عمداً خراب می‌کند و assert می‌کند که با وجودِ
+    `ruff_resolver` تزریقی، `collect()` همچنان درست کار می‌کند. اگر روزی کسی
+    `find_ruff()` را دوباره بیرونِ مسیرِ تزریق صدا بزند، همین‌جا قرمز می‌شود — نه در CI.
+    """
+    def boom(interpreter=None):
+        raise AssertionError("find_ruff() نباید صدا زده شود وقتی resolver تزریق شده است")
+
+    monkeypatch.setattr("scripts.python_quality_gate.find_ruff", boom)
+    stats = collect(tmp_path,
+                    runner=make_runner([ruff_item(tmp_path, "a.py", "F841", 1)],
+                                       mypy_text(TWO_ERRORS)),
+                    ruff_resolver=fake_ruff)
+    assert stats["ruff"]["total"] == 1 and stats["mypy"]["total"] == 2
 
 
 def test_collect_counts_by_code_and_top_files_for_both_tools(tmp_path):

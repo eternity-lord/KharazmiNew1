@@ -287,16 +287,32 @@ def _section(items: list[dict], root: Path, version: str, extra: dict | None = N
     return out
 
 
-def collect(root: Path | None = None, runner=None) -> dict:
+def collect(root: Path | None = None, runner=None, ruff_resolver=None) -> dict:
     """هر دو ابزار را اجرا می‌کند و موجودیِ تجمیعی را می‌سازد.
 
     `runner` برایِ تست تزریق‌پذیر است. کدهایِ خروجِ ruff و mypy با هم فرق دارند: ruff
     وقتی خطا پیدا کند `1` می‌دهد (معمولی) و وقتی خودش خراب باشد `2`؛ mypy هم `1` یعنی
     خطا دارد و `2` یعنی خطایِ مهلک. پس «غیرصفر» به‌تنهایی معنایِ شکست ندارد.
+
+    `ruff_resolver` هم به همان دلیل تزریق‌پذیر است. نسخهٔ اول این تابع `find_ruff()` را
+    **پیش از** نگاه کردن به `runner` صدا می‌زد، پس حتی وقتی تست یک runnerِ ساختگی تزریق
+    کرده بود — و هرگز قصدِ اجرایِ ruffِ واقعی را نداشت — نبودنِ باینریِ ruff رویِ دیسک
+    باعثِ `ToolUnavailable` می‌شد. یعنی منطقِ گیت فقط رویِ ماشینی قابلِ آزمودن بود که
+    ruff نصب داشت. این در jobِ `route-audit` در CI لو رفت: آن job عمداً
+    `requirements-dev.txt` را نصب نمی‌کند (به ruff/mypy نیاز ندارد) و در نتیجه ۲۱ شاهد
+    قرمز شدند، در حالی که همان suite در محیطِ توسعه — که ruff داشت — سبز بود.
+
+    قاعدهٔ کلی‌تر: **هر وابستگیِ محیطی که یک تابع مصرف می‌کند باید در همان سطح تزریق‌پذیر
+    باشد که خودِ اجرا تزریق‌پذیر است**، وگرنه «تست با runnerِ ساختگی» به‌طورِ پنهان به
+    محیطِ نصب وابسته می‌ماند.
+
+    رفتارِ fail-loud دست‌نخورده است: وقتی runner واقعی است (اجرایِ عادی و CI)، همان
+    `find_ruff()` صدا زده می‌شود و نبودنِ ruff همچنان `ToolUnavailable` (exit 2) می‌دهد.
     """
     base = root or ROOT
     run = runner or default_runner
-    ruff_exe = find_ruff()
+    resolve_ruff = ruff_resolver or find_ruff
+    ruff_exe = resolve_ruff()
 
     rv = run([ruff_exe, "--version"], base)
     ruff_version = _version_token(rv, "ruff")
