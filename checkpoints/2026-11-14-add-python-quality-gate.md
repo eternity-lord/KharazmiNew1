@@ -508,6 +508,12 @@ baseline را عوض می‌کند بدونِ آنکه بفهمد چه را از
   (پوشهٔ ممنوعه).
 - هیچ‌کدام از گیت‌ها در حالتِ موفقیت annotationِ «gate OK» منتشر نمی‌کنند.
 - هشدارهایِ depreciationِ `setup-java@v4` و `actions/*@v4` (Node 20).
+- **نقطهٔ کورِ محیطی که این سند از آن خبر نداشت** (پس از merge کشف شد): گیت از رویِ
+  stdoutِ خودِ mypy دربارهٔ محیط قضاوت می‌کرد، ولی `ignore_missing_imports = true` با
+  `follow_imports = "silent"` یعنی یک بستهٔ نصب‌نشده بی‌صدا `Any` می‌شود و صدها خطا
+  ناپدید می‌گردد. اندازه‌گیری شد: محیطِ کامل ۷۲۵ خطا و محیطِ ناقص ۱۷۴ خطا، با همان
+  `checked_files = 55` — یعنی گیت `delta -551` را «بهبود» می‌خواند و exit 0 می‌داد.
+  بسته شد در `checkpoints/2026-11-16-close-gate-environment-blind-spot.md`.
 
 **هدفِ بعدیِ refactor:** `AttendanceActivity.kt` (۹۹۸ خط، چگالیِ ۶۸٫۱ pin در
 kLOC) با یک خوشهٔ ≈۱۴۲ خطیِ آزادِ شبکه/صف: `flushPendingQueue` ۲۰۱–۲۳۵ ·
