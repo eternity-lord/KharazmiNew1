@@ -49,12 +49,17 @@ jobs:
         with:
           python-version: "3.11"
           cache: pip
-          cache-dependency-path: Kharazmi_Server/requirements.txt
+          cache-dependency-path: |
+            Kharazmi_Server/requirements.txt
+            Kharazmi_Server/requirements-dev.txt
 
       - name: Install dependencies (runtime + test)
         run: |
           python -m pip install --upgrade pip
-          pip install -r Kharazmi_Server/requirements.txt pytest
+          # requirements-dev.txt نسخه‌های ruff/mypy را pin کرده (۰٫۱۷٫۴ و ۲٫۴٫۱) و
+          # pytest>=8.0 هم دارد، پس `pytest` آزادِ قبلی دیگر تکراری است. نصبِ اینها
+          # فقط در jobِ خودِ گیت است: jobِ route-audit به ابزارهایِ lint نیاز ندارد.
+          pip install -r Kharazmi_Server/requirements.txt -r Kharazmi_Server/requirements-dev.txt
 
       - name: Record real DB checksum (before)
         run: |
@@ -78,6 +83,17 @@ jobs:
       # گاردِ md5 آمده، همان گارد این step را هم پوشش می‌دهد.
       - name: Gate the Android-server route contract
         run: python scripts/validate_app_map.py --gate
+
+      # گیتِ کیفیتِ کدِ پایتون — همان الگویِ lint_gate.py و kotlin_warning_gate.py:
+      # «بدتر نشود»، نه «صفر شود». ruff و mypy تا امروز نصب و اجرا می‌شدند ولی هیچ‌جا
+      # گیت نمی‌شدند؛ یعنی عددِ ۲۵۰ خطایِ ruff و ۷۲۵ خطایِ mypy فقط در حافظهٔ دستیِ
+      # توسعه‌دهنده‌ها زنده بود و یک commit می‌توانست بی‌صدا ده‌ها خطایِ تازه اضافه کند.
+      # صفرکردنِ یکجایِ ۹۷۵ خطا ریفکتور نیست و بدونِ تستِ رفتار خطرِ ساختنِ باگِ واقعی دارد.
+      # نسخهٔ ابزارها بخشی از baseline است و با pinِ requirements-dev.txt مقایسه می‌شود؛
+      # اختلافِ نسخه ⇒ exit 2 یعنی «ناشناخته»، نه پاس و نه شکست. بهبود ⇒ exit 0 به‌همراهِ
+      # JSONِ آمادهٔ commit در یک notice تا همان بهبود قفل شود (درسِ PR #27).
+      - name: Gate Python code quality against the committed baseline
+        run: python scripts/python_quality_gate.py --table --check
 
       - name: Guard - real institute database untouched
         run: |

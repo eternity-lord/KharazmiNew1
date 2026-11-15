@@ -96,15 +96,25 @@ def test_the_pin_corpus_actually_sees_the_server_side_pins():
     assert literals >= 100, literals       # امروز ۲۱۷
 
 
-def test_no_tracked_code_file_misspells_either_root_directory():
+def test_no_code_file_in_the_worktree_misspells_either_root_directory():
     """گاردِ سراسری برایِ کلِ کلاسِ این غلط: H بزرگ در نامِ دو پوشهٔ ریشه.
 
     checkpointها و docs عمداً مستثنا هستند چون خودِ غلط را نقل می‌کنند تا درسش بماند؛
     ممنوعیت فقط برایِ فایل‌هایِ **کد** است که آن مسیرها را واقعاً مصرف می‌کنند.
+
+    کورپس عمداً `--cached --others --exclude-standard` است، یعنی فایل‌هایِ tracked **به‌
+    علاوهٔ** فایل‌هایِ commit‌نشده (و بدونِ فایل‌هایِ ignore‌شده مثلِ `.venv`). چرا این
+    مهم است: این غلط تقریباً همیشه در ویرایشِ **commit‌نشدهٔ** همان لحظه رخ می‌دهد، و
+    نسخهٔ اولِ این گارد که فقط `git ls-files` را می‌دید، در برشِ «گیتِ کیفیتِ پایتون»
+    لغزش را نگرفت — `K<H بزرگ>arazmi_Server/requirements-dev.txt` با H بزرگ در
+    `.github/workflows/tests.yml` نوشته شده بود، یعنی گامِ `pip install -r` در CI با
+    «فایل پیدا نشد» کلِ job را می‌شکست. با دیدنِ worktree، همان لغزش **پیش از commit**
+    قرمز می‌شود. در CI (checkoutِ تمیز) رفتار دست‌نخورده می‌ماند چون untracked وجود ندارد.
     """
-    listed = subprocess.run(["git", "ls-files", "--", *CODE_GLOBS], cwd=ROOT,
+    listed = subprocess.run(["git", "ls-files", "--cached", "--others", "--exclude-standard",
+                             "--", *CODE_GLOBS], cwd=ROOT,
                             capture_output=True, text=True, check=True).stdout.split()
-    assert len(listed) > 500, len(listed)      # کنترلِ مثبت: واقعاً کورپس دیده‌ایم (امروز ۵۶۴)
+    assert len(listed) > 500, len(listed)      # کنترلِ مثبت: واقعاً کورپس دیده‌ایم (امروز ۵۶۸)
     bad = []
     for f in listed:
         p = ROOT / f
