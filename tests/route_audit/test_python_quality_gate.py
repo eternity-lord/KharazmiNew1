@@ -42,11 +42,14 @@ from scripts.python_quality_gate import (
     compact_table,
     emit_annotation,
     escape,
+    find_requirements,
     fingerprint,
     locations_for_codes,
     main,
     parse_mypy_output,
+    parse_requirements,
     parse_ruff_json,
+    probe_environment,
     relativize,
 )
 
@@ -126,10 +129,32 @@ def fake_ruff() -> str:
     return "/does/not/need/to/exist/ruff"
 
 
+FAKE_REQUIRED = ["fastapi", "sqlalchemy"]
+
+
+def fake_env(root=None) -> dict:
+    """جایگزینِ `probe_environment()` برایِ شاهدهایی که محیطِ واقعی را نمی‌سنجند.
+
+    دقیقاً همان دلیلی که `fake_ruff()` لازم است: `collect()` حالا **پیش از** اجرایِ
+    ابزارها کامل بودنِ محیطِ وابستگی را می‌سنجد، و آن سنجش به یک `requirements.txt`
+    واقعی رویِ دیسک و به بسته‌هایِ نصب‌شده در همان مفسر نگاه می‌کند. شاهدی که runnerِ
+    ساختگی تزریق می‌کند نباید به هیچ‌کدام از این‌ها وابسته باشد — وگرنه همان باگی
+    برمی‌گردد که در برشِ پیش ۲۱ شاهد را در jobِ `route-audit` قرمز کرد، این بار با
+    یک بهانهٔ تازه.
+
+    این بار درسِ آن شکست **پیش‌دستانه** اعمال شده: نقطهٔ تزریقِ `env_prober` هم‌زمان
+    با خودِ سنجش اضافه شد، نه بعد از اینکه CI قرمز شد.
+
+    `root` را می‌پذیرد چون `collect()` پروب را با `base` صدا می‌زند.
+    """
+    return {"required": list(FAKE_REQUIRED), "missing": [],
+            "requirements": "srv/requirements.txt"}
+
+
 def stats_for(root: Path, ruff_items: list[dict], mypy_errors: list[tuple[str, int, str]],
               **kwargs) -> dict:
     return collect(root, runner=make_runner(ruff_items, mypy_text(mypy_errors), **kwargs),
-                   ruff_resolver=fake_ruff)
+                   ruff_resolver=fake_ruff, env_prober=fake_env)
 
 
 def write_baseline(path: Path, stats: dict, note: str = "test baseline") -> Path:
@@ -245,13 +270,13 @@ def test_collect_accepts_ruff_exit_1_because_findings_are_normal(tmp_path):
 def test_collect_refuses_ruff_exit_2(tmp_path):
     runner = make_runner([], mypy_text(TWO_ERRORS), ruff_rc=2)
     with pytest.raises(ToolUnavailable, match="ruff failed to run"):
-        collect(tmp_path, runner=runner, ruff_resolver=fake_ruff)
+        collect(tmp_path, runner=runner, ruff_resolver=fake_ruff, env_prober=fake_env)
 
 
 def test_collect_refuses_mypy_exit_2(tmp_path):
     runner = make_runner([ruff_item(tmp_path, "a.py")], "", mypy_rc=2)
     with pytest.raises(ToolUnavailable, match="mypy failed to run"):
-        collect(tmp_path, runner=runner, ruff_resolver=fake_ruff)
+        collect(tmp_path, runner=runner, ruff_resolver=fake_ruff, env_prober=fake_env)
 
 
 def test_collect_refuses_a_summary_that_disagrees_with_the_parsed_errors(tmp_path):
@@ -260,20 +285,20 @@ def test_collect_refuses_a_summary_that_disagrees_with_the_parsed_errors(tmp_pat
     runner = make_runner([], "pkg/a.py:1: error: x  [misc]\npkg/b.py:2: error: y  [misc]\n"
                              "Found 5 errors in 2 files (checked 9 source files)")
     with pytest.raises(ToolUnavailable, match="summary says 5 errors"):
-        collect(tmp_path, runner=runner, ruff_resolver=fake_ruff)
+        collect(tmp_path, runner=runner, ruff_resolver=fake_ruff, env_prober=fake_env)
 
 
 def test_collect_refuses_a_summary_that_disagrees_on_the_file_count(tmp_path):
     runner = make_runner([], "pkg/a.py:1: error: x  [misc]\npkg/b.py:2: error: y  [misc]\n"
                              "Found 2 errors in 7 files (checked 9 source files)")
     with pytest.raises(ToolUnavailable, match="summary says 7 files"):
-        collect(tmp_path, runner=runner, ruff_resolver=fake_ruff)
+        collect(tmp_path, runner=runner, ruff_resolver=fake_ruff, env_prober=fake_env)
 
 
 def test_collect_refuses_a_broken_version_probe(tmp_path):
     runner = make_runner([], mypy_text(TWO_ERRORS), version_rc=1)
     with pytest.raises(ToolUnavailable, match="--version failed"):
-        collect(tmp_path, runner=runner, ruff_resolver=fake_ruff)
+        collect(tmp_path, runner=runner, ruff_resolver=fake_ruff, env_prober=fake_env)
 
 
 def test_collect_refuses_to_run_without_a_ruff_executable(tmp_path, monkeypatch):
@@ -282,7 +307,7 @@ def test_collect_refuses_to_run_without_a_ruff_executable(tmp_path, monkeypatch)
 
     monkeypatch.setattr("scripts.python_quality_gate.find_ruff", boom)
     with pytest.raises(ToolUnavailable, match="not found"):
-        collect(tmp_path, runner=make_runner([], mypy_text(TWO_ERRORS)))
+        collect(tmp_path, runner=make_runner([], mypy_text(TWO_ERRORS)), env_prober=fake_env)
 
 
 def test_an_injected_runner_does_not_require_ruff_to_be_installed(tmp_path, monkeypatch):
@@ -308,7 +333,114 @@ def test_an_injected_runner_does_not_require_ruff_to_be_installed(tmp_path, monk
     stats = collect(tmp_path,
                     runner=make_runner([ruff_item(tmp_path, "a.py", "F841", 1)],
                                        mypy_text(TWO_ERRORS)),
-                    ruff_resolver=fake_ruff)
+                    ruff_resolver=fake_ruff, env_prober=fake_env)
+    assert stats["ruff"]["total"] == 1 and stats["mypy"]["total"] == 2
+
+
+# ── ۵-۲) محیطِ وابستگی: پارس، کشف، و fail-loud ──────────────────
+
+
+def test_parse_requirements_drops_versions_comments_extras_and_markers():
+    text = ("# یک کامنت\n"
+            "\n"
+            "fastapi>=0.100.0\n"
+            "  sqlalchemy>=2.0.0  \n"
+            "python-dotenv[dotenv-extra]>=1.0.0; python_version < '3.12'\n"
+            "-r other-requirements.txt\n"
+            "--index-url https://example.invalid/simple\n"
+            "uvicorn\n"
+            "uvicorn>=0.20.0\n")
+    assert parse_requirements(text) == ["fastapi", "python-dotenv", "sqlalchemy", "uvicorn"]
+
+
+def test_parse_requirements_normalizes_names_pep503():
+    """`Psycopg2_Binary` و `psycopg2-binary` و `psycopg2.binary` هر یکی‌اند.
+
+    این نرمال‌سازی دلیلِ اصلیِ نبودنِ جدولِ نگاشت است: نامی که `requirements.txt`
+    می‌نویسد و نامی که `importlib.metadata` می‌دهد فقط وقتی قابلِ مقایسه‌اند که هر دو
+    یک‌جور نرمال شده باشند. اندازه‌گیری شد که هر ۱۳ نامِ واقعیِ این مخزن بدونِ استثنا
+    می‌خوانند — از جمله سه نامی که importِ متفاوتی دارند (`python-dotenv` ⇒ `dotenv`،
+    `psycopg2-binary` ⇒ `psycopg2`، `python-multipart` ⇒ `multipart`)، چون اینجا نامِ
+    distribution مقایسه می‌شود نه نامِ import.
+    """
+    got = parse_requirements("Psycopg2_Binary==2.9.9\nPython_Dotenv>=1.0\nslowapi~=0.1.9\n")
+    assert got == ["psycopg2-binary", "python-dotenv", "slowapi"]
+
+
+def test_find_requirements_needs_exactly_one_dependency_root(tmp_path):
+    """نه صفر، نه دو: اگر معیارِ کشف مبهم باشد، «کدام محیط» اصلاً تعریف نشده است.
+
+    نامِ پوشه عمداً در گیت literal نیامده (به docstringِ `find_requirements`)، پس این
+    شاهد معیارِ واقعی را می‌سنجد: تنها زیرپوشهٔ سطحِ اولی که `requirements.txt` دارد.
+    """
+    with pytest.raises(ToolUnavailable, match="exactly one top-level directory"):
+        find_requirements(tmp_path)
+
+    for name in ("one", "two"):
+        d = tmp_path / name
+        d.mkdir()
+        (d / "requirements.txt").write_text("fastapi\n", encoding="utf-8")
+    with pytest.raises(ToolUnavailable, match="exactly one top-level directory"):
+        find_requirements(tmp_path)
+
+    (tmp_path / "two" / "requirements.txt").unlink()
+    assert find_requirements(tmp_path) == tmp_path / "one" / "requirements.txt"
+
+
+def test_probe_environment_names_every_missing_distribution(tmp_path, monkeypatch):
+    """پروب باید **نامِ** هر بستهٔ غایب را بدهد، نه فقط یک شمار.
+
+    پیامِ «۲ بسته کم است» قابلِ اقدام نیست؛ پیامِ «این دو بسته نصب نیستند» هست. این
+    همان قاعدهٔ کلیِ این گیت است: خروجیِ شکست باید بدونِ یک دورِ دیگرِ بررسی قابلِ
+    اقدام باشد.
+    """
+    d = tmp_path / "srv"
+    d.mkdir()
+    (d / "requirements.txt").write_text(
+        "definitely-not-installed-a>=1.0\ndefinitely-not-installed-b\n", encoding="utf-8")
+    monkeypatch.setattr("scripts.python_quality_gate.installed_distributions", lambda: set())
+    env = probe_environment(tmp_path)
+    assert env["required"] == ["definitely-not-installed-a", "definitely-not-installed-b"]
+    assert env["missing"] == ["definitely-not-installed-a", "definitely-not-installed-b"]
+    assert env["requirements"].endswith("requirements.txt")
+
+
+def test_collect_refuses_an_incomplete_dependency_environment(tmp_path):
+    """محیطِ ناقص ⇒ `ToolUnavailable` ⇒ exit 2، یعنی «ناشناخته» نه «بهبود».
+
+    این شاهد علتِ وجودِ کلِ این برش است: با `ignore_missing_imports = true` و
+    `follow_imports = "silent"` در `pyproject.toml`، نبودنِ یک بسته هیچ خطایی تولید
+    نمی‌کند و نوعش `Any` می‌شود، پس صدها خطایِ mypy بی‌صدا ناپدید می‌شوند.
+    اندازه‌گیریِ واقعی رویِ همین مخزن: محیطِ کامل ۷۲۵ خطا در ۱۴ شناسه و محیطِ ناقص
+    ۱۷۴ خطا در ۹ شناسه، در حالی که `checked_files` در هر دو ۵۵ می‌ماند و خطِ خلاصه هم
+    با شمارشِ پارس‌شده یکی است — یعنی هیچ شاهدِ درونیِ دیگری این را نمی‌گرفت.
+    """
+    def incomplete(root=None):
+        return {"required": ["fastapi", "sqlalchemy"], "missing": ["fastapi", "sqlalchemy"],
+                "requirements": "srv/requirements.txt"}
+
+    with pytest.raises(ToolUnavailable, match="dependency environment incomplete"):
+        collect(tmp_path, runner=make_runner([], mypy_text(TWO_ERRORS)),
+                ruff_resolver=fake_ruff, env_prober=incomplete)
+
+
+def test_an_injected_env_prober_does_not_require_the_real_environment(tmp_path, monkeypatch):
+    """نسخهٔ محیطِ وابستگی از همان درسی که برشِ پیش با ۲۱ شاهدِ قرمز یاد گرفته شد.
+
+    `probe_environment` را عمداً خراب می‌کنیم: اگر صدا زده شود `AssertionError` می‌دهد.
+    بعد assert می‌کنیم که با `env_prober` تزریقی، `collect()` همچنان درست کار می‌کند.
+    بدونِ این شاهد کسی می‌تواند پروب را دوباره بیرونِ مسیرِ تزریق صدا بزند و suite فقط
+    رویِ ماشینی سبز بماند که `requirements.txt` نصب دارد — یعنی دوباره تست‌ها به‌جایِ
+    منطقِ گیت، محیطِ نصب را بسنجند. این بار آن درس **پیش از** شکستِ CI اعمال شد.
+    """
+    def boom(root=None):
+        raise AssertionError("probe_environment() نباید صدا زده شود وقتی prober تزریق شده")
+
+    monkeypatch.setattr("scripts.python_quality_gate.probe_environment", boom)
+    stats = collect(tmp_path, runner=make_runner([ruff_item(tmp_path, "a.py", "F841", 1)],
+                                                 mypy_text(TWO_ERRORS)),
+                    ruff_resolver=fake_ruff, env_prober=fake_env)
+    assert stats["environment"]["required"] == FAKE_REQUIRED
     assert stats["ruff"]["total"] == 1 and stats["mypy"]["total"] == 2
 
 
@@ -414,6 +546,45 @@ def test_gate_fails_when_the_baseline_is_unreadable(tmp_path, capsys):
     assert "baseline unreadable" in capsys.readouterr().out
 
 
+def test_gate_reports_a_changed_dependency_set_as_unknown_not_as_pass(tmp_path, capsys):
+    """تغییرِ `requirements.txt` ⇒ exit 2، حتی اگر هر دو محیط «کامل» باشند.
+
+    افزودن یا گرفتنِ یک بسته، نوع‌هایِ تازه‌ای را برایِ mypy قابلِ حل یا غیرقابلِ حل
+    می‌کند و خطاها را جابه‌جا می‌کند، پس شمارِ فعلی با شمارِ baseline هم‌سنخ نیست.
+    اینجا هم مثلِ تغییرِ نسخهٔ ابزار، «ناشناخته» صادقانه‌تر از «پاس» یا «شکست» است.
+    """
+    stats = stats_for(tmp_path, [ruff_item(tmp_path, "a.py")], TWO_ERRORS)
+    base = write_baseline(tmp_path / "b.json", stats)
+    payload = json.loads(base.read_text(encoding="utf-8"))
+    payload["environment"]["required"] = sorted([*FAKE_REQUIRED, "pandas"])
+    base.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    assert check_against_baseline(stats, str(base)) == 2
+    out = capsys.readouterr().out
+    assert "dependency set changed since the baseline was measured" in out
+    assert "removed=['pandas']" in out
+    assert "delta" not in out, "در وضعیتِ ناشناخته هیچ خطِ delta چاپ نمی‌شود"
+
+
+def test_gate_accepts_a_baseline_without_an_environment_section(tmp_path, capsys):
+    """یک fail-openِ محدود و **صراحی‌شده**: baselineِ بدونِ `environment` رد نمی‌شود.
+
+    دلیلش عملی است: اگر نبودِ کلید باعثِ exit 2 می‌شد، هر baselineِ ساخته‌شده پیش از این
+    برش بلافاصله بی‌استفاده می‌شد و ارتقا را پرهزینه می‌کرد. نبودِ کلید یعنی «مقایسه
+    ممکن نیست» نه «محیط ناقص است» — و سنجشِ کامل بودنِ محیط همچنان مستقل از baseline
+    در `collect()` انجام می‌شود، پس حفره‌ای باز نمی‌ماند. نخستین `--write-baseline`
+    کلید را می‌سازد و از آن پس این مقایسه هم برقرار است.
+    """
+    stats = stats_for(tmp_path, [ruff_item(tmp_path, "a.py")], TWO_ERRORS)
+    base = write_baseline(tmp_path / "b.json", stats)
+    payload = json.loads(base.read_text(encoding="utf-8"))
+    payload.pop("environment")
+    base.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    assert check_against_baseline(stats, str(base)) == 0
+    assert "delta +0" in capsys.readouterr().out
+
+
 def test_gate_reports_version_mismatch_as_unknown_not_as_pass(tmp_path, capsys):
     """ruff بین نسخه‌ها قواعدِ تازه اضافه می‌کند؛ شمارِ نسخهٔ دیگر با این baseline
     مقایسه‌شدنی نیست. پس نه پاس می‌دهیم نه شکست — `exit 2` یعنی «ناشناخته»."""
@@ -485,7 +656,7 @@ def test_main_check_runs_end_to_end_with_an_injected_root(tmp_path, monkeypatch,
     stats = stats_for(tmp_path, [ruff_item(tmp_path, "a.py")], TWO_ERRORS)
     base = write_baseline(tmp_path / "b.json", stats)
     monkeypatch.setattr("scripts.python_quality_gate.collect",
-                        lambda root=None, runner=None: stats)
+                        lambda root=None, runner=None, ruff_resolver=None, env_prober=None: stats)
     assert main(["--check", "--baseline", str(base), "--root", str(tmp_path)]) == 0
     assert "delta +0" in capsys.readouterr().out
 
@@ -546,6 +717,32 @@ def test_committed_baseline_agrees_with_the_pinned_tool_versions():
     base = json.loads(BASELINE_PATH.read_text(encoding="utf-8"))
     assert base["ruff"]["version"] == pins["ruff"]
     assert base["mypy"]["version"] == pins["mypy"]
+
+
+def test_the_real_repository_environment_is_complete_and_matches_the_baseline():
+    """شاهدِ ریپویِ واقعی: محیطِ همان اجرایی که تست‌ها در آن برگزار می‌شود کامل است.
+
+    این شاهد در **هر دو** jobِ CI اجرا می‌شود و در هر دو باید سبز باشد، چون هر دو
+    `requirements.txt` را نصب می‌کنند (jobِ `route-audit` عمداً فقط همان را نصب می‌کند
+    و نه `requirements-dev.txt` را — همان تصمیمی که در برشِ پیش باگِ تزریقِ runner را
+    لو داد). اگر روزی وابستگی‌ای به `requirements.txt` اضافه شود و جایی نصب نشود،
+    نخستین قرمزی همین‌جا دیده می‌شود، نه به‌شکلِ یک «بهبودِ» دروغین در شمارِ mypy.
+
+    هم‌زمان قفل می‌کند که baselineِ commit‌شده همان مجموعهٔ وابستگی را داشته باشد: اگر
+    `requirements.txt` عوض شود و baseline نه، گیت در CI ‏exit 2 می‌دهد (درست) و اینجا هم
+    قرمز می‌شود تا علت پیش از یک دورِ کاملِ CI دیده شود — دقیقاً همان الگویی که برایِ
+    pinهایِ نسخهٔ ruff/mypy در شاهدِ کناری به کار رفته است.
+
+    نامِ پوشه در این شاهد هم literal نیامده: `probe_environment` خودش مسیر را پیدا و
+    نسبی می‌کند، پس مقایسه با مقدارِ baseline هیچ نوشتارِ دستیِ نام را لازم ندارد.
+    """
+    env = probe_environment(REPO_ROOT)
+    assert env["required"], "requirements.txt باید دستِ‌کم یک distribution اعلام کند"
+    assert env["missing"] == [], f"محیطِ وابستگی ناقص است: {env['missing']}"
+    base = json.loads(BASELINE_PATH.read_text(encoding="utf-8"))
+    assert "environment" in base, "baseline باید محیطی را که در آن اندازه گرفته شده ثبت کند"
+    assert sorted(base["environment"]["required"]) == sorted(env["required"])
+    assert base["environment"]["requirements"] == env["requirements"]
 
 
 def test_committed_baseline_is_self_consistent():

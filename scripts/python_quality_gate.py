@@ -70,6 +70,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import importlib.metadata
 import json
 import re
 import shutil
@@ -172,6 +173,108 @@ def find_ruff(interpreter: str | None = None) -> str:
         raise ToolUnavailable("ruff executable not found (looked beside "
                               f"{exe} and on PATH) — cannot measure lint inventory")
     return found
+
+
+REQ_NAME_SPLIT = re.compile(r"[\[<>=!~;\s]")
+DIST_NAME_RUN = re.compile(r"[-_.]+")
+
+
+def _norm_dist(name: str) -> str:
+    """نامِ distribution را طبقِ PEP 503 نرمال می‌کند: `Psycopg2_Binary` ⇒ `psycopg2-binary`.
+
+    عمداً نامِ **distribution** مقایسه می‌شود و نه نامِ import، چون این دو یکی نیستند
+    (`python-dotenv` در کد `dotenv` است و `psycopg2-binary` می‌شود `psycopg2`) و هر جدولِ
+    دستیِ نگاشت بینِ این دو هم ناقص می‌ماند هم کهنه می‌شود. `importlib.metadata` همان
+    نامی را می‌دهد که `requirements.txt` می‌نویسد، پس هیچ نگاشتی لازم نیست — اندازه‌گیری
+    شد که هر ۱۳ نامِ اعلام‌شده در این مخزن بدونِ یک استثنا با نامِ نصب‌شده می‌خوانند.
+    """
+    return DIST_NAME_RUN.sub("-", name.strip()).lower()
+
+
+def find_requirements(root: Path) -> Path:
+    """`requirements.txt` سرور را پیدا می‌کند، بدونِ نوشتنِ نامِ پوشه در این فایل.
+
+    نامِ پوشه عمداً literal نیامده. این مخزن یک کلاسِ غلطِ تاریخی دارد که در آن حرفِ دومِ
+    نامِ پوشه‌ها گاهی بزرگ نوشته می‌شود و گاهی کوچک، و یک گاردِ سراسری هم برایش نوشته
+    شده است. نوشتنِ همان نام در اینجا دو خطر داشت: اینکه خودم مصداقِ تازهٔ همان غلط
+    شوم، و اینکه ویرایشِ بعدیِ این literal به‌خاطرِ یکی‌نبودنِ case شکست بخورد. معیارِ
+    «تنها زیرپوشهٔ سطحِ اولی که `requirements.txt` دارد» به هیچ نامی وابسته نیست و
+    اندازه‌گیری شد که در این مخزن **دقیقاً یک** مصداق دارد (و خودِ ریشه یکی ندارد).
+    """
+    hits = [p for p in sorted(root.iterdir())
+            if p.is_dir() and (p / "requirements.txt").is_file()]
+    if len(hits) != 1:
+        raise ToolUnavailable(
+            f"expected exactly one top-level directory holding requirements.txt under "
+            f"{root}, found {len(hits)} ({[p.name for p in hits]}) — cannot tell which "
+            "dependency set defines a comparable measurement")
+    return hits[0] / "requirements.txt"
+
+
+def parse_requirements(text: str) -> list[str]:
+    """نامِ distributionها را از یک فایلِ requirements بیرون می‌کشد.
+
+    شمارهٔ نسخه عمداً **دور ریخته می‌شود**: pinهایِ این مخزن `>=` هستند، یعنی نسخهٔ
+    نصب‌شده شناور است و مقایسهٔ شمارهٔ نسخه‌ها هر اجرایِ CI را بی‌دلیل قرمز می‌کرد.
+    چیزی که باید یکی بماند **مجموعهٔ** وابستگی‌هاست — چون نبودنِ یک بسته باعث می‌شود
+    mypy نوعش را `Any` بگیرد و صدها خطایِ واقعی بی‌صدا ناپدید شوند.
+
+    خط‌هایِ خالی و `#` و خط‌هایِ `-` (مثلِ `-r` یا `--index-url`) رد می‌شوند؛ extras و
+    environment marker هم بریده می‌شوند چون هیچ‌کدام در «چه بسته‌ای نصب است» اثر ندارند.
+    """
+    out: set[str] = set()
+    for line in text.splitlines():
+        s = line.strip()
+        if not s or s.startswith("#") or s.startswith("-"):
+            continue
+        s = REQ_NAME_SPLIT.split(s, maxsplit=1)[0].strip()
+        if s:
+            out.add(_norm_dist(s))
+    return sorted(out)
+
+
+def installed_distributions() -> set[str]:
+    """نامِ نرمال‌شدهٔ همهٔ distributionهایِ نصب‌شده در محیطِ مفسرِ در حالِ اجرا.
+
+    mypy در `collect()` با `[sys.executable, "-m", "mypy"]` اجرا می‌شود، پس محیطِ همین
+    مفسر **دقیقاً** همان چیزی است که mypy برایِ حلِ importها می‌بیند. یک distributionِ
+    خراب نباید کلِ سنجش را بیندازد، پس خطایِ خواندنِ نام فقط همان یکی را رد می‌کند.
+    """
+    names: set[str] = set()
+    for dist in importlib.metadata.distributions():
+        try:
+            name = dist.metadata["Name"]
+        except (AttributeError, KeyError, TypeError, ValueError):
+            continue
+        if name:
+            names.add(_norm_dist(name))
+    return names
+
+
+def probe_environment(root: Path) -> dict:
+    """مجموعهٔ وابستگیِ اعلام‌شده را با آنچه واقعاً نصب است مقایسه می‌کند.
+
+    چرا این سنجش اصلاً لازم است: `pyproject.toml` برایِ mypy دو تنظیمِ
+    `ignore_missing_imports = true` و `follow_imports = "silent"` گذاشته است. یعنی یک
+    بستهٔ نصب‌نشده **هیچ** خطایی تولید نمی‌کند و نوعش `Any` می‌شود — و با `Any` شدنِ
+    fastapi و sqlalchemy و pydantic، صدها خطایِ `arg-type` و `assignment` بی‌صدا
+    ناپدید می‌شوند.
+
+    این حدس نیست، اندازه‌گیری شد: در محیطِ کامل mypy ‏۷۲۵ خطا در ۱۴ شناسه می‌دهد و در
+    محیطی که فقط ruff و mypy و pytest دارد ‏۱۷۴ خطا در ۹ شناسه. خروجیِ mypy در هر دو
+    حالت خوش‌قالب است، خطِ خلاصه با شمارشِ پارس‌شده یکی است، و `checked_files` هم همان
+    ۵۵ می‌ماند — یعنی **هیچ‌کدام** از شاهدهایِ درونیِ موجود این را نمی‌گرفتند و گیت آن
+    را «بهبودِ ۵۵۱ واحدی» می‌خواند و با exit 0 چراغِ سبز می‌داد. بدترین شکلِ ممکن برایِ
+    یک گیت: حصاری که در محیطِ ناقص، بی‌صدا باز می‌شود.
+    """
+    req_path = find_requirements(root)
+    required = parse_requirements(req_path.read_text(encoding="utf-8"))
+    installed = installed_distributions()
+    return {
+        "required": required,
+        "missing": [r for r in required if r not in installed],
+        "requirements": relativize(str(req_path), root),
+    }
 
 
 def _version_token(run: ToolRun, tool: str) -> str:
@@ -287,7 +390,7 @@ def _section(items: list[dict], root: Path, version: str, extra: dict | None = N
     return out
 
 
-def collect(root: Path | None = None, runner=None, ruff_resolver=None) -> dict:
+def collect(root: Path | None = None, runner=None, ruff_resolver=None, env_prober=None) -> dict:
     """هر دو ابزار را اجرا می‌کند و موجودیِ تجمیعی را می‌سازد.
 
     `runner` برایِ تست تزریق‌پذیر است. کدهایِ خروجِ ruff و mypy با هم فرق دارند: ruff
@@ -308,8 +411,30 @@ def collect(root: Path | None = None, runner=None, ruff_resolver=None) -> dict:
 
     رفتارِ fail-loud دست‌نخورده است: وقتی runner واقعی است (اجرایِ عادی و CI)، همان
     `find_ruff()` صدا زده می‌شود و نبودنِ ruff همچنان `ToolUnavailable` (exit 2) می‌دهد.
+    `env_prober` هم از همان قاعده پیروی می‌کند: سنجشِ کامل بودنِ محیطِ وابستگی یک
+    وابستگیِ محیطیِ **دیگر** است، پس نقطهٔ تزریقِ هم‌سطحِ خودش را دارد. بدونِ آن، هر
+    شاهده‌ای که runnerِ ساختگی تزریق می‌کند ناچار بود یک `requirements.txt` واقعی و
+    کلِ مجموعهٔ بسته‌هایِ نصب‌شده را هم داشته باشد — یعنی دقیقاً همان دامی که
+    `ruff_resolver` برایش اضافه شد، این بار برایِ محیطِ وابستگی.
+
+    ترتیبِ عمدی است: سنجشِ محیط **پیش از** اجرایِ هر دو ابزار می‌آید، چون در محیطِ ناقص
+    خودِ اندازه‌گیری بی‌معناست و پیامِ «محیط ناقص» از پیامِ «ruff پیدا نشد» بسیار
+    قابلِ اقدام‌تر است.
     """
     base = root or ROOT
+    probe = env_prober or probe_environment
+    env = probe(base)
+    missing = list(env.get("missing") or [])
+    if missing:
+        required = list(env.get("required") or [])
+        raise ToolUnavailable(
+            f"dependency environment incomplete: {len(missing)} of {len(required)} "
+            f"distributions declared by {env.get('requirements') or 'requirements.txt'} "
+            f"are not installed: {', '.join(missing)}. With ignore_missing_imports=true "
+            "mypy types every unresolved import as Any, so hundreds of real errors "
+            "vanish and this run would read as a huge improvement. The measurement is "
+            "not comparable to the baseline — install the declared requirements and "
+            "re-run.")
     run = runner or default_runner
     resolve_ruff = ruff_resolver or find_ruff
     ruff_exe = resolve_ruff()
@@ -342,6 +467,7 @@ def collect(root: Path | None = None, runner=None, ruff_resolver=None) -> dict:
 
     return {
         "root": str(base),
+        "environment": env,
         "ruff": _section(ruff_items, base, ruff_version),
         "mypy": _section(mypy_items, base, mypy_version,
                          extra={"checked_files": summary["checked"],
@@ -364,6 +490,10 @@ def compact_table(stats: dict) -> str:
         if tool == "mypy" and "checked_files" in s:
             out.append(f"   checked source files: {s['checked_files']}")
         out.append("")
+    env = stats.get("environment") or {}
+    if env.get("required"):
+        out.append(f"environment: {len(env['required'])} required distributions installed "
+                   f"(declared by {env.get('requirements') or 'requirements.txt'})")
     return "\n".join(out).rstrip("\n")
 
 
@@ -389,9 +519,19 @@ def baseline_payload(stats: dict, note: str) -> dict:
             "نه پاس و نه شکست. نسخه‌های pin‌شده در Kharazmi_Server/requirements-dev.txt‌اند.",
             "محدودیتِ صادقانه: netting-out — رفعِ یک خطا و افزودنِ یک خطایِ هم‌شناسه",
             "نه total را تغییر می‌دهد نه by_code را، پس گیت ساکت می‌ماند.",
+            "محیطِ وابستگی هم بخشیِ baseline است: mypy با ignore_missing_imports=true هر",
+            "بستهٔ نصب‌نشده را Any می‌گیرد، پس نبودِ یک وابستگی صدها خطایِ واقعی را بی‌صدا",
+            "ناپدید می‌کند و اجرا «بهبود» به نظر می‌رسد. گیت پیش از هر مقایسه‌ای نصب بودنِ",
+            "همهٔ distributionهایِ requirements.txt را راستی‌آزمایی می‌کند و اگر حتی یکی",
+            "نباشد exit 2 می‌دهد (ناشناخته — نه پاس، نه شکست). تغییرِ خودِ مجموعهٔ",
+            "وابستگی هم exit 2 می‌دهد، چون شمارِ mypyِ محیطِ تازه با این baseline هم‌سنخ نیست.",
         ],
         "ruff": slim("ruff"),
         "mypy": slim("mypy"),
+        "environment": {
+            "requirements": (stats.get("environment") or {}).get("requirements"),
+            "required": list((stats.get("environment") or {}).get("required") or []),
+        },
         "totals": {
             "combined": stats["ruff"]["total"] + stats["mypy"]["total"],
             "distinct_codes": stats["ruff"]["distinct_codes"] + stats["mypy"]["distinct_codes"],
@@ -455,6 +595,31 @@ def _check_versions(stats: dict, base: dict) -> list[str]:
     return out
 
 
+def _check_environment(stats: dict, base: dict) -> list[str]:
+    """تغییرِ مجموعهٔ وابستگی ⇒ وضعیتِ ناشناخته، دقیقاً مثلِ تغییرِ نسخهٔ ابزار.
+
+    baseline در یک محیطِ مشخص اندازه گرفته شده است. اگر `requirements.txt` از آن زمان عوض
+    شده باشد، شمارِ فعلیِ mypy با شمارِ baseline هم‌سنخ نیست — حتی اگر هر دو محیط «کامل»
+    باشند، چون افزودنِ یک بستهٔ تازه نوع‌هایِ تازه‌ای را برایِ mypy قابلِ حل می‌کند و
+    خطاها را جابه‌جا می‌کند. پس نه پاس می‌دهیم نه شکست: exit 2 و درخواستِ اندازه‌گیریِ
+    دوباره.
+
+    baselineهایِ قدیمی‌تر که کلیدِ `environment` ندارند عمداً **رد نمی‌شوند**: نبودِ
+    `want` یعنی آن baseline پیش از این سنجش ساخته شده و مقایسه‌ای ممکن نیست. این
+    fail-openِ محدود است، چون اولین `--write-baseline` کلید را می‌سازد و از آن پس
+    مقایسه برقرار است — و در این ریپو baselineِ commit‌شده همین حالا بازنویسی می‌شود.
+    """
+    want = list((base.get("environment") or {}).get("required") or [])
+    got = list((stats.get("environment") or {}).get("required") or [])
+    if not want or sorted(want) == sorted(got):
+        return []
+    added = sorted(set(got) - set(want))
+    removed = sorted(set(want) - set(got))
+    return [f"dependency set changed since the baseline was measured: added={added} "
+            f"removed={removed} — mypy resolves different types now, so the counts are "
+            "not comparable. Re-run with --write-baseline and commit the refreshed JSON."]
+
+
 def check_against_baseline(stats: dict, baseline_path: str) -> int:
     p = Path(baseline_path)
     if not p.exists():
@@ -469,9 +634,11 @@ def check_against_baseline(stats: dict, baseline_path: str) -> int:
         print(f"::error title=python quality gate::baseline unreadable: {baseline_path} ({exc})")
         return 1
 
-    version_problems = _check_versions(stats, base)
-    if version_problems:
-        for item in version_problems:
+    # هر دو سنجش وضعیتِ «ناشناخته» می‌دهند نه «بدتر»: اگر نسخهٔ ابزار یا مجموعهٔ
+    # وابستگی عوض شده باشد، شمارِ فعلی با baseline هم‌سنخ نیست و مقایسه بی‌معنا می‌شود.
+    unknown_problems = _check_versions(stats, base) + _check_environment(stats, base)
+    if unknown_problems:
+        for item in unknown_problems:
             print(f"::error title=python quality gate::{item}")
         return 2
 

@@ -8,7 +8,13 @@
     "می‌کنند، پس شمارِ نسخهٔ دیگر قابلِ مقایسه نیست و گیت exit 2 می‌دهد (ناشناخته)،",
     "نه پاس و نه شکست. نسخه‌های pin‌شده در Kharazmi_Server/requirements-dev.txt‌اند.",
     "محدودیتِ صادقانه: netting-out — رفعِ یک خطا و افزودنِ یک خطایِ هم‌شناسه",
-    "نه total را تغییر می‌دهد نه by_code را، پس گیت ساکت می‌ماند."
+    "نه total را تغییر می‌دهد نه by_code را، پس گیت ساکت می‌ماند.",
+    "محیطِ وابستگی هم بخشیِ baseline است: mypy با ignore_missing_imports=true هر",
+    "بستهٔ نصب‌نشده را Any می‌گیرد، پس نبودِ یک وابستگی صدها خطایِ واقعی را بی‌صدا",
+    "ناپدید می‌کند و اجرا «بهبود» به نظر می‌رسد. گیت پیش از هر مقایسه‌ای نصب بودنِ",
+    "همهٔ distributionهایِ requirements.txt را راستی‌آزمایی می‌کند و اگر حتی یکی",
+    "نباشد exit 2 می‌دهد (ناشناخته — نه پاس، نه شکست). تغییرِ خودِ مجموعهٔ",
+    "وابستگی هم exit 2 می‌دهد، چون شمارِ mypyِ محیطِ تازه با این baseline هم‌سنخ نیست."
   ],
   "ruff": {
     "version": "0.17.4",
@@ -92,9 +98,27 @@
     },
     "checked_files": 55
   },
+  "environment": {
+    "requirements": "Kharazmi_Server/requirements.txt",
+    "required": [
+      "fastapi",
+      "httpx",
+      "openpyxl",
+      "passlib",
+      "psycopg2-binary",
+      "pydantic",
+      "python-dotenv",
+      "python-multipart",
+      "reportlab",
+      "requests",
+      "slowapi",
+      "sqlalchemy",
+      "uvicorn"
+    ]
+  },
   "totals": {
     "combined": 975,
     "distinct_codes": 41
   },
-  "source": "local run of ruff 0.17.4 + mypy 2.4.1 on 8657b18"
+  "source": "written from a local run"
 }
