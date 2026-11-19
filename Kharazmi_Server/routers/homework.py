@@ -215,7 +215,10 @@ async def submit_homework_file(
         raise HTTPException(status_code=403, detail="شما در این کلاس ثبت‌نام نکرده‌اید")
 
     # File upload validation
-    ext = validate_file(file)
+    # only the 400-on-disallowed-extension side effect is wanted here; the
+    # returned extension is unused because the stored name is re-derived
+    # from file.filename by sanitize_filename() on the next line.
+    validate_file(file)
     safe_name = sanitize_filename(file.filename)
     # در زمان نوشتن دوباره resolve می‌شود تا override محیطی/تست معتبر باشد
     file_path = os.path.join(storage_dir("homework"), safe_name)

@@ -102,14 +102,22 @@ def _split_top_level(text: str, delimiter: str = ",") -> list[tuple[str, int]]:
             cursor = skipped
             continue
         char = text[cursor]
-        if char == "(": parens += 1
-        elif char == ")": parens = max(0, parens - 1)
-        elif char == "<": angles += 1
-        elif char == ">": angles = max(0, angles - 1)
-        elif char == "[": brackets += 1
-        elif char == "]": brackets = max(0, brackets - 1)
-        elif char == "{": braces += 1
-        elif char == "}": braces = max(0, braces - 1)
+        if char == "(":
+            parens += 1
+        elif char == ")":
+            parens = max(0, parens - 1)
+        elif char == "<":
+            angles += 1
+        elif char == ">":
+            angles = max(0, angles - 1)
+        elif char == "[":
+            brackets += 1
+        elif char == "]":
+            brackets = max(0, brackets - 1)
+        elif char == "{":
+            braces += 1
+        elif char == "}":
+            braces = max(0, braces - 1)
         elif char == delimiter and not (parens or angles or brackets or braces):
             pieces.append((text[start:cursor], start))
             start = cursor + 1
@@ -185,9 +193,12 @@ def inspect_gson_configuration(client_file: Path = RETROFIT_CLIENT) -> dict[str,
 
 
 def _primitive_default(type_name: str) -> Any:
-    if type_name in ("Int", "Long", "Short", "Byte"): return 0
-    if type_name in ("Float", "Double"): return 0.0
-    if type_name == "Boolean": return False
+    if type_name in ("Int", "Long", "Short", "Byte"):
+        return 0
+    if type_name in ("Float", "Double"):
+        return 0.0
+    if type_name == "Boolean":
+        return False
     return None
 
 
@@ -235,12 +246,18 @@ def _kotlin_default(
     import json
 
     expression = _without_comments(expression).strip()
-    if expression == "null": return None
-    if expression == "true": return True
-    if expression == "false": return False
-    if expression in {"emptyList()", "mutableListOf()", "arrayListOf()"}: return []
-    if expression in {"emptyMap()", "mutableMapOf()", "linkedMapOf()"}: return {}
-    if expression == "emptySet()": return set()
+    if expression == "null":
+        return None
+    if expression == "true":
+        return True
+    if expression == "false":
+        return False
+    if expression in {"emptyList()", "mutableListOf()", "arrayListOf()"}:
+        return []
+    if expression in {"emptyMap()", "mutableMapOf()", "linkedMapOf()"}:
+        return {}
+    if expression == "emptySet()":
+        return set()
 
     string = re.fullmatch(r'"((?:\\.|[^"\\])*)"', expression)
     if string:
@@ -255,7 +272,8 @@ def _kotlin_default(
     if number:
         cleaned = expression.replace("_", "")
         suffix = cleaned[-1:].lower()
-        if suffix in {"f", "d", "l"}: cleaned = cleaned[:-1]
+        if suffix in {"f", "d", "l"}:
+            cleaned = cleaned[:-1]
         try:
             if any(char in cleaned.lower() for char in (".", "e")):
                 return float(cleaned)
@@ -267,7 +285,8 @@ def _kotlin_default(
     if factory:
         arguments = _split_top_level(factory.group(2)) if factory.group(2).strip() else []
         values = [_kotlin_default(argument, models, _seen) for argument, _ in arguments]
-        if any(value is _UNMODELED_DEFAULT for value in values): return _UNMODELED_DEFAULT
+        if any(value is _UNMODELED_DEFAULT for value in values):
+            return _UNMODELED_DEFAULT
         return set(values) if "set" in factory.group(1).lower() else values
 
     mapping = re.fullmatch(r"(mapOf|mutableMapOf|linkedMapOf)\s*\((.*)\)", expression, re.DOTALL)
@@ -276,10 +295,12 @@ def _kotlin_default(
         contents = mapping.group(2).strip()
         for argument, _ in (_split_top_level(contents) if contents else []):
             pair = _split_top_level(argument, delimiter="=")
-            if len(pair) != 2: return _UNMODELED_DEFAULT
+            if len(pair) != 2:
+                return _UNMODELED_DEFAULT
             key = _kotlin_default(pair[0][0].strip(), models, _seen)
             value = _kotlin_default(pair[1][0].strip(), models, _seen)
-            if key is _UNMODELED_DEFAULT or value is _UNMODELED_DEFAULT: return _UNMODELED_DEFAULT
+            if key is _UNMODELED_DEFAULT or value is _UNMODELED_DEFAULT:
+                return _UNMODELED_DEFAULT
             result[key] = value
         return result
 

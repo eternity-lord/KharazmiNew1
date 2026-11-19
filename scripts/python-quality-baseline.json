@@ -18,60 +18,44 @@
   ],
   "ruff": {
     "version": "0.17.4",
-    "total": 250,
-    "distinct_codes": 27,
+    "total": 87,
+    "distinct_codes": 11,
     "by_code": {
-      "E701": 57,
-      "F841": 31,
-      "B905": 27,
       "C408": 27,
-      "E702": 23,
       "W293": 12,
-      "SIM102": 11,
-      "E722": 10,
+      "F841": 8,
       "RUF015": 8,
       "UP031": 8,
-      "B007": 6,
+      "E702": 7,
+      "SIM102": 6,
       "SIM115": 5,
-      "SIM108": 4,
-      "RUF013": 3,
-      "SIM103": 3,
-      "C401": 2,
-      "E731": 2,
-      "RUF021": 2,
-      "C416": 1,
-      "RET501": 1,
-      "RET503": 1,
-      "RUF019": 1,
-      "RUF046": 1,
-      "SIM110": 1,
-      "SIM300": 1,
-      "UP035": 1,
-      "W292": 1
+      "E701": 3,
+      "SIM108": 2,
+      "B007": 1
     },
-    "files_with_issues": 63,
+    "files_with_issues": 27,
     "top_files": {
-      "tests/route_audit/sweep/common.py": 30,
-      "tests/route_audit/kotlin_contract.py": 21,
-      "Kharazmi_Server/routers/reports.py": 17,
       "Kharazmi_Server/tests/test_priority3_integrity.py": 12,
       "Kharazmi_Server/tests/test_wallet_finance_audit.py": 11,
-      "Kharazmi_Server/routers/audit.py": 10,
-      "tests/route_audit/sweep/run_sweep.py": 9,
-      "Kharazmi_Server/routers/timeline.py": 8,
+      "Kharazmi_Server/routers/reports.py": 9,
       "Kharazmi_Server/tests/test_roles_installment_notifications_audit.py": 7,
-      "Kharazmi_Server/routers/dunning.py": 6
+      "Kharazmi_Server/routers/audit.py": 5,
+      "Kharazmi_Server/tests/test_group6_financial_regression.py": 5,
+      "Kharazmi_Server/tests/test_storage_paths.py": 5,
+      "Kharazmi_Server/routers/parent.py": 3,
+      "Kharazmi_Server/tests/test_android_resources_static.py": 3,
+      "Kharazmi_Server/tests/test_branch_resolution.py": 3
     }
   },
   "mypy": {
     "version": "2.4.1",
-    "total": 725,
+    "total": 719,
     "distinct_codes": 14,
     "by_code": {
-      "arg-type": 239,
-      "assignment": 206,
+      "arg-type": 237,
+      "assignment": 203,
       "var-annotated": 72,
-      "union-attr": 59,
+      "union-attr": 58,
       "misc": 54,
       "valid-type": 43,
       "no-untyped-def": 19,
@@ -93,8 +77,8 @@
       "Kharazmi_Server/routers/attendance.py": 30,
       "Kharazmi_Server/services/transaction_admin.py": 30,
       "Kharazmi_Server/services/payments.py": 29,
-      "Kharazmi_Server/routers/reports.py": 27,
-      "Kharazmi_Server/routers/exams.py": 25
+      "Kharazmi_Server/routers/exams.py": 25,
+      "Kharazmi_Server/routers/homework.py": 25
     },
     "checked_files": 55
   },
@@ -117,8 +101,8 @@
     ]
   },
   "totals": {
-    "combined": 975,
-    "distinct_codes": 41
+    "combined": 806,
+    "distinct_codes": 25
   },
   "source": "written from a local run"
 }

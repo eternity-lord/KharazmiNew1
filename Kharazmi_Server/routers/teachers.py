@@ -816,9 +816,7 @@ def get_pending_settlement(
             return True
         if start_day is not None and parsed < start_day:
             return False
-        if end_day is not None and parsed > end_day:
-            return False
-        return True
+        return not (end_day is not None and parsed > end_day)
 
     def _api_date(value):
         """تاریخِ قابل‌نمایش در API: تاریخ معتبر ⇒ همان مقدار ذخیره‌شده؛ بدون تاریخ/نامعتبر ⇒ \"\".

@@ -278,7 +278,6 @@ def _render_current_android_inventory(calls: list[dict[str, str]]) -> str:
 
     models = discover_models()
     fields = ["interface/method", "method", "path", "response class", "response fields/types + JSON name", "file:line"]
-    out = []
     import io
     stream = io.StringIO(newline="")
     writer = csv.DictWriter(stream, fieldnames=fields, lineterminator="\n")

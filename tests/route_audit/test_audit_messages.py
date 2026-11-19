@@ -68,12 +68,12 @@ def _restore_tables(db, before, model_names=RESTORE_MODELS):
         current = {tuple(row[index] for index in key_indexes): row for row in current_rows}
 
         for key in current.keys() - baseline.keys():
-            predicate = and_(*(column == value for column, value in zip(primary_keys, key)))
+            predicate = and_(*(column == value for column, value in zip(primary_keys, key, strict=True)))
             db.execute(delete(table).where(predicate))
 
         for key, row in baseline.items():
-            predicate = and_(*(column == value for column, value in zip(primary_keys, key)))
-            values = dict(zip(column_names, row))
+            predicate = and_(*(column == value for column, value in zip(primary_keys, key, strict=True)))
+            values = dict(zip(column_names, row, strict=True))
             if key in current:
                 primary_names = {column.name for column in primary_keys}
                 db.execute(

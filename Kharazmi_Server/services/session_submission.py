@@ -181,7 +181,9 @@ def submit_session_and_calculate(
             continue
 
         # FIX (F-S2): upsert — ردیف آرشیوشده‌ی همین (جلسه، دانش‌آموز) احیا می‌شود نه INSERT تازه.
-        att = _upsert_attendance_row(db, session.id, item.student_id, item.status, excused_val)
+        # called for its side effect (the row is upserted/revived); the returned
+        # Attendance object is not needed by the charging logic below.
+        _upsert_attendance_row(db, session.id, item.student_id, item.status, excused_val)
 
         # تعیین وضعیت کسر وجه: حاضرین و غایبین غیرموجه (اگر جریمه غیبت فعال باشد)
         should_charge = False
@@ -438,14 +440,15 @@ def edit_past_session(
             continue
 
         # FIX (F-S2): upsert — ردیف آرشیوشده‌ی همین (جلسه، دانش‌آموز) احیا می‌شود نه INSERT تازه.
-        att = _upsert_attendance_row(db, session.id, item.student_id, item.status, excused_val)
+        # called for its side effect (the row is upserted/revived); the returned
+        # Attendance object is not needed by the charging logic below.
+        _upsert_attendance_row(db, session.id, item.student_id, item.status, excused_val)
 
         should_charge = False
-        if item.status in ["Present", "Late"]:
+        if item.status in ["Present", "Late"] or (
+            item.status == "Absent" and course.rule_calc_absent and not excused_val
+        ):
             should_charge = True
-        elif item.status == "Absent":
-            if course.rule_calc_absent and not excused_val:
-                should_charge = True
 
         if should_charge:
             curr_w_t = st.wallet_teacher if st.wallet_teacher is not None else 0

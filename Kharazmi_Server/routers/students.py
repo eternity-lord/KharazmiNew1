@@ -639,8 +639,6 @@ def get_student_my_profile(authorization: str | None = Header(None), db: Session
         })
 
     # ۵. مبالغ تراز مالی دانش‌آموز
-    w_t = student.wallet_teacher if student.wallet_teacher is not None else 0
-    w_i = student.wallet_institute if student.wallet_institute is not None else 0
     # FIX: Bug 16 - student/parent financial views must agree with tuition debtor reports.
     total_debt = calculate_student_debt(db, student)
 

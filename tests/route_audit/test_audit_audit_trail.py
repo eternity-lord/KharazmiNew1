@@ -244,7 +244,6 @@ def test_audit_trail_date_filters_order_and_jalali_full_day(client, auth_headers
     ]
     db.add_all(entries)
     db.commit()
-    log_ids = [row.id for row in entries]
     try:
         before_reads = _database_snapshot(db)
         gregorian = _payload(client.get(

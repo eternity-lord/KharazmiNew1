@@ -307,7 +307,7 @@ def get_suspicious_patterns(
                     if att.status == "Absent":
                         absent_by_course[cid] += 1
 
-                for cid, last10 in course_to_last10.items():
+                for cid, _last10 in course_to_last10.items():
                     absent = absent_by_course.get(cid, 0)
                     total = total_by_course.get(cid, 0)
                     if absent == 0 and total > 0:
@@ -366,7 +366,6 @@ def count_suspicious_patterns(db: Session) -> int:
         deleted_txns = db.query(Transaction).options(joinedload(Transaction.student), joinedload(Transaction.course)).filter(Transaction.is_deleted == True).all()
         if deleted_txns:
             txn_ids = [t.id for t in deleted_txns]
-            txn_map = {t.id: t for t in deleted_txns}
             logs_by_target = db.query(ActivityLog).filter(ActivityLog.target_id.in_(txn_ids), ActivityLog.timestamp >= cutoff).all()
             recent_logs_with_details = db.query(ActivityLog).filter(ActivityLog.timestamp >= cutoff).all()
             from collections import defaultdict
@@ -376,10 +375,10 @@ def count_suspicious_patterns(db: Session) -> int:
             for log in recent_logs_with_details:
                 if log.details:
                     for tid in txn_ids:
-                        if f"#{tid}" in log.details or f"تراکنش #{tid}" in log.details or f"#{tid} " in log.details or str(tid) in log.details and "تراکنش" in log.details:
+                        if f"#{tid}" in log.details or f"تراکنش #{tid}" in log.details or f"#{tid} " in log.details or (str(tid) in log.details and "تراکنش" in log.details):
                             if log not in logs_by_txn[tid]:
                                 logs_by_txn[tid].append(log)
-            for tid, logs in logs_by_txn.items():
+            for _tid, logs in logs_by_txn.items():
                 if not logs:
                     continue
                 logs_sorted = sorted(logs, key=lambda x: x.timestamp or datetime.datetime.min)
@@ -448,7 +447,7 @@ def count_suspicious_patterns(db: Session) -> int:
                     total_by_course[cid] += 1
                     if att.status == "Absent":
                         absent_by_course[cid] += 1
-                for cid, last10 in course_to_last10.items():
+                for cid, _last10 in course_to_last10.items():
                     absent = absent_by_course.get(cid, 0)
                     total = total_by_course.get(cid, 0)
                     if absent == 0 and total > 0:

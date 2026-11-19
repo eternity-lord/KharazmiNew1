@@ -125,7 +125,7 @@ def build_portal_exams(db, student) -> list:
             # گردکردن «نیم به بالا» (نه round بانکی پایتون): ۱۸.۵ باید ۱۹ نمایش داده شود،
             # چون نمرهٔ نیم‌نمره در آموزشگاه به سمت بالا خوانده می‌شود (۱۸.۵ ⇒ ۱۹).
             raw = float(ex.max_score if ex.max_score is not None else 20)
-            max_score = int(math.floor(raw + 0.5))
+            max_score = math.floor(raw + 0.5)
         except (TypeError, ValueError):
             max_score = 20
         result.append({

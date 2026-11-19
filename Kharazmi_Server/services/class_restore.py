@@ -93,8 +93,8 @@ def restore_deleted_class(
     else:
         enrollment_ids, session_ids = [], []
 
-    enrollment_ids = sorted(set(int(row_id) for row_id in enrollment_ids))
-    session_ids = sorted(set(int(row_id) for row_id in session_ids))
+    enrollment_ids = sorted({int(row_id) for row_id in enrollment_ids})
+    session_ids = sorted({int(row_id) for row_id in session_ids})
     enrollments = db.query(Enrollment).filter(Enrollment.id.in_(enrollment_ids)).all() if enrollment_ids else []
     sessions = db.query(SessionLog).filter(SessionLog.id.in_(session_ids)).all() if session_ids else []
     if (len(enrollments) != len(enrollment_ids)

@@ -36,10 +36,8 @@ def parse_time_to_minutes(time_str):
             return int(t_s) * 60
 
         start_m = to_min(start_str)
-        if end_str:
-            end_m = to_min(end_str)
-        else:
-            end_m = start_m + 90 # پیش‌فرض ۹۰ دقیقه برای جلسه کلاسی تک‌ساعته
+        # پیش‌فرض ۹۰ دقیقه برای جلسه کلاسی تک‌ساعته
+        end_m = to_min(end_str) if end_str else start_m + 90
         return start_m, end_m
     except Exception:
         return None
@@ -54,14 +52,9 @@ def days_overlap(day1, day2):
     even_days = {"شنبه", "دوشنبه", "چهارشنبه", "زوج"}
     odd_days = {"یکشنبه", "سه‌شنبه", "پنج‌شنبه", "فرد"}
 
-    if day1 in even_days and day2 in even_days:
-        if day1 == "زوج" or day2 == "زوج" or day1 == day2:
-            return True
-    if day1 in odd_days and day2 in odd_days:
-        if day1 == "فرد" or day2 == "فرد" or day1 == day2:
-            return True
-
-    return False
+    if day1 in even_days and day2 in even_days and (day1 == "زوج" or day2 == "زوج" or day1 == day2):
+        return True
+    return bool(day1 in odd_days and day2 in odd_days and (day1 == "فرد" or day2 == "فرد" or day1 == day2))
 
 
 def check_scheduling_conflicts(db: Session, teacher_id: int, days_of_week: str,

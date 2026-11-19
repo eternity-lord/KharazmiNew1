@@ -72,12 +72,12 @@ def _restore_tables(db, before, *model_names):
         }
 
         for key in current.keys() - baseline.keys():
-            predicate = and_(*(column == value for column, value in zip(primary_keys, key)))
+            predicate = and_(*(column == value for column, value in zip(primary_keys, key, strict=True)))
             db.execute(delete(table).where(predicate))
 
         for key, row in baseline.items():
-            predicate = and_(*(column == value for column, value in zip(primary_keys, key)))
-            values = dict(zip(column_names, row))
+            predicate = and_(*(column == value for column, value in zip(primary_keys, key, strict=True)))
+            values = dict(zip(column_names, row, strict=True))
             if key in current:
                 non_primary_values = {
                     name: value for name, value in values.items()
@@ -208,7 +208,6 @@ def test_crm_create_lead_rejects_invalid_mobile_branch_and_inactive_branch_witho
         assert no_branch.json() == {"detail": "شعبه مشخص نیست؛ لطفاً branch_id معتبر ارسال کنید"}
 
         branch = db.get(models.Branch, 2)
-        old_active = branch.active
         branch.active = False
         db.commit()
         inactive_branch = client.post(
@@ -354,7 +353,7 @@ def test_crm_add_notes_updates_contacted_followup_and_only_the_lead_row(client, 
         changed = {
             name for name, old, new in zip(
                 models.Lead.__table__.columns.keys(), before["crm_leads"][0], after["crm_leads"][0]
-            ) if old != new
+, strict=True) if old != new
         }
         assert changed == {"notes", "next_follow_up", "status"}
     finally:
@@ -481,7 +480,7 @@ def test_crm_convert_with_active_course_records_enrollment_values_pending_tuitio
         oracle = build_oracle(db)
         assert oracle.enrollments[enrollment.id].paid == 0
         assert oracle.enrollments[enrollment.id].due == 1_000_000
-        assert not [tx for tx in db.query(models.Transaction).filter_by(student_id=student_id).all()]
+        assert not list(db.query(models.Transaction).filter_by(student_id=student_id).all())
     finally:
         _restore_tables(db, before, "Lead", "Transaction", "Enrollment", "Student", "SequenceCounter")
 

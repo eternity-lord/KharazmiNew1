@@ -413,8 +413,6 @@ def test_transaction_logic(data: TransactionTestData, db: Session = Depends(get_
         student.sync_wallet_balance()
 
     # بروزرسانی کیف پول کل
-    final_w_t = student.wallet_teacher if student.wallet_teacher is not None else 0
-    final_w_i = student.wallet_institute if student.wallet_institute is not None else 0
     # FIX: Bug 18 - derive the total only through the shared wallet helper.
     student.sync_wallet_balance()
 
@@ -453,8 +451,6 @@ def test_transaction_logic(data: TransactionTestData, db: Session = Depends(get_
             student.sync_wallet_balance()
 
     # بروزرسانی کیف پول کل
-    final_w_t = student.wallet_teacher if student.wallet_teacher is not None else 0
-    final_w_i = student.wallet_institute if student.wallet_institute is not None else 0
     # FIX: Bug 18 - derive the total only through the shared wallet helper.
     student.sync_wallet_balance()
 
@@ -481,8 +477,6 @@ def test_transaction_logic(data: TransactionTestData, db: Session = Depends(get_
             student.sync_wallet_balance()
 
     # بروزرسانی کیف پول کل
-    final_w_t = student.wallet_teacher if student.wallet_teacher is not None else 0
-    final_w_i = student.wallet_institute if student.wallet_institute is not None else 0
     # FIX: Bug 18 - derive the total only through the shared wallet helper.
     student.sync_wallet_balance()
 

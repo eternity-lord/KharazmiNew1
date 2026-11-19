@@ -93,7 +93,8 @@ def run() -> dict:
             token = create_jwt_token(role_users[role], role)
             session = models.SessionLocal()
             session.add(models.UserSession(user_id=role_users[role], teacher_id=1 if role == "teacher" else None, sub_role=role, token=token))
-            session.commit(); session.close()
+            session.commit()
+            session.close()
             return {"Authorization": f"Bearer {token}"}
         for row in rows:
             reset_db()
@@ -108,21 +109,28 @@ def run() -> dict:
                 json_ok, body_shape, value = shape(response)
                 error = None
             except Exception as exc:  # keep one broken route from hiding the rest
-                response = None; json_ok = False; body_shape = "client-exception"; value = None; error = repr(exc)
+                response = None
+                json_ok = False
+                body_shape = "client-exception"
+                value = None
+                error = repr(exc)
             entry = {"method": row["method"], "path": row["path کامل"], "handler": row["handler"], "role": role, "status": response.status_code if response else None, "json": json_ok, "shape": body_shape, "sample_value": _compact_json(value), "error": error, "invalid_target": invalid_target, "status_500": bool(response and response.status_code == 500)}
             # A second, non-mutating empty read where a query key allows it.
             empty = None
             if row["method"] == "GET" and params:
                 empty_params = dict(params)
                 for key in empty_params:
-                    if key in ("query", "search"): empty_params[key] = "__route_audit_empty__"
-                    elif key.endswith("_id") or key in ("id", "student_id"): empty_params[key] = 999999
+                    if key in ("query", "search"):
+                        empty_params[key] = "__route_audit_empty__"
+                    elif key.endswith("_id") or key in ("id", "student_id"):
+                        empty_params[key] = 999999
                 try:
                     reset_db()
                     er = client.get(url, params=empty_params, headers=fresh_headers(role))
                     ej, es, ev = shape(er)
                     empty = {"status": er.status_code, "json": ej, "shape": es, "is_null_list": es == "null", "value": ev if isinstance(ev, list) and len(ev) < 3 else None}
-                except Exception as exc: empty = {"error": repr(exc)}
+                except Exception as exc:
+                    empty = {"error": repr(exc)}
             entry["empty"] = empty
             report["routes"].append(entry)
 
@@ -143,7 +151,8 @@ def run() -> dict:
         # CSV is convenient for searching 221 rows in review.
         lines = ["method,path,role,status,json,shape,invalid_status,invalid_json,empty_status,empty_shape"]
         for e in report["routes"]:
-            inv = e.get("invalid", {}); emp = e.get("empty") or {}
+            inv = e.get("invalid", {})
+            emp = e.get("empty") or {}
             vals = [e["method"], e["path"], e["role"], e.get("status"), e.get("json"), e.get("shape"), inv.get("status"), inv.get("json"), emp.get("status"), emp.get("shape")]
             lines.append(",".join('"' + str(v).replace('"', '""') + '"' for v in vals))
         OUT.joinpath("report.csv").write_text("\n".join(lines) + "\n", encoding="utf-8")

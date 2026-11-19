@@ -126,7 +126,7 @@ def _collect_recent_ids(db: Session, candidate_ids: list[int], today: datetime.d
                     v = int(n)
                     if v in candidate_ids:
                         matching.append(v)
-                except:
+                except Exception:
                     pass
             if not matching:
                 # fallback substring
@@ -140,12 +140,13 @@ def _collect_recent_ids(db: Session, candidate_ids: list[int], today: datetime.d
             m = re.search(r"(\d{1,2})[:٫.](\d{2})", sms.date or "")
             if m:
                 try:
-                    hh = int(m.group(1)); mm = int(m.group(2))
+                    hh = int(m.group(1))
+                    mm = int(m.group(2))
                     sms_dt = datetime.datetime.combine(d, datetime.time(hh, mm))
                     delta = now_dt - sms_dt
                     if 0 <= delta.total_seconds() <= 48 * 3600:
                         is_recent = True
-                except:
+                except Exception:
                     pass
             if not is_recent:
                 diff_days = (today - d).days
@@ -351,7 +352,7 @@ def send_dunning_batch(
         # commit skipped logs? none, but ensure session clean
         try:
             db.commit()
-        except:
+        except Exception:
             db.rollback()
 
     return {
@@ -369,7 +370,6 @@ def count_dunning_pending(db: Session) -> int:
     No full draft building, no _categorize Python loop for 10k, just COUNT.
     """
     today = datetime.date.today()
-    today_jalali = jalali_date_string(today)
     # Compute jalali boundaries for buckets
     up_start = jalali_date_string(today + datetime.timedelta(days=1))
     up_end = jalali_date_string(today + datetime.timedelta(days=3))
