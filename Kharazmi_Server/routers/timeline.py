@@ -26,7 +26,7 @@ class TimelineEvent(BaseModel):
 def _format_amount(amount: int) -> str:
     try:
         return f"{int(amount):,}"
-    except:
+    except Exception:
         return str(amount)
 
 def _normalize_timestamp(raw: str | None, fallback_id: int = 0) -> str:
@@ -72,11 +72,12 @@ def _sort_key(event: TimelineEvent):
                 try:
                     tp = time_part.translate(str.maketrans("۰۱۲۳۴۵۶۷۸۹", "0123456789")).translate(str.maketrans("٠١٢٣٤٥٦٧٨٩", "0123456789"))
                     h, m = tp.split(":")[:2]
-                    hour = int(h); minute = int(m)
-                except:
+                    hour = int(h)
+                    minute = int(m)
+                except Exception:
                     pass
             return datetime.datetime.combine(d, datetime.time(hour, minute))
-    except:
+    except Exception:
         pass
     # Fallback lexical
     return event.timestamp
@@ -207,7 +208,7 @@ def get_student_timeline(
             try:
                 score_str = f"{g.score:g}"
                 max_str = f"{g.max_score:g}" if g.max_score else ""
-            except:
+            except Exception:
                 score_str = str(g.score)
                 max_str = str(g.max_score)
             title = f"نمره {score_str}"
@@ -227,7 +228,7 @@ def get_student_timeline(
                         color = "#F44336"
                     elif ratio < 0.75:
                         color = "#FF9800"
-            except:
+            except Exception:
                 pass
             events.append(TimelineEvent(
                 timestamp=ts,
@@ -271,7 +272,7 @@ def get_student_timeline(
                     c = db.query(Course).filter(Course.id == inst.enrollment.course_id).first()
                     if c:
                         course_title = c.title
-            except:
+            except Exception:
                 pass
             ts = _normalize_timestamp(inst.due_date, inst.id)
             amount_str = _format_amount(inst.amount or 0)
@@ -287,7 +288,7 @@ def get_student_timeline(
                     due_d = parse_project_date(inst.due_date)
                     if due_d and due_d < datetime.date.today():
                         overdue = True
-                except:
+                except Exception:
                     pass
                 if overdue:
                     title = f"قسط معوق {amount_str} تومان"

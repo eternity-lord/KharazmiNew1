@@ -275,7 +275,8 @@ def test_admin_transaction_update_preserves_ledger_and_wallet_invariant(client, 
     assert db.get(models.Transaction, 4).description == "ویرایش ممیزی"
     assert db.get(models.Student, 6).wallet_institute == original[3] + 1_000
     assert db.get(models.Student, 6).wallet_balance == db.get(models.Student, 6).wallet_teacher + db.get(models.Student, 6).wallet_institute
-    transaction = db.get(models.Transaction, 4); student = db.get(models.Student, 6)
+    transaction = db.get(models.Transaction, 4)
+    student = db.get(models.Student, 6)
     transaction.amount, transaction.description, transaction.date = original[:3]
     student.wallet_institute, student.wallet_balance = original[3:]
     db.commit()
@@ -293,7 +294,8 @@ def test_admin_reset_teacher_password_rotates_shadow_and_restores_seed(client, a
     assert response.status_code == 200
     assert len(response.json()["new_password"]) == 8
     db.expire_all()
-    teacher = db.get(models.Teacher, 1); shadow = db.get(models.User, shadow.id)
+    teacher = db.get(models.Teacher, 1)
+    shadow = db.get(models.User, shadow.id)
     assert teacher.teacher_code != original[0]
     assert teacher.password == shadow.password
     assert teacher.password != original[1]
@@ -325,7 +327,7 @@ def test_admin_bulk_suspend_and_bulk_sms_restore_fixture(client, auth_headers, d
     assert len(created_logs) == 1 and created_logs[0].sent_count == 1
     for row in created_logs:
         db.delete(row)
-    for course, value in zip(courses, original):
+    for course, value in zip(courses, original, strict=True):
         course.is_suspended = value
     db.commit()
 

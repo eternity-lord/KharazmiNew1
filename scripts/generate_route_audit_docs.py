@@ -136,9 +136,9 @@ def literal_route_matches(route: str, literal: str) -> bool:
     literal_parts = literal.split("?", 1)[0].strip("/").split("/")
     if len(route_parts) != len(literal_parts):
         return False
-    for expected, actual in zip(route_parts, literal_parts):
+    for expected, actual in zip(route_parts, literal_parts, strict=True):
         if expected.startswith("{") and expected.endswith("}"):
-            if not actual or actual.startswith("{") and "}" not in actual:
+            if not actual or (actual.startswith("{") and "}" not in actual):
                 return False
         elif expected != actual:
             return False

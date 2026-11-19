@@ -155,7 +155,9 @@ def test_direct_payment_retry_is_idempotent_without_duplicate_transaction(client
     tx_id = created[0].id
     db.query(models.TransactionInstallmentAllocation).filter(models.TransactionInstallmentAllocation.transaction_id == tx_id).delete(synchronize_session=False)
     db.delete(created[0])
-    enrollment = db.get(models.Enrollment, 1); student = db.get(models.Student, 1); installment = db.get(models.Installment, 1)
+    enrollment = db.get(models.Enrollment, 1)
+    student = db.get(models.Student, 1)
+    installment = db.get(models.Installment, 1)
     enrollment.total_paid, student.wallet_institute = before_paid, before_wi
     installment.is_paid, installment.paid_at, installment.paid_amount = before_installment
     student.sync_wallet_balance()

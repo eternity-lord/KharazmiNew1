@@ -135,44 +135,69 @@ def resolve_schema(openapi: dict[str, Any], schema: dict[str, Any] | None) -> di
 
 def example_value(openapi: dict[str, Any], schema: dict[str, Any], field_name: str = "") -> Any:
     schema = resolve_schema(openapi, schema)
-    if "example" in schema: return schema["example"]
-    if "default" in schema: return schema["default"]
-    if "enum" in schema and schema["enum"]: return schema["enum"][0]
+    if "example" in schema:
+        return schema["example"]
+    if "default" in schema:
+        return schema["default"]
+    if schema.get("enum"):
+        return schema["enum"][0]
     typ = schema.get("type")
     lname = field_name.lower()
     if typ == "object" or "properties" in schema:
         return {name: example_value(openapi, child, name) for name, child in schema.get("properties", {}).items() if name in schema.get("required", []) or "default" in child}
-    if typ == "array": return [example_value(openapi, schema.get("items", {}), field_name)]
+    if typ == "array":
+        return [example_value(openapi, schema.get("items", {}), field_name)]
     if typ == "integer":
-        if "student" in lname: return 1
-        if "course" in lname or "class" in lname: return 1
-        if "session_code" in lname: return 5001
+        if "student" in lname:
+            return 1
+        if "course" in lname or "class" in lname:
+            return 1
+        if "session_code" in lname:
+            return 5001
         return 1
-    if typ == "number": return 1.0
-    if typ == "boolean": return False
+    if typ == "number":
+        return 1.0
+    if typ == "boolean":
+        return False
     if typ == "string":
-        if "date" in lname: return "1405/06/20"
-        if "time" in lname: return "16:00"
-        if "status" in lname: return "Present"
-        if "mode" in lname: return "metadata_only"
-        if "type" in lname: return "deposit"
-        if "target_wallet" in lname: return "institute"
-        if "payment_method" in lname: return "نقدی"
-        if "token" in lname: return "route-audit-token"
-        if "mobile" in lname: return "09120000001"
+        if "date" in lname:
+            return "1405/06/20"
+        if "time" in lname:
+            return "16:00"
+        if "status" in lname:
+            return "Present"
+        if "mode" in lname:
+            return "metadata_only"
+        if "type" in lname:
+            return "deposit"
+        if "target_wallet" in lname:
+            return "institute"
+        if "payment_method" in lname:
+            return "نقدی"
+        if "token" in lname:
+            return "route-audit-token"
+        if "mobile" in lname:
+            return "09120000001"
         return "route-audit"
     return None
 
 
 def path_value(name: str) -> str:
     lname = name.lower()
-    if "session_code" in lname: return "5001"
-    if "course" in lname or "class" in lname: return "1"
-    if "student" in lname: return "1"
-    if "transaction" in lname: return "1"
-    if "installment" in lname: return "1"
-    if "exam" in lname or "attempt" in lname: return "1"
-    if "request" in lname: return "1"
+    if "session_code" in lname:
+        return "5001"
+    if "course" in lname or "class" in lname:
+        return "1"
+    if "student" in lname:
+        return "1"
+    if "transaction" in lname:
+        return "1"
+    if "installment" in lname:
+        return "1"
+    if "exam" in lname or "attempt" in lname:
+        return "1"
+    if "request" in lname:
+        return "1"
     return "1"
 
 
@@ -205,10 +230,7 @@ def request_parts(openapi: dict[str, Any], row: dict[str, str], *, invalid: bool
         if invalid:
             resolved = resolve_schema(openapi, request_body)
             required = resolved.get("required", [])
-            if required:
-                body = {required[0]: []}
-            else:
-                body = {}
+            body = {required[0]: []} if required else {}
         elif row["path کامل"] == "/auth/change-password":
             body = {
                 "mobile": "audit-admin",
@@ -239,7 +261,10 @@ def shape(response) -> tuple[bool, str, Any]:
         value = response.json()
     except Exception:
         return False, "non-json", None
-    if value is None: return True, "null", value
-    if isinstance(value, list): return True, "list", value
-    if isinstance(value, dict): return True, "object", value
+    if value is None:
+        return True, "null", value
+    if isinstance(value, list):
+        return True, "list", value
+    if isinstance(value, dict):
+        return True, "object", value
     return True, "scalar", value

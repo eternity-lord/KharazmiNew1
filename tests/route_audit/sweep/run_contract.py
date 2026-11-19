@@ -105,13 +105,17 @@ def run():
         openapi = client.get("/openapi.json").json()
         baseline = db_path.read_bytes()
         def reset():
-            main.models.engine.dispose(); db_path.write_bytes(baseline)
+            main.models.engine.dispose()
+            db_path.write_bytes(baseline)
         user_ids = {"admin": 1, "secretary": 2, "teacher": 3, "student": 4, "parent": 5}
         def headers(role):
             if role == "public":
                 return {}
             token = create_jwt_token(user_ids[role], role)
-            db = models.SessionLocal(); db.add(models.UserSession(user_id=user_ids[role], teacher_id=1 if role == "teacher" else None, sub_role=role, token=token)); db.commit(); db.close()
+            db = models.SessionLocal()
+            db.add(models.UserSession(user_id=user_ids[role], teacher_id=1 if role == "teacher" else None, sub_role=role, token=token))
+            db.commit()
+            db.close()
             return {"Authorization": f"Bearer {token}"}
         server = {(r["method"], norm(r["path کامل"])): r for r in inventory()}
         source_calls = rows()
@@ -153,8 +157,10 @@ def run():
             try:
                 response = client.request(method, url, params=params, json=body, headers=headers(role))
                 status = response.status_code
-                try: payload = response.json()
-                except Exception: payload = None
+                try:
+                    payload = response.json()
+                except Exception:
+                    payload = None
             except Exception as exc:
                 out["entries"].append({"method": method, "path": android_path, "response_class": android_row["response class"], "status": None, "error": repr(exc), "issues": []})
                 continue

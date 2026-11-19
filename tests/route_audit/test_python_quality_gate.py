@@ -25,7 +25,9 @@
 
 from __future__ import annotations
 
+import io
 import json
+import tokenize
 from pathlib import Path
 
 import pytest
@@ -758,3 +760,49 @@ def test_committed_baseline_is_self_consistent():
     assert base["mypy"]["checked_files"] >= base["mypy"]["files_with_issues"]
     assert all(p.startswith(("Kharazmi_Server/", "scripts/", "tests/"))
                for p in base["ruff"]["top_files"]), "مسیرها باید نسبیِ ریپو باشند"
+
+
+def test_every_whitespace_only_line_lives_inside_a_multiline_string():
+    """شاهدِ ریپویِ واقعی: هر خطِ «فقط فضایِ سفید» بخشی از **محتوایِ** رشته است.
+
+    چرا این شاهد لازم است: در برشِ پاک‌سازیِ بدهیِ lint، قاعدهٔ W293 (خطِ خالیِ دارایِ
+    فضایِ سفید) در ظاهر بی‌خطرترین موردِ ممکن است — «فضایِ سفیدِ آخرِ خطِ خالی را پاک
+    کن». ولی در این ریپو هر ۱۲ موردِ باقی‌ماندهٔ آن درونِ رشتهٔ سه‌نقلوییِ قالبِ HTML
+    است (صفحهٔ `parent.py` و `reports.py`)؛ یعنی آن «فضایِ سفیدِ زائد» در واقع نویسهٔ
+    متنِ خروجی است. پاک‌کردنش درختِ AST را عوض می‌کند و صفحهٔ رندرشده را تغییر می‌دهد —
+    و چون W293 یک warningِ ظاهری است، هیچ تستِ رفتاری آن را نمی‌بیند. یک پاسِ کورِ
+    `--fix` روی W293 همان‌جا دو فایلِ تولید را بی‌صدا خراب کرد و شاهدِ AST برگرداندشان.
+
+    این تست همان ناوردایی را به زبانِ خودِ زبان قفل می‌کند: با `tokenize` دامنهٔ همهٔ
+    رشته‌هایِ چندخطی را می‌گیرد و می‌آزماید هیچ خطِ غیرتهیِ «کاملاً فضایِ سفید» بیرونِ
+    آن دامنه‌ها نیست. اگر روزی کسی W293 را در کدِ واقعی بسازد (یا قالب‌بندیِ کور دوباره
+    سراغِ قالب‌هایِ HTML برود) نخستین قرمزی همین‌جا دیده می‌شود، نه در diffِ صفحهٔ کاربر.
+    توجه: این شاهد عمداً **همهٔ** `*.py` ریپو را می‌بیند، نه فقط آن‌چه lint می‌شود —
+    پوشهٔ `checkpoints/` و `docs/` و درختِ اندروید از lint بیرون‌اند و این ناوردایی
+    برایِ آن‌ها هم می‌ارزد.
+    """
+    skipped = {".git", ".venv", "node_modules"}
+    offenders: list[tuple[str, int, str]] = []
+    scanned = 0
+    for path in sorted(REPO_ROOT.rglob("*.py")):
+        if any(part in skipped for part in path.parts):
+            continue
+        scanned += 1
+        rel = str(path.relative_to(REPO_ROOT))
+        source = path.read_text(encoding="utf-8")
+        multiline_string_rows: set[int] = set()
+        try:
+            for token in tokenize.generate_tokens(io.StringIO(source).readline):
+                if token.type == tokenize.STRING and token.end[0] > token.start[0]:
+                    multiline_string_rows.update(range(token.start[0], token.end[0] + 1))
+        except (tokenize.TokenError, IndentationError, SyntaxError) as exc:
+            offenders.append((rel, 0, "unparsable: " + str(exc)))
+            continue
+        for row, line in enumerate(source.split("\n"), start=1):
+            if line and not line.strip() and row not in multiline_string_rows:
+                offenders.append((rel, row, repr(line)))
+    assert scanned > 200, f"این شاهد باید کلِ ریپو را ببیند، فقط {scanned} فایل یافت شد"
+    assert not offenders, (
+        "خطِ خالیِ دارایِ فضایِ سفید در کدِ واقعی (بیرونِ رشته) پیدا شد — این همان بدهیِ "
+        f"W293 است که باید پاک شود، نه مواردِ داخلِ قالبِ HTML: {offenders[:8]}"
+    )

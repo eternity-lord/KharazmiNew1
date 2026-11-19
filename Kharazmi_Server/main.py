@@ -1,6 +1,5 @@
 import datetime
 import os
-from typing import List, Optional, Union
 
 from fastapi import Depends, FastAPI, HTTPException, status
 from sqlalchemy import text
@@ -95,7 +94,7 @@ class PublicRouteIsolationMiddleware(BaseHTTPMiddleware):
         path = request.url.path.lower()
 
         # Check if the request is coming via Cloudflare Quick Tunnel (*.trycloudflare.com)
-        is_public_tunnel = ".trycloudflare.com" in host or "trycloudflare.com" == host
+        is_public_tunnel = ".trycloudflare.com" in host or host == "trycloudflare.com"
 
         if is_public_tunnel:
             # Strictly allow ONLY routes starting with /parent/ or /uploads/ (for child profile photo)
@@ -162,10 +161,7 @@ def auto_patch_database():
         try:
             if "sqlite" in str(db.bind.url):
                 cursor = db.execute(text(f"PRAGMA table_info({table_name});"))
-                for row in cursor.fetchall():
-                    if row[1] == col_name:
-                        return True
-                return False
+                return any(row[1] == col_name for row in cursor.fetchall())
             res = db.execute(text(
                 f"SELECT column_name FROM information_schema.columns "
                 f"WHERE table_name='{table_name}' AND column_name='{col_name}';"

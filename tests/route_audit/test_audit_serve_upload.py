@@ -110,7 +110,7 @@ def test_serve_upload_missing_file_is_404_and_read_only(client, auth_headers, db
 
     def missing(*parts):
         lookups.append(parts)
-        return None
+        return
 
     monkeypatch.setattr(main, "resolve_existing", missing)
     response = client.get("/uploads/no-such-audit-file.jpg", headers=auth_headers["admin"])

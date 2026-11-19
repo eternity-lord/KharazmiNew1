@@ -24,7 +24,6 @@ def run_tests():
     res_sec = httpx.post(f"{URL_BASE}/auth/login", json=login_sec_payload)
     print(f"   Status Code: {res_sec.status_code}")
     print(f"   Response: {json.dumps(res_sec.json(), indent=2, ensure_ascii=False)}")
-    sec_token = res_sec.json().get("token")
 
     # 3. Teacher Login
     print("\n3. Teacher Login (09123333333 / 123):")

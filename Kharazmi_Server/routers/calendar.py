@@ -160,7 +160,6 @@ def get_calendar_events(
     role: str = Depends(check_user_login)
 ):
     session = db.query(models.UserSession).filter(models.UserSession.token == authorization.split()[1]).first()
-    user_id = session.user_id
 
     events = []
 

@@ -54,12 +54,12 @@ def _restore_tables(db, before, *model_names):
         current = {tuple(row[index] for index in key_indexes): row for row in current_rows}
 
         for key in current.keys() - baseline.keys():
-            predicate = and_(*(column == value for column, value in zip(primary_keys, key)))
+            predicate = and_(*(column == value for column, value in zip(primary_keys, key, strict=True)))
             db.execute(delete(table).where(predicate))
 
         for key, row in baseline.items():
-            predicate = and_(*(column == value for column, value in zip(primary_keys, key)))
-            values = dict(zip(column_names, row))
+            predicate = and_(*(column == value for column, value in zip(primary_keys, key, strict=True)))
+            values = dict(zip(column_names, row, strict=True))
             if key in current:
                 non_primary_values = {
                     name: value for name, value in values.items()
@@ -115,7 +115,6 @@ def test_dunning_drafts_bucket_boundaries_sort_filter_and_idempotency_are_read_o
         # and decoys for paid/deleted installment, deleted enrollment/student, and no mobile.
         db.query(models.Installment).update({"is_deleted": True}, synchronize_session=False)
         student_without_mobile = db.get(models.Student, 4)
-        old_mobile = student_without_mobile.parent_mobile
         student_without_mobile.parent_mobile = "   "
         rows = [
             _make_installment(models, enrollment_id=1, due_delta=1, amount=101_001),

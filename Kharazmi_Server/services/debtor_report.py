@@ -65,9 +65,8 @@ def _debtor_age_bucket(last_payment_day, today: datetime.date):
     if age < 0:
         age = 0
     for name, low, high in DEBT_AGE_BUCKETS:
-        if high is None or age <= high:
-            if age >= low:
-                return name, age
+        if (high is None or age <= high) and age >= low:
+            return name, age
     return "over_30", age
 
 

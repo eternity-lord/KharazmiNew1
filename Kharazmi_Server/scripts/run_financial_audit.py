@@ -118,7 +118,7 @@ def run_audit():
             AttendanceItem(student_id=3, status="Present")
         ]
     )
-    res_s1 = submit_session_and_calculate(data_s1, db, "admin")
+    submit_session_and_calculate(data_s1, db, "admin")
     db.commit()
 
     # Re-fetch wallets of students B and C
@@ -150,7 +150,7 @@ def run_audit():
             AttendanceItem(student_id=3, status="Present")                  # Present (150,000 charge)
         ]
     )
-    res_s2 = submit_session_and_calculate(data_s2, db, "admin")
+    submit_session_and_calculate(data_s2, db, "admin")
     db.commit()
 
     db.refresh(student_a)
@@ -172,7 +172,7 @@ def run_audit():
             AttendanceItem(student_id=3, status="Absent", excused=True)
         ]
     )
-    res_s3 = submit_session_and_calculate(data_s3, db, "admin")
+    submit_session_and_calculate(data_s3, db, "admin")
     db.commit()
 
     db.refresh(student_a)
@@ -237,7 +237,7 @@ def run_audit():
     session_ids = [s.id for s in sessions_db]
 
     settle_req = SettleRequest(session_ids=session_ids)
-    res_settle = settle_teacher_sessions(teacher_id=1, req=settle_req, db=db, admin_sub_role="admin")
+    settle_teacher_sessions(teacher_id=1, req=settle_req, db=db, admin_sub_role="admin")
     db.commit()
 
     # Re-fetch settlements

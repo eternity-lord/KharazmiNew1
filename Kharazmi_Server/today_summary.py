@@ -176,9 +176,7 @@ def schedule_matches_date(days_of_week: str | None, date_value: datetime.date) -
     # Existing scheduling code defines زوج as Sat/Mon/Wed and فرد as Sun/Tue/Thu.
     if "زوج" in schedule and date_value.weekday() in (5, 0, 2):
         return True
-    if "فرد" in schedule and date_value.weekday() in (6, 1, 3):
-        return True
-    return False
+    return bool("فرد" in schedule and date_value.weekday() in (6, 1, 3))
 
 
 def parse_schedule_start(class_time: str | None) -> tuple[int, int] | None:
@@ -330,7 +328,7 @@ def build_admin_smart_alerts(
             .filter(SessionLog.id.in_(pending_session_ids))
             .all()
         )
-        for session, course, teacher in rows:
+        for session, _course, teacher in rows:
             session_date = parse_project_date(session.date)
             if not session_date:
                 continue

@@ -86,7 +86,8 @@ def _income_chart_buckets(rows, start_day, end_day):
     if span_days <= 31:
         labels = [jalali_date_string(window_start + datetime.timedelta(days=offset))
                   for offset in range(span_days)]
-        key_of = lambda day: jalali_date_string(day)
+        def key_of(day):
+            return jalali_date_string(day)
     else:
         start_key = jalali_date_string(window_start)[:7]
         end_key = jalali_date_string(window_end)[:7]
@@ -98,7 +99,8 @@ def _income_chart_buckets(rows, start_day, end_day):
             month += 1
             if month == 13:
                 year, month = year + 1, 1
-        key_of = lambda day: jalali_date_string(day)[:7]
+        def key_of(day):
+            return jalali_date_string(day)[:7]
 
     index = {label: position for position, label in enumerate(labels)}
     buckets = [{"day": label, "amount": 0} for label in labels]
@@ -160,9 +162,7 @@ def _date_in_range(value, start_day, end_day) -> bool:
         return True
     if start_day is not None and parsed < start_day:
         return False
-    if end_day is not None and parsed > end_day:
-        return False
-    return True
+    return not (end_day is not None and parsed > end_day)
 
 
 def _api_date_or_blank(value) -> str:
@@ -328,8 +328,8 @@ def get_chart_data(
 
 @router.get("/reports/financial")
 def get_financial_report(
-    start_date: str = None,
-    end_date: str = None,
+    start_date: str | None = None,
+    end_date: str | None = None,
     branch_id: int | None = None,
     teacher_id: int | None = None,
     authorization: str | None = Header(None),
@@ -628,8 +628,6 @@ def get_financial_summary(
     if not month:
         month = curr_jm
 
-    month_prefix = f"{year}/{month:02d}/%"
-    year_prefix = f"{year}/%"
 
     start_date = f"{year}/{month:02d}/01"
     # روز ۳۱ برای ماه‌های ۷ تا ۱۱ جلالی نامعتبر است و helper مرکزی عمداً
@@ -725,6 +723,7 @@ def get_financial_summary(
             },
             "diagnostics": report_period_diagnostics(db, start_date, end_date, teacher_id=teacher_id),
         }
+    return None
 
 
 @router.get("/reports/student_statement")

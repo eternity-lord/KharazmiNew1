@@ -854,7 +854,7 @@ def list_audit_logs(
         db, [(row.id, row.entity_type, wanted) for row, _o, _n, _c, wanted in parsed], page_ids)
 
     logs: list[AuditLogEntry] = []
-    for row, old_values, new_values, changed, wanted in parsed:
+    for row, old_values, new_values, changed, _wanted in parsed:
         action_label, change_type, icon_color = _change_type_meta(row.action, old_values, new_values)
         refs = refs_by_log.get(row.id, {})
         student_id = student_id_by_log.get(row.id)

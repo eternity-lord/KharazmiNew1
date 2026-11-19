@@ -152,7 +152,7 @@ def deliver_push(db, tokens: Iterable, *, title: str, body: str,
                     result.failed += failure
                 continue
 
-            for token, item in zip(batch, per_token):
+            for token, item in zip(batch, per_token, strict=False):
                 error = (item or {}).get("error")
                 if error:
                     result.failed += 1

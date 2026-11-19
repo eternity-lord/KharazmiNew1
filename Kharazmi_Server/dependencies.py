@@ -49,7 +49,7 @@ def _b64url_decode(data: str) -> bytes:
     padding = "=" * (-len(data) % 4)
     return base64.urlsafe_b64decode(data + padding)
 
-def create_jwt_token(user_id: int, sub_role: str, expires_days: int = None) -> str:
+def create_jwt_token(user_id: int, sub_role: str, expires_days: int | None = None) -> str:
     # FIX: create signed JWT-like token with user_id, role, exp
     if expires_days is None:
         expires_days = JWT_ACCESS_TOKEN_EXPIRE_DAYS
@@ -474,9 +474,8 @@ def resolve_creation_branch(
         if teacher is not None:
             if teacher.branch_id != branch.id:
                 raise HTTPException(status_code=403, detail="شما فقط می‌توانید در شعبه‌ی خودتان داده ثبت کنید.")
-        elif user is not None and user.branch_id is not None:
-            if user.branch_id != branch.id:
-                raise HTTPException(status_code=403, detail="شما مجاز به ایجاد داده در شعبه‌ی دیگر نیستید.")
+        elif user is not None and user.branch_id is not None and user.branch_id != branch.id:
+            raise HTTPException(status_code=403, detail="شما مجاز به ایجاد داده در شعبه‌ی دیگر نیستید.")
         return branch.id
 
     # 2) branch خودِ فراخوان
